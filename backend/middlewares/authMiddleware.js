@@ -16,20 +16,13 @@ exports.isAuthenticated = async (req,res,next) => {
 
         const decoded = jwt.verify(token,process.env.JWT_SECRET);
 
-        const user = await User.findOne({_id:decoded.id,status:"active"});
+        const user = await User.findOne({_id:decoded.id});
 
         if(!user) {
             return res.status(401).json({
                 success:false,
                 message:"User not found!"
             })
-        }
-
-        if(user.status !== "active") {
-            return res.status(403).json({
-                success : false,
-                message : "Account not approved yet!"
-            });
         }
 
         req.user = user;

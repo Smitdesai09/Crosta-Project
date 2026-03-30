@@ -4,6 +4,14 @@ const jwt = require("jsonwebtoken");
 
 exports.registerUser = async (req,res) => {
     try {
+
+        if(req.user.role !== "admin") {
+            return res.status(403).json({
+                success : false,
+                message : "Only Admins can register new users!"
+            });
+        }
+        
         const {name,email,password} = req.body;
         
         const existingUser = await User.findOne({email});
@@ -23,9 +31,9 @@ exports.registerUser = async (req,res) => {
             passowrd : hashedPassword
         });
 
-        res.status(200).json({
+        res.status(201).json({
             success : true,
-            message : "User Registered Successfully, Wait for Admin Approval!"
+            message : "User Registered Successfully!"
         });
 
     } catch (error) {
@@ -56,20 +64,6 @@ exports.loginUser = async (req,res) => {
             })
         }
 
-        if(user.status === "pending") {
-            return res.status(403).json({
-                success : false,
-                message : "Please wait for admin approval!"
-            });
-        }
-
-        if(user.status === "rejected") {
-            return res.status(403).json({
-                success : false,
-                message : "Your registration request has been rejected by admin!"
-            });
-        }
-
         const token = jwt.sing(
             {id : user._id},
             process.env.JWT_SECRET,
@@ -91,6 +85,7 @@ exports.loginUser = async (req,res) => {
 
 exports.getMe = async (req,res) => {
     try {
+
         res.status(200).json({
             succcess : true,
             data : req.user
@@ -143,33 +138,31 @@ exports.getOneUser = async (req,res) => {
     }  
 }
 
-
-exports.approveUser = async (req,res) => {
+exports.updateUser = async (req,res) => {
     try {
-        const user = await User.findOne({_id : req.params.id});
+        const userId = req.params.id;
+
+        const user = await User.findOne({_id : user}).select("+password");
 
         if(!user) {
             return res.status(404).json({
                 success : false,
-                message : "User Not Found!"
-            })
-        }
-
-        if(user.status === "active") {
-            return res.status(400).json({
-                success : false,
-                message : "User is already approved!"                   
+                message : "User Not Foudn!"
             });
         }
 
-        user.status = "active";
-        user.approvedAt = Date.now();
+        const {name,email,password} = req.body;
+
+        if(name) user.name = name;
+        if(email) user.email = email;
 
         await user.save();
         res.status(200).json({
             success : true,
-            message : "User Approved Successfully!"
+            message : "User Updated Successfully!",
+            data : user
         });
+
     } catch (error) {
         res.status(500).json({
             success : false,
@@ -179,36 +172,30 @@ exports.approveUser = async (req,res) => {
 }
 
 
-exports.rejectUser = async (req,res) => {
+exports.deleteUser = async (req,res) => {
     try {
-        const user = await User.findOne({_id : req.params.id});
+        const userId = req.params.id;
+
+        const user = await User.findOne({_id : userId});
 
         if(!user) {
             return res.status(404).json({
                 success : false,
-                message : "User Not Found!"
+                message : "User Not Found!" 
             });
         }
 
-        if(user.status === "rejected") {
-            return res.status(400).json({
-                success : false,
-                message : "User is already rejected!"
-            });
-        }
-
-        user.status = "rejected";
-        await user.save();
+        await User.deleteOne();
 
         res.status(200).json({
             success : true,
-            message : "User Rejected Successfully!"
+            message : "User Deleted Successfully!"
         });
-        
+
     } catch (error) {
         res.status(500).json({
             success : false,
             message : error.message
-        })
+        });
     }
 }

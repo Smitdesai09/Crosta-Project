@@ -7,18 +7,19 @@ const {
     getMe,
     getAllUsers,
     getOneUser,
-    approveUser,
-    rejectUser
+    updateUser,
+    deleteUser
 } =require("../controllers/userController");
 
 const {isAuthenticated} = require("../middlewares/authMiddleware");
 
-router.post("/register",registerUser);
+router.post("/register",isAuthenticated,registerUser);
 router.post("/login",loginUser);
 router.get("/me",isAuthenticated,getMe);
 router.get("/all",isAuthenticated,getAllUsers);
 router.get("/:id",isAuthenticated,getOneUser);
-router.put("/approve/:id",isAuthenticated,approveUser);
-router.put("/reject/:id",isAuthenticated,rejectUser);
+router.put("/update/:id",isAuthenticated,updateUser);
+router.delete("/delete/:id",isAuthenticated,deleteUser);
+
 
 module.exports = router;
