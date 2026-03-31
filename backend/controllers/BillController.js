@@ -53,7 +53,9 @@ exports.createBill = async (req, res) => {
             gst: gstAmount,
             totalAmount: totalAmount,
             paymentType,
-            customerPhone
+            customerPhone,
+            operatorId: req.user._id,
+            operatorName: req.user.username
         });
 
         order.status = "billed";
@@ -93,7 +95,8 @@ exports.getAllBills = async (req, res) => {
             query.$or = [
                 { customerPhone: { $regex: search, $options: "i" } },
                 { "items.name": { $regex: search, $options: "i" } },
-                { "items.category": { $regex: search, $options: "i" } }
+                { "items.category": { $regex: search, $options: "i" } },
+                { operatorName: { $regex: search, $options: "i" } }
             ];
         }
 
@@ -128,6 +131,7 @@ exports.getAllBills = async (req, res) => {
                 paymentType: 1,
                 orderType: 1,
                 customerPhone: 1,
+                operatorName: 1,
                 createdAt: 1
             }
         )

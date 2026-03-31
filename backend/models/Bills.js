@@ -92,6 +92,17 @@ const BillSchema = new mongoose.Schema(
         customerPhone: {
             type: String,
             trim: true
+        },
+        
+        operatorId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true
+        },
+
+        operatorName: { 
+            type: String, 
+            required: true 
         }
 
     },
