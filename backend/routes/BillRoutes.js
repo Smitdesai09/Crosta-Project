@@ -3,7 +3,7 @@ const router = express.Router();
 
 const {
   createBill,
-  getBills,
+  getAllBills,
   getBillById
 } = require("../controllers/BillController");
 
@@ -11,7 +11,7 @@ const {
 // Create bill 
 router.post("/", createBill);
 // Get all bills (history)
-router.get("/", getBills);
+router.get("/", getAllBills);
 // Get single bill
 router.get("/:id", getBillById);
 

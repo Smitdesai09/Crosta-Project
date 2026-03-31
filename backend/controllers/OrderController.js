@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const Order = require("../models/Order");
-const Product = require("../models/product.model");
+const Order = require("../models/Orders");
+const Product = require("../models/Products")
 
 exports.getActiveOrders = async (req, res) => {
     try {
@@ -11,7 +11,7 @@ exports.getActiveOrders = async (req, res) => {
 
         const formattedOrders = orders.map(order => (
             {
-                orderId: order._id,
+                id: order._id,
                 tableNumber: order.tableNumber,
                 subtotal: order.subtotal
             }
@@ -35,15 +35,15 @@ exports.getOrderById = async (req, res) => {
 
     try {
 
-        const { orderId } = req.params;
+        const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(orderId))
+        if (!mongoose.Types.ObjectId.isValid(id))
             return res.status(400).json({
                 success: false,
                 message: "Invalid order id"
             });
 
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(id);
 
         if (!order)
             return res.status(404).json({
@@ -83,6 +83,22 @@ exports.createOrder = async (req, res) => {
                 success: false,
                 message: "Table number must be between 1 and 6"
             });
+
+        // Before creating the order
+        const existingOrder = await Order.findOne({ tableNumber, status: "active" });
+        if (existingOrder) {
+            return res.status(400).json({
+                success: false,
+                message: `Table ${tableNumber} already has an active order`
+            });
+        }
+
+        if (!items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Items required"
+            });
+        }
 
         const validatedItems = [];
         let subtotal = 0;
@@ -162,17 +178,17 @@ exports.createOrder = async (req, res) => {
 
 exports.updateOrder = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const { id } = req.params;
         const { items, orderType } = req.body;
 
-        // Validate orderId
-        if (!mongoose.Types.ObjectId.isValid(orderId))
+        // Validate id
+        if (!mongoose.Types.ObjectId.isValid(id))
             return res.status(400).json({
                 success: false,
                 message: "Invalid order id"
             });
 
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(id);
         if (!order)
             return res.status(404).json({
                 success: false,
@@ -252,29 +268,24 @@ exports.updateOrder = async (req, res) => {
 
 exports.cancelOrder = async (req, res) => {
     try {
-        const { orderId } = req.params;
+        const { id } = req.params;
 
-        if (!mongoose.Types.ObjectId.isValid(orderId))
+        if (!mongoose.Types.ObjectId.isValid(id))
             return res.status(400).json({
                 success: false,
                 message: "Invalid order id"
             });
 
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(id);
 
         if (!order)
-            return res.status(404).json({
-                success: false,
-                message: "Order not found"
-            });
+            return res.status(404).json({ success: false, message: "Order not found" });
 
         if (order.status === "billed")
-            return res.status(400).json({
-                success: false,
-                message: "Cannot cancel billed order"
-            });
+            return res.status(400).json({ success: false, message: "Cannot cancel billed order" });
 
-        await order.deleteOne();
+        // Replace deleteOne() with findByIdAndDelete
+        await Order.findByIdAndDelete(id);
 
         return res.status(200).json({
             success: true,
