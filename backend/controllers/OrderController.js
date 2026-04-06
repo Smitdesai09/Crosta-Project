@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const Order = require("../models/Orders");
-const Product = require("../models/Products")
+const Order = require("../models/orders");
+const Product = require("../models/products")
 
 exports.getActiveOrders = async (req, res) => {
     try {

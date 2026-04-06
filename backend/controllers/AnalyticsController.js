@@ -1,4 +1,4 @@
-const Bill = require("../models/Bills");
+const Bill = require("../models/bills");
 
 exports.getMonthlyAnalytics = async (req, res) => {
     try {

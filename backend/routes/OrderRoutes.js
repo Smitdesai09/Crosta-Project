@@ -7,7 +7,7 @@ const {
   getOrderById,
   updateOrder,
   cancelOrder
-} = require("../controllers/OrderController");
+} = require("../controllers/orderController");
 
 
 // Get all active orders (active tables)

@@ -5,7 +5,7 @@ const {
   createBill,
   getAllBills,
   getBillById
-} = require("../controllers/BillController");
+} = require("../controllers/billController");
 
 
 // Create bill 

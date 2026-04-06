@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const Bill = require("../models/Bills");
-const Order = require("../models/Orders");
+const Bill = require("../models/bills");
+const Order = require("../models/orders");
 
 exports.createBill = async (req, res) => {
     try {

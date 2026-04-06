@@ -1,5 +1,5 @@
-const Bill = require("../models/Bills");
-const Product = require("../models/Products");
+const Bill = require("../models/bills");
+const Product = require("../models/products");
 
 exports.getSummary = async (req, res) => {
   try {
