@@ -16,7 +16,7 @@ const productSchema = new mongoose.Schema({
 
     variants : {
         type : [{
-            name : {
+            size : {
                 type : String,
                 required : true
             },
@@ -51,4 +51,5 @@ module.exports = mongoose.model("Product",productSchema);
 //         "price" : 200
 //     }]
     
+// }
 // }

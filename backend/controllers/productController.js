@@ -1,4 +1,4 @@
-const Product = require("../modules/productSchema");
+const Product = require("../models/productSchema");
 
 exports.createProduct = async (req,res) => {
     try {
@@ -54,14 +54,8 @@ exports.updateProduct = async (req,res) => {
         return res.status(401).json({success:false,message:"All Fields are required!"});
     }
 
-    // const updatedProduct = await Product.findByIdAndUpdate(
-    //     req.params.id,
-    //     {name,category,variants},
-    //     {new:true}
-    // );
-
-    const updatedProduct = await Product.findOneAndUpdate(
-        {_id:req.params.id,isAvailable:true},
+    const updatedProduct = await Product.findByIdAndUpdate(
+        req.params.id,
         {name,category,variants},
         {new:true}
     );
@@ -86,13 +80,8 @@ exports.updateProduct = async (req,res) => {
 
 exports.deleteProduct = async (req,res) => {
     try{
-        // const deletedProduct = await Product.findByIdAndDelete(req.params.id);
-        const deletedProduct = await Product.findOneAndUpdate(
-            {_id:req.params.id,isAvailable:true},
-            {isAvailable:false},
-            {new:true}
-        );
-        
+        const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+
         if(!deletedProduct) {
             return res.status(404).json({success:false,message:"Product not Found!"})
         }
