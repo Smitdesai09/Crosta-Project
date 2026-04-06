@@ -1,13 +1,13 @@
 const Bill = require("../models/Bills");
 const Product = require("../models/Products");
 
-exports.getDashboard = async (req, res) => {
+exports.getSummary = async (req, res) => {
   try {
 
     const start = new Date();
-    start.setHours(11, 0, 0, 0); // 11 AM
+    start.setHours(0, 0, 0, 0); // 00:00 AM Morning
     const end = new Date();
-    end.setHours(25, 0, 0, 0); // 1 AM next day
+    end.setHours(23, 59, 59, 999); // 23:59 PM Night
 
     // 1. Today orders and revenue
     const summaryAgg = await Bill.aggregate([

@@ -3,17 +3,15 @@ const Bill = require("../models/Bills");
 exports.getMonthlyAnalytics = async (req, res) => {
     try {
 
-        const month = parseInt(req.query.month);
-        const year = parseInt(req.query.year);
+        const now = new Date();
 
-        if (!month || !year) {
-            return res.status(400).json({ message: "Month and year required" });
-        }
+        const month = parseInt(req.query.month) || (now.getMonth() + 1);
+        const year = parseInt(req.query.year) || now.getFullYear();
 
-        const start = new Date(year, month - 1, 1, 11, 0, 0, 0);
-        const end = new Date(year, month, 1, 11, 0, 0, 0);
+        const start = new Date(year, month - 1, 1, 0, 0, 0, 0);
+        const end = new Date(year, month, 1, 0, 0, 0, 0);
 
-        
+
         const analytics = await Bill.aggregate([
 
             {

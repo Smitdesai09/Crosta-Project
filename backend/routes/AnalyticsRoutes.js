@@ -3,6 +3,6 @@ const router = express.Router();
 
 const { getMonthlyAnalytics } = require("../controllers/AnalyticsController");
 
-router.get("/monthly", getMonthlyAnalytics);
+router.get("/", getMonthlyAnalytics);
 
 module.exports = router;
