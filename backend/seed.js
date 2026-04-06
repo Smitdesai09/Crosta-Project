@@ -1,7 +1,7 @@
 const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 
-const User = require("./models/userSchema");
+const User = require("./models/users");
 const connectDB = require("./config/db");
 
 dotenv.config();

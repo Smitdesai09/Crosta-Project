@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/userSchema");
+const User = require("../models/users");
 
 exports.isAuthenticated = async (req, res, next) => {
   try {
@@ -73,7 +73,7 @@ exports.authorizeRoles = (...roles) => {
 
 // const jwt = require("jsonwebtoken");
 // const rateLimit = require("express-rate-limit");
-// const User = require("../models/userSchema");
+// const User = require("../models/users");
 
 // const jwtVerifyOptions = {
 //     issuer: process.env.JWT_ISSUER || "crosta-api",
