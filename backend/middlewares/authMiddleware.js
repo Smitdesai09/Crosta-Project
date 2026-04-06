@@ -1,5 +1,4 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/users");
 
 exports.isAuthenticated = async (req, res, next) => {
   try {
@@ -30,14 +29,6 @@ exports.isAuthenticated = async (req, res, next) => {
         message: "Invalid token payload",
       });
     }
-    // const user = await User.findOne({ _id: decoded.id });
-
-    // if (!user) {
-    //   return res.status(401).json({
-    //     success: false,
-    //     message: "User not found!",
-    //   });
-    // }
 
     req.user = decoded;
 

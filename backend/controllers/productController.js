@@ -2,6 +2,18 @@ const Product = require("../models/products");
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+
+
+exports.getAllProducts = async (req,res) => {
+    try {
+        const products = await Product.find({isAvailable:true})
+        res.status(200).json({success:true,message:"Data Fetched Successfully",data:products});
+
+    } catch (error) {
+        res.status(500).json({success:false,message:error.message});
+    }
+}
+
 exports.createProduct = async (req,res) => {
     try {
         const {name,category,variants} = req.body;
@@ -21,37 +33,10 @@ exports.createProduct = async (req,res) => {
     }
 }
 
-
-exports.getAllProducts = async (req,res) => {
-    try {
-        const products = await Product.find({isAvailable:true})
-        res.status(200).json({success:true,message:"Data Fetched Successfully",data:products});
-
-    } catch (error) {
-        res.status(500).json({success:false,message:error.message});
-    }
-}
-
-
-exports.getOneProduct = async (req,res) => {
-    try {
-        // const product = await Product.findById(req.params.id)
-        const product = await Product.findOne({_id:req.params.id,isAvailable:true});
-
-        if(!product) {
-            return res.status(404).json({success:false,message:"Product Not Found!"});
-        }
-
-        res.status(200).json({success:true,data:product});
-    } catch(error) {
-        res.status(500).json({success:false,message:error.message})
-    }
-}
-
 exports.updateProduct = async (req,res) => {
-   try {
+    try {
      const {name,category,variants} = req.body;
-    
+     
     if (!name || !category || !variants) {
         return res.status(401).json({success:false,message:"All Fields are required!"});
     }
@@ -79,7 +64,6 @@ exports.updateProduct = async (req,res) => {
    }
 }
 
-
 exports.deleteProduct = async (req,res) => {
     try{
         const deletedProduct = await Product.findByIdAndDelete(req.params.id);
@@ -87,10 +71,25 @@ exports.deleteProduct = async (req,res) => {
         if(!deletedProduct) {
             return res.status(404).json({success:false,message:"Product not Found!"})
         }
-
+        
         res.status(200).json({success:true,message:"Product Deleted Successfully!"
         });
     } catch(error) {
         res.status(500).json({success:false,message:error.message});
     }
 }
+
+// exports.getOneProduct = async (req,res) => {
+//     try {
+//         // const product = await Product.findById(req.params.id)
+//         const product = await Product.findOne({_id:req.params.id,isAvailable:true});
+
+//         if(!product) {
+//             return res.status(404).json({success:false,message:"Product Not Found!"});
+//         }
+
+//         res.status(200).json({success:true,data:product});
+//     } catch(error) {
+//         res.status(500).json({success:false,message:error.message})
+//     }
+// }

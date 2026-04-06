@@ -5,6 +5,49 @@ const mongoose = require("mongoose");
 // 🔹 ID Validation Function
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+
+exports.getMe = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        name: req.user.name,
+        email: req.user.email,
+        role: req.user.role
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({ isDeleted: false }).select("name email role");
+
+    res.status(200).json({
+      success: true,
+      totalUsers: users.length,
+      data: users,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 exports.addUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -65,84 +108,6 @@ exports.addUser = async (req, res) => {
         });
     }
 };
-
-
-exports.getMe = async (req, res) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not authenticated",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: {
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role
-      },
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-exports.getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find({ isDeleted: false }).select("name email role");
-
-    res.status(200).json({
-      success: true,
-      totalUsers: users.length,
-      data: users,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// exports.getOneUser = async (req, res) => {
-//   try {
-//     const userId = req.params.id;
-
-//     if (!isValidId(userId)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid user ID",
-//       });
-//     }
-
-//     const user = await User.findOne({
-//       _id: userId,
-//       isDeleted: false,
-//     }).select("name email");
-
-//     if (!user) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
-
-//     res.status(200).json({
-//       success: true,
-//       data: user,
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: error.message,
-//     });
-//   }
-// };
 
 exports.updateUser = async (req, res) => {
   try {
@@ -289,42 +254,3 @@ exports.restoreUser = async (req, res) => {
     });
   }
 };
-
-// exports.toggleDeleteUser = async (req,res) => {
-//     try {
-//         const userId = req.params.id;
-
-//         if(!isValidId(userId)){
-//             return res.status(400).json({
-//                 success:false,
-//                 message:"Invalid user ID"
-//             });
-//         }
-
-//         const user = await User.findById(userId);
-
-//         if(!user){
-//             return res.status(404).json({
-//                 success:false,
-//                 message:"User not found"
-//             });
-//         }
-
-//         // 🔥 TOGGLE
-//         user.isDeleted = !user.isDeleted;
-//         await user.save();
-
-//         res.status(200).json({
-//             success:true,
-//             message: user.isDeleted
-//                 ? "User deleted successfully"
-//                 : "User restored successfully"
-//         });
-
-//     } catch(error){
-//         res.status(500).json({
-//             success:false,
-//             message:error.message
-//         });
-//     }
-// };

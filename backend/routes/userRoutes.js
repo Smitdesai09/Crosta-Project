@@ -2,10 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 const {
-    addUser,
     getMe,
     getAllUsers,
-    getOneUser,
+    addUser,
     updateUser,
     deleteUser,
     restoreUser
@@ -17,13 +16,11 @@ const {
 } = require("../middlewares/authMiddleware");
 
 
-router.post(
-    "/register",
-    isAuthenticated,
-    authorizeRoles("admin"),
-    addUser
+router.get(
+    "/me", 
+    isAuthenticated, 
+    getMe
 );
-router.get("/me", isAuthenticated, getMe);
 
 router.get(
     "/",
@@ -32,18 +29,18 @@ router.get(
     getAllUsers
 );
 
-router.get(
-    "/:id",
+router.post(
+    "/register",
     isAuthenticated,
     authorizeRoles("admin"),
-    getOneUser
+    addUser
 );
 
 router.put(
     "/:id",
     isAuthenticated,
     authorizeRoles("admin"),
-    updateUser 
+    updateUser
 );
 
 router.delete(
