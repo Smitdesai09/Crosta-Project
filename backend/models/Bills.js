@@ -51,6 +51,13 @@ const BillSchema = new mongoose.Schema(
             max: 6
         },
 
+        orderType: {
+            type: String,
+            enum: ["dine-in", "takeaway"],
+            default: "dine-in",
+            index: true
+        },
+
         items: {
             type: [BillItemSchema],
             validate: {
@@ -86,27 +93,31 @@ const BillSchema = new mongoose.Schema(
         paymentType: {
             type: String,
             enum: ["cash", "upi", "card"],
-            required: true
+            required: true,
+            index: true
         },
 
         customerPhone: {
             type: String,
-            trim: true
+            trim: true,
+            index: true
         },
-        
+
         operatorId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             required: true
         },
 
-        operatorName: { 
-            type: String, 
-            required: true 
+        operatorName: {
+            type: String,
+            required: true,
+            index: true
         }
 
     },
     { timestamps: true }
 );
+billSchema.index({ orderId: -1 });
 
 module.exports = mongoose.model("Bill", BillSchema);

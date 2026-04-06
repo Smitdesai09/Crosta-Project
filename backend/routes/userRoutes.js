@@ -30,7 +30,7 @@ router.get(
 );
 
 router.post(
-    "/register",
+    "/",
     isAuthenticated,
     authorizeRoles("admin"),
     addUser
@@ -51,7 +51,7 @@ router.delete(
 );
 
 router.put(
-    "/restore/:id",
+    "/:id/restore",
     isAuthenticated,
     authorizeRoles("admin"),
     restoreUser

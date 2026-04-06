@@ -1,18 +1,14 @@
 const jwt = require("jsonwebtoken");
 
-exports.isAuthenticated = async (req, res, next) => {
+
+exports.isAuthenticated = (req, res, next) => {
   try {
-    let token;
 
-    if (req.cookies && req.cookies.token) {
-      token = req.cookies.token;
-    } else {
-      const authHeader = req.headers.authorization || "";
-
-      if (authHeader.startsWith("Bearer ")) {
-        token = authHeader.split(" ")[1];
-      }
-    }
+    const token =
+      req.cookies?.token ||
+      (req.headers.authorization?.startsWith("Bearer ")
+        ? req.headers.authorization.split(" ")[1]
+        : null);
 
     if (!token) {
       return res.status(401).json({
@@ -22,18 +18,12 @@ exports.isAuthenticated = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    if (!decoded._id) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid token payload",
-      });
-    }
-
     req.user = decoded;
 
     next();
+
   } catch (error) {
+
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({
         success: false,
@@ -48,8 +38,10 @@ exports.isAuthenticated = async (req, res, next) => {
   }
 };
 
+
 exports.authorizeRoles = (...roles) => {
   return (req, res, next) => {
+
     if (!req.user) {
       return res.status(401).json({
         success: false,

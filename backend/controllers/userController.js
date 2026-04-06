@@ -1,10 +1,10 @@
 const User = require("../models/users");
 const validator = require("validator");
 const mongoose = require("mongoose");
+const bcrypt = require("bcrypt");
 
-// 🔹 ID Validation Function
+// ID Validation Helper Function
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
-
 
 exports.getMe = async (req, res) => {
   try {
@@ -33,7 +33,10 @@ exports.getMe = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ isDeleted: false }).select("name email role");
+    const users = await User
+      .find({ isDeleted: false })
+      .select("name email role")
+      .lean();
 
     res.status(200).json({
       success: true,
@@ -49,64 +52,67 @@ exports.getAllUsers = async (req, res) => {
 };
 
 exports.addUser = async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
+  try {
+    const { name, email, password } = req.body;
 
-        if (!name || !email || !password) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required"
-            });
-        }
-
-        if (!validator.isEmail(email)) {
-            return res.status(400).json({
-                success: false,
-                message: "Invalid email format"
-            });
-        }
-
-        if (password.length < 6) {
-            return res.status(400).json({
-                success: false,
-                message: "Password must be at least 6 characters"
-            });
-        }
-
-        const existingUser = await UserModel.findOne({ email });
-
-        if (existingUser) {
-            return res.status(400).json({
-                success: false,
-                message: "User already exists"
-            });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = await UserModel.create({
-            name,
-            email,
-            password: hashedPassword
-        });
-
-        return res.status(201).json({
-            success: true,
-            message: "User registered successfully",
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role
-            }
-        });
-
-    } catch (err) {
-        return res.status(500).json({
-            success: false,
-            message: err.message
-        });
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required"
+      });
     }
+
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format"
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters"
+      });
+    }
+
+    const existingUser = await User
+      .findOne({ email })
+      .select("_id")
+      .lean();
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
 };
 
 exports.updateUser = async (req, res) => {
@@ -132,13 +138,6 @@ exports.updateUser = async (req, res) => {
       });
     }
 
-    // if (req.user.role !== "admin") {
-    //   return res.status(403).json({
-    //     success: false,
-    //     message: "You can only update your own profile",
-    //   });
-    // }
-
     const { name, email } = req.body;
 
     if (name) user.name = name;
@@ -151,7 +150,11 @@ exports.updateUser = async (req, res) => {
         });
       }
 
-      const existingUser = await User.findOne({ email, isDeleted: false });
+      const existingUser = await User
+        .findOne({ email, isDeleted: false })
+        .select("_id")
+        .lean();
+
       if (existingUser && existingUser._id.toString() !== userId) {
         return res.status(400).json({
           success: false,
@@ -191,7 +194,11 @@ exports.deleteUser = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ _id: userId, isDeleted: false });
+    const user = await User.findOneAndUpdate(
+      { _id: userId, isDeleted: false },
+      { isDeleted: true },
+      { new: true }
+    );
 
     if (!user) {
       return res.status(404).json({
@@ -200,13 +207,9 @@ exports.deleteUser = async (req, res) => {
       });
     }
 
-    // 🔥 SOFT DELETE
-    user.isDeleted = true;
-    await user.save();
-
     res.status(200).json({
       success: true,
-      message: "User deleted successfully (soft delete)",
+      message: "User deleted successfully",
     });
   } catch (error) {
     res.status(500).json({
@@ -219,6 +222,7 @@ exports.deleteUser = async (req, res) => {
 exports.restoreUser = async (req, res) => {
   try {
     const userId = req.params.id;
+
     if (!isValidId(userId)) {
       return res.status(400).json({
         success: false,
@@ -226,22 +230,18 @@ exports.restoreUser = async (req, res) => {
       });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findOneAndUpdate(
+      { _id: userId, isDeleted: true },
+      { isDeleted: false },
+      { new: true }
+    );
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User not found",
+        message: "User not found or already active",
       });
     }
-    if (!user.isDeleted) {
-      return res.status(400).json({
-        success: false,
-        message: "User is already active",
-      });
-    }
-    user.isDeleted = false;
-    await user.save();
 
     res.status(200).json({
       success: true,

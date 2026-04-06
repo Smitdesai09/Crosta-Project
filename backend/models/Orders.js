@@ -48,7 +48,8 @@ const OrderSchema = new mongoose.Schema(
     type: Number,
     required: true,
     min: 1,
-    max: TOTAL_TABLES
+    max: TOTAL_TABLES,
+    index: true
   },
 
   orderType: {
@@ -81,5 +82,6 @@ const OrderSchema = new mongoose.Schema(
 },
 { timestamps: true }
 );
+OrderSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("Order", OrderSchema);
