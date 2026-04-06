@@ -1,5 +1,7 @@
 const Product = require("../models/products");
 
+const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
+
 exports.createProduct = async (req,res) => {
     try {
         const {name,category,variants} = req.body;
@@ -49,7 +51,7 @@ exports.getOneProduct = async (req,res) => {
 exports.updateProduct = async (req,res) => {
    try {
      const {name,category,variants} = req.body;
-
+    
     if (!name || !category || !variants) {
         return res.status(401).json({success:false,message:"All Fields are required!"});
     }

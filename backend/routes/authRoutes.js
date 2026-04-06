@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
-    register,
+    // register,
     login,
     logout,
     forgotPassword,
@@ -10,8 +10,8 @@ const {
 } = require("../controllers/authController");
 
 const {
-    isAuthenticated,
-    authorizeRoles
+    isAuthenticated
+    // authorizeRoles
 } = require("../middlewares/authMiddleware");
 
 
@@ -24,12 +24,12 @@ router.post("/reset-password/:token", resetPassword);
 // 🔐 PROTECTED ROUTES
 
 // Admin only register
-router.post(
-    "/register",
-    isAuthenticated,
-    authorizeRoles("admin"),
-    register
-);
+// router.post(
+//     "/register",
+//     isAuthenticated,
+//     authorizeRoles("admin"),
+//     register
+// );
 
 // Logout
 router.get("/logout", isAuthenticated, logout);

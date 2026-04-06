@@ -24,16 +24,22 @@ exports.isAuthenticated = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const user = await User.findOne({ _id: decoded.id });
-
-    if (!user) {
+    if (!decoded._id) {
       return res.status(401).json({
         success: false,
-        message: "User not found!",
+        message: "Invalid token payload",
       });
     }
+    // const user = await User.findOne({ _id: decoded.id });
 
-    req.user = user;
+    // if (!user) {
+    //   return res.status(401).json({
+    //     success: false,
+    //     message: "User not found!",
+    //   });
+    // }
+
+    req.user = decoded;
 
     next();
   } catch (error) {
@@ -70,109 +76,3 @@ exports.authorizeRoles = (...roles) => {
     next();
   };
 };
-
-// const jwt = require("jsonwebtoken");
-// const rateLimit = require("express-rate-limit");
-// const User = require("../models/users");
-
-// const jwtVerifyOptions = {
-//     issuer: process.env.JWT_ISSUER || "crosta-api",
-//     audience: process.env.JWT_AUDIENCE || "crosta-users"
-// };
-
-// const ensureJwtSecret = () => {
-//     if (!process.env.JWT_SECRET) {
-//         const error = new Error("JWT_SECRET is not configured.");
-//         error.statusCode = 500;
-//         throw error;
-//     }
-
-//     return process.env.JWT_SECRET;
-// };
-
-// const getBearerToken = (req) => {
-//     const authHeader = req.headers.authorization;
-
-//     if (!authHeader) {
-//         return null;
-//     }
-
-//     const [scheme, token, ...rest] = authHeader.trim().split(" ");
-
-//     if (scheme !== "Bearer" || !token || rest.length > 0) {
-//         return null;
-//     }
-
-//     return token;
-// };
-
-// exports.authLimiter = rateLimit({
-//     windowMs: 15 * 60 * 1000,
-//     max: Number(process.env.AUTH_RATE_LIMIT_MAX) || 10,
-//     standardHeaders: true,
-//     legacyHeaders: false,
-//     message: {
-//         success: false,
-//         message: "Too many authentication attempts. Please try again later."
-//     }
-// });
-
-// exports.isAuthenticated = async (req, res, next) => {
-//     try {
-//         const secret = ensureJwtSecret();
-//         const token = getBearerToken(req);
-
-//         if (!token) {
-//             return res.status(401).json({
-//                 success: false,
-//                 message: "Authentication token is required."
-//             });
-//         }
-
-//         const decoded = jwt.verify(token, secret, jwtVerifyOptions);
-
-//         if (!decoded?.id) {
-//             return res.status(401).json({
-//                 success: false,
-//                 message: "Invalid authentication token."
-//             });
-//         }
-
-//         const user = await User.findById(decoded.id).select("name email role");
-
-//         if (!user) {
-//             return res.status(401).json({
-//                 success: false,
-//                 message: "Authentication failed."
-//             });
-//         }
-
-//         req.user = {
-//             id: user._id.toString(),
-//             name: user.name,
-//             email: user.email,
-//             role: user.role || "user"
-//         };
-
-//         next();
-//     } catch (error) {
-//         if (error.name === "TokenExpiredError") {
-//             return res.status(401).json({
-//                 success: false,
-//                 message: "Token expired. Please log in again."
-//             });
-//         }
-
-//         if (error.name === "JsonWebTokenError") {
-//             return res.status(401).json({
-//                 success: false,
-//                 message: "Invalid authentication token."
-//             });
-//         }
-
-//         return res.status(error.statusCode || 500).json({
-//             success: false,
-//             message: error.statusCode ? error.message : "Authentication failed."
-//         });
-//     }
-// };

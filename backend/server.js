@@ -25,8 +25,8 @@ app.use(cors({
 
 
 //routes
-app.use("/api/auth",require("./routes/authRoutes"));
-app.use("/api/user",require("./routes/userRoutes"));
+app.use("/api/auth",authRoutes);
+app.use("/api/user",userRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/bills", billRoutes)

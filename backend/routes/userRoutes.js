@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
+    addUser,
     getMe,
     getAllUsers,
     getOneUser,
@@ -15,6 +16,13 @@ const {
     authorizeRoles
 } = require("../middlewares/authMiddleware");
 
+
+router.post(
+    "/register",
+    isAuthenticated,
+    authorizeRoles("admin"),
+    addUser
+);
 router.get("/me", isAuthenticated, getMe);
 
 router.get(
@@ -34,7 +42,7 @@ router.get(
 router.put(
     "/:id",
     isAuthenticated,
-    authorizeRoles("admin","user"),
+    authorizeRoles("admin"),
     updateUser 
 );
 

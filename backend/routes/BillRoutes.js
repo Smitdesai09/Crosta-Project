@@ -7,12 +7,13 @@ const {
   getBillById
 } = require("../controllers/billController");
 
+const {isAuthenticated} = require("../middlewares/authMiddleware");
 
 // Create bill 
-router.post("/", createBill);
+router.post("/",isAuthenticated ,createBill);
 // Get all bills (history)
-router.get("/", getAllBills);
+router.get("/",isAuthenticated ,getAllBills);
 // Get single bill
-router.get("/:id", getBillById);
+router.get("/:id",isAuthenticated ,getBillById);
 
 module.exports = router;

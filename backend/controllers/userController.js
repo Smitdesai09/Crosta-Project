@@ -5,6 +5,68 @@ const mongoose = require("mongoose");
 // 🔹 ID Validation Function
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
 
+exports.addUser = async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            });
+        }
+
+        if (!validator.isEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid email format"
+            });
+        }
+
+        if (password.length < 6) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 6 characters"
+            });
+        }
+
+        const existingUser = await UserModel.findOne({ email });
+
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                message: "User already exists"
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const user = await UserModel.create({
+            name,
+            email,
+            password: hashedPassword
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: "User registered successfully",
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
+
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: err.message
+        });
+    }
+};
+
+
 exports.getMe = async (req, res) => {
   try {
     if (!req.user) {
@@ -19,6 +81,7 @@ exports.getMe = async (req, res) => {
       data: {
         name: req.user.name,
         email: req.user.email,
+        role: req.user.role
       },
     });
   } catch (error) {
@@ -31,11 +94,11 @@ exports.getMe = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await User.find({ isDeleted: false }).select("name email");
+    const users = await User.find({ isDeleted: false }).select("name email role");
 
     res.status(200).json({
       success: true,
-      count: users.length,
+      totalUsers: users.length,
       data: users,
     });
   } catch (error) {
@@ -46,40 +109,40 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-exports.getOneUser = async (req, res) => {
-  try {
-    const userId = req.params.id;
+// exports.getOneUser = async (req, res) => {
+//   try {
+//     const userId = req.params.id;
 
-    if (!isValidId(userId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid user ID",
-      });
-    }
+//     if (!isValidId(userId)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid user ID",
+//       });
+//     }
 
-    const user = await User.findOne({
-      _id: userId,
-      isDeleted: false,
-    }).select("name email");
+//     const user = await User.findOne({
+//       _id: userId,
+//       isDeleted: false,
+//     }).select("name email");
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
 
-    res.status(200).json({
-      success: true,
-      data: user,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       data: user,
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
+//   }
+// };
 
 exports.updateUser = async (req, res) => {
   try {
@@ -104,12 +167,12 @@ exports.updateUser = async (req, res) => {
       });
     }
 
-    if (req.user.role !== "admin" && req.user.id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: "You can only update your own profile",
-      });
-    }
+    // if (req.user.role !== "admin") {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "You can only update your own profile",
+    //   });
+    // }
 
     const { name, email } = req.body;
 
