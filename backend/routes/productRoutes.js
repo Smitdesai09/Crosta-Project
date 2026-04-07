@@ -17,5 +17,5 @@ router.get("/",isAuthenticated, getAvailableProducts);
 router.post("/", isAuthenticated, authorizeRoles("admin"), createProduct);
 router.put("/:id", isAuthenticated, authorizeRoles("admin"), updateProduct);
 router.delete("/:id", isAuthenticated, authorizeRoles("admin"), deleteProduct);
-router.paut("/:id/restore",isAuthenticated, authorizeRoles("admin"), restoreProduct);
+router.put("/:id/restore",isAuthenticated, authorizeRoles("admin"), restoreProduct);
 module.exports = router;

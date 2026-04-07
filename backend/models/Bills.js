@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const BillItemSchema = new mongoose.Schema(
+const billItemSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -35,7 +35,7 @@ const BillItemSchema = new mongoose.Schema(
     { _id: false }
 );
 
-const BillSchema = new mongoose.Schema(
+const billSchema = new mongoose.Schema(
     {
         orderId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -59,7 +59,7 @@ const BillSchema = new mongoose.Schema(
         },
 
         items: {
-            type: [BillItemSchema],
+            type: [billItemSchema],
             validate: {
                 validator: v => v.length > 0,
                 message: "Bill must contain at least one item"
@@ -120,4 +120,4 @@ const BillSchema = new mongoose.Schema(
 );
 billSchema.index({ orderId: -1 });
 
-module.exports = mongoose.model("Bill", BillSchema);
+module.exports = mongoose.model("Bill", billSchema);
