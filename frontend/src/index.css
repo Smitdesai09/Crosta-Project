@@ -1,23 +1,50 @@
 @import "tailwindcss";
 
 @theme {
-  /* Accents */
   --color-brand: #FF6D33;
   --color-brand-hover: #E85A25;
   --color-brand-pale: #FFF5F1;
   
-  /* Neutrals & Surfaces */
   --color-neutral-deep: #1A1A1A;
   --color-neutral-dark: #333333;
   --color-surface-white: #FFFFFF;
   --color-surface-gray: #F7F7F7;
   
-  /* Borders */
   --color-border-main: #E8E8E8;
   --color-border-light: #EEEEEE;
   
-  /* Text */
   --color-text-primary: #111111;
   --color-text-secondary: #757575;
   --color-text-placeholder: #BDBDBD;
+}
+
+/* --- Slim Overlay Scrollbars --- */
+* {
+  scrollbar-width: thin; /* For Firefox: Makes it slim */
+  scrollbar-color: transparent transparent; /* Hides track, keeps functionality */
+}
+
+/* Show scrollbar only when hovering/scrolling the container */
+*:hover {
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; 
+}
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 20px;
+}
+
+/* Show the thumb on hover */
+*:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2); 
 }
