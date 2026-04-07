@@ -36,15 +36,38 @@ exports.createProduct = async (req,res) => {
 exports.updateProduct = async (req,res) => {
     try {
      const {name,category,variants} = req.body;
-     
-    if (!name || !category || !variants) {
+     const {id} = req.params;
+
+     if(!idValidId(id)) {
+        return res.status(400).json({
+            success : false,
+            message : "Invalid Product ID"
+        });
+     }
+   
+    if (!name || !category || !variants || variants.length === 0 ) {
         return res.status(401).json({success:false,message:"All Fields are required!"});
     }
 
+    for (let v of variants) {
+        if (!v.name || !v.price) {
+            return res.status(400).json({
+                success : false,
+                message : "Each Variant must have size and price"
+            })
+        }
+
+        if(isNaN(v.price)) {
+            return res.status(400).json({
+                success : false,
+                message : "Price must be a number"
+            })
+        }
+    }
     const updatedProduct = await Product.findByIdAndUpdate(
-        req.params.id,
+        id,
         {name,category,variants},
-        {new:true}
+        {new:true,runValidators: true}   //It will check schema rules again
     );
 
     if(!updatedProduct) {
@@ -66,18 +89,82 @@ exports.updateProduct = async (req,res) => {
 
 exports.deleteProduct = async (req,res) => {
     try{
-        const deletedProduct = await Product.findByIdAndDelete(req.params.id);
+        const productId = req.params.id;
+
+        if(!isValidId(productId)) {
+            return res.status(400).json({
+                success : false,
+                message : "Invalid Product ID!"
+            })
+        }
+
+        const deletedProduct = await Product.findOneAndUpdate(
+            {_id : productId , isDeleted : false},
+            {idDeleted : true},
+            {new : true}
+        );
+
+        // const deletedProduct = await Product.findByIdAndDelete(req.params.id);
 
         if(!deletedProduct) {
-            return res.status(404).json({success:false,message:"Product not Found!"})
+            return res.status(404).json({
+                success:false,
+                message:"Product not Found!"
+            })
         }
         
-        res.status(200).json({success:true,message:"Product Deleted Successfully!"
+        res.status(200).json({
+            success:true,
+            message:"Product Deleted Successfully!"
         });
     } catch(error) {
-        res.status(500).json({success:false,message:error.message});
+        res.status(500).json({
+            success:false,
+            message:error.message
+        });
     }
 }
+
+
+exports.restoreProduct = async(req,res)=>{
+    try {
+        const productId = req.params.id;
+
+        if(!isValidId(productId)) {
+            return res.status(400).json({
+                success : false,
+                message : "Invalid product ID"
+            });
+        }
+
+
+        const restoreProduct = await Product.findOneAndUpdate(
+            {_id : productId, isDeleted : true},
+            {idDeletd : false},
+            {new : true}
+        );
+
+        if(!restoreProduct) {
+            return res.status(404).json({
+                success : false,
+                message : "Product Not Found or Already Active"
+            });
+        }
+
+        res.status(200).json({
+            success : true,
+            message : "Product Restored successfully!"
+        });
+
+
+    } catch (error) {
+        res.status(500).json({
+            success : false,
+            message : error.message
+        })
+    }
+}
+
 
 // exports.getOneProduct = async (req,res) => {
 //     try {
