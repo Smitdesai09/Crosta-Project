@@ -28,7 +28,7 @@ exports.getAllProductsAdmin = async (req, res) => {
 
 exports.getAvailableProducts = async (req, res) => {
     try {
-        const products = await Product.find({ isAvailable: true, isDeleted: false }).lean();
+        const products = await Product.find({ isAvailable: true }).lean();
         res.status(200).json({ 
             success: true, 
             message: "Available products fetched", 
@@ -138,8 +138,8 @@ exports.deleteProduct = async (req,res) => {
         }
 
         const deletedProduct = await Product.findOneAndUpdate(
-            {_id : productId , isDeleted : false},
-            {isDeleted : true},
+            {_id : productId , isAvailable : false},
+            {isAvailable : true},
             {new : true}
         );
 
@@ -178,8 +178,8 @@ exports.restoreProduct = async(req,res)=>{
 
 
         const restoreProduct = await Product.findOneAndUpdate(
-            {_id : productId, isDeleted : true},
-            {isDeletd : false},
+            {_id : productId, isAvailable : true},
+            {isAvailable : false},
             {new : true}
         );
 
@@ -306,7 +306,7 @@ exports.restoreProduct = async(req,res)=>{
 //         }
 
 //         const deletedProduct = await Product.findOneAndUpdate(
-//             {_id : productId , isDeleted : false},
+//             {_id : productId , isAvailable : false},
 //             {idDeleted : true},
 //             {new : true}
 //         );
@@ -346,7 +346,7 @@ exports.restoreProduct = async(req,res)=>{
 
 
 //         const restoreProduct = await Product.findOneAndUpdate(
-//             {_id : productId, isDeleted : true},
+//             {_id : productId, isAvailable : true},
 //             {idDeletd : false},
 //             {new : true}
 //         );

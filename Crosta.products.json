@@ -1,0 +1,362 @@
+[{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947985"
+  },
+  "name": "All Veggies",
+  "category": "MARINARA SAUCE",
+  "variants": [
+    {
+      "name": "Small",
+      "price": 249
+    },
+    {
+      "name": "Large",
+      "price": 539
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb94798b"
+  },
+  "name": "Tyscan Garden",
+  "category": "PESTO SAUCE",
+  "variants": [
+    {
+      "name": "Large",
+      "price": 569
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947986"
+  },
+  "name": "Mushroom Delight",
+  "category": "MARINARA SAUCE",
+  "variants": [
+    {
+      "name": "Small",
+      "price": 269
+    },
+    {
+      "name": "Large",
+      "price": 549
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb94798d"
+  },
+  "name": "Garlic Bread",
+  "category": "FRESH BREAD",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 249
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947990"
+  },
+  "name": "Salted",
+  "category": "FRIES",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 119
+    },
+    {
+      "name": "Cheesy",
+      "price": 149
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947991"
+  },
+  "name": "Peri-Peri",
+  "category": "FRIES",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 139
+    },
+    {
+      "name": "Cheesy",
+      "price": 189
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947984"
+  },
+  "name": "Margherita",
+  "category": "MARINARA SAUCE",
+  "variants": [
+    {
+      "name": "Small",
+      "price": 229
+    },
+    {
+      "name": "Large",
+      "price": 469
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947988"
+  },
+  "name": "Brocco Cheese",
+  "category": "ALFREDO SAUCE",
+  "variants": [
+    {
+      "name": "Small",
+      "price": 249
+    },
+    {
+      "name": "Large",
+      "price": 529
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb94798c"
+  },
+  "name": "Peppered Olive Volcano",
+  "category": "CALZONE",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 449
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947983"
+  },
+  "name": "Marinara",
+  "category": "MARINARA SAUCE",
+  "variants": [
+    {
+      "name": "Small",
+      "price": 199
+    },
+    {
+      "name": "Large",
+      "price": 409
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947998"
+  },
+  "name": "Pesto Pasta",
+  "category": "PENNE PASTA",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 319
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947996"
+  },
+  "name": "Alfredo Pasta",
+  "category": "PENNE PASTA",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 269
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947987"
+  },
+  "name": "Paneer Parmesan",
+  "category": "MARINARA SAUCE",
+  "variants": [
+    {
+      "name": "Small",
+      "price": 269
+    },
+    {
+      "name": "Large",
+      "price": 549
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb94798e"
+  },
+  "name": "Stuffed Garlic Bread",
+  "category": "FRESH BREAD",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 279
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947997"
+  },
+  "name": "Marinara Pasta",
+  "category": "PENNE PASTA",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 289
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947992"
+  },
+  "name": "Avocado Toast",
+  "category": "SOURDOUGH SANDWICH",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 249
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947999"
+  },
+  "name": "Pink Sauce Pasta",
+  "category": "PENNE PASTA",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 299
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb94798f"
+  },
+  "name": "Four Pepper Garlic Bread",
+  "category": "FRESH BREAD",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 299
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947994"
+  },
+  "name": "All Veggies",
+  "category": "SOURDOUGH SANDWICH",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 279
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947995"
+  },
+  "name": "Cheesy Mushroom",
+  "category": "SOURDOUGH SANDWICH",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 299
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947989"
+  },
+  "name": "Umami Sunset",
+  "category": "ALFREDO SAUCE",
+  "variants": [
+    {
+      "name": "Small",
+      "price": 269
+    },
+    {
+      "name": "Large",
+      "price": 529
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb94798a"
+  },
+  "name": "Quad-Cheese",
+  "category": "PESTO SAUCE",
+  "variants": [
+    {
+      "name": "Small",
+      "price": 269
+    },
+    {
+      "name": "Large",
+      "price": 559
+    }
+  ],
+  "isAvailable": true
+},
+{
+  "_id": {
+    "$oid": "69cb9766320de35ceb947993"
+  },
+  "name": "Caprese",
+  "category": "SOURDOUGH SANDWICH",
+  "variants": [
+    {
+      "name": "Regular",
+      "price": 269
+    }
+  ],
+  "isAvailable": true
+}]

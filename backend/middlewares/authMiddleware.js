@@ -1,6 +1,5 @@
 const jwt = require("jsonwebtoken");
-
-
+ 
 exports.isAuthenticated = (req, res, next) => {
   try {
 
