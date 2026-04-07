@@ -1,7 +1,7 @@
 const User = require("../models/users");
 const validator = require("validator");
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 
 // ID Validation Helper Function
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
