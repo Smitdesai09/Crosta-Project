@@ -9,7 +9,7 @@ exports.createBill = async (req, res) => {
         if (!orderId || !mongoose.Types.ObjectId.isValid(orderId))
             return res.status(400).json({ success: false, message: "Invalid orderId" });
 
-        const order = await Order.findById(orderId);
+        const order = await Order.findById(orderId).select("tableNumber items status orderType").lean();
 
         if (!order)
             return res.status(404).json({ success: false, message: "Order not found" });
@@ -17,14 +17,12 @@ exports.createBill = async (req, res) => {
         if (order.status === "billed")
             return res.status(400).json({ success: false, message: "Order already billed" });
 
-        const tableNumber = order.tableNumber;
-        const items = order.items;
+        const { tableNumber, items, orderType } = order;
 
         let subtotal = 0;
         const billItems = [];
 
         for (const item of items) {
-
             const itemSubtotal = item.price * item.quantity;
             subtotal += itemSubtotal;
 
@@ -47,19 +45,20 @@ exports.createBill = async (req, res) => {
         const bill = await Bill.create({
             orderId,
             tableNumber,
+            orderType,         // <-- added
             items: billItems,
             subtotal,
             discount,
             gst: gstAmount,
-            totalAmount: totalAmount,
+            totalAmount,
             paymentType,
             customerPhone,
             operatorId: req.user._id,
             operatorName: req.user.username
         });
 
-        order.status = "billed";
-        await order.save();
+        // Update order status
+        await Order.findByIdAndUpdate(orderId, { status: "billed" });
 
         return res.status(201).json({
             success: true,
@@ -137,7 +136,8 @@ exports.getAllBills = async (req, res) => {
         )
             .sort({ createdAt: -1 })
             .skip((page - 1) * limit)
-            .limit(limit);
+            .limit(limit)
+            .lean();
 
         const summary = bills.map(bill => ({
             billId: bill._id,
@@ -177,7 +177,7 @@ exports.getBillById = async (req, res) => {
         if (!mongoose.Types.ObjectId.isValid(id))
             return res.status(400).json({ success: false, message: "Invalid billId" });
 
-        const bill = await Bill.findById(id);
+        const bill = await Bill.findById(id).lean();
 
         if (!bill)
             return res.status(404).json({ success: false, message: "Bill not found" });

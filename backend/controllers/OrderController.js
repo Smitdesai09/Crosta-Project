@@ -1,35 +1,34 @@
 const mongoose = require("mongoose");
 const Order = require("../models/orders");
-const Product = require("../models/products")
+const Product = require("../models/products");
+
 
 exports.getActiveOrders = async (req, res) => {
     try {
+
         const orders = await Order.find(
             { status: "active" },
-            { tableNumber: 1, subtotal: 1 } // only what frontend needs
-        ).sort({ createdAt: -1 });
-
-        const formattedOrders = orders.map(order => (
-            {
-                id: order._id,
-                tableNumber: order.tableNumber,
-                subtotal: order.subtotal
-            }
-        ));
+            { tableNumber: 1, subtotal: 1 }
+        )
+            .sort({ createdAt: -1 })
+            .lean();
 
         return res.status(200).json({
             success: true,
             message: "Active orders fetched",
-            data: formattedOrders
+            data: orders
         });
 
     } catch (error) {
+
         return res.status(500).json({
             success: false,
             message: "Internal server error"
         });
+
     }
 };
+
 
 exports.getOrderById = async (req, res) => {
 
@@ -43,7 +42,7 @@ exports.getOrderById = async (req, res) => {
                 message: "Invalid order id"
             });
 
-        const order = await Order.findById(id);
+        const order = await Order.findById(id).lean();
 
         if (!order)
             return res.status(404).json({
@@ -67,7 +66,9 @@ exports.getOrderById = async (req, res) => {
     }
 };
 
+
 exports.createOrder = async (req, res) => {
+
     try {
 
         const { tableNumber, orderType = "dine-in", items } = req.body;
@@ -84,21 +85,28 @@ exports.createOrder = async (req, res) => {
                 message: "Table number must be between 1 and 6"
             });
 
-        // Before creating the order
         const existingOrder = await Order.findOne({ tableNumber, status: "active" });
-        if (existingOrder) {
+
+        if (existingOrder)
             return res.status(400).json({
                 success: false,
                 message: `Table ${tableNumber} already has an active order`
             });
-        }
 
-        if (!items || !Array.isArray(items) || items.length === 0) {
+        if (!items || !Array.isArray(items) || items.length === 0)
             return res.status(400).json({
                 success: false,
                 message: "Items required"
             });
-        }
+
+        const productIds = [...new Set(items.map(i => i.productId))];
+
+        const products = await Product.find(
+            { _id: { $in: productIds } },
+            { name: 1, variants: 1 }
+        ).lean();
+
+        const productMap = new Map(products.map(p => [p._id.toString(), p]));
 
         const validatedItems = [];
         let subtotal = 0;
@@ -106,38 +114,23 @@ exports.createOrder = async (req, res) => {
         for (const item of items) {
 
             if (!item.productId || !mongoose.Types.ObjectId.isValid(item.productId))
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid productId"
-                });
+                return res.status(400).json({ success: false, message: "Invalid productId" });
 
             if (!item.variant)
-                return res.status(400).json({
-                    success: false,
-                    message: "Variant required"
-                });
+                return res.status(400).json({ success: false, message: "Variant required" });
 
             if (!item.quantity || item.quantity <= 0)
-                return res.status(400).json({
-                    success: false,
-                    message: "Quantity must be greater than 0"
-                });
+                return res.status(400).json({ success: false, message: "Quantity must be greater than 0" });
 
-            const product = await Product.findById(item.productId);
+            const product = productMap.get(item.productId);
 
             if (!product)
-                return res.status(404).json({
-                    success: false,
-                    message: "Product not found"
-                });
+                return res.status(404).json({ success: false, message: "Product not found" });
 
             const variant = product.variants.find(v => v.name === item.variant);
 
             if (!variant)
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid variant"
-                });
+                return res.status(400).json({ success: false, message: "Invalid variant" });
 
             const itemSubtotal = variant.price * item.quantity;
 
@@ -176,12 +169,14 @@ exports.createOrder = async (req, res) => {
     }
 };
 
+
 exports.updateOrder = async (req, res) => {
+
     try {
+
         const { id } = req.params;
         const { items, orderType } = req.body;
 
-        // Validate id
         if (!mongoose.Types.ObjectId.isValid(id))
             return res.status(400).json({
                 success: false,
@@ -189,6 +184,7 @@ exports.updateOrder = async (req, res) => {
             });
 
         const order = await Order.findById(id);
+
         if (!order)
             return res.status(404).json({
                 success: false,
@@ -201,7 +197,6 @@ exports.updateOrder = async (req, res) => {
                 message: "Cannot modify billed order"
             });
 
-        // Optional: update orderType
         if (orderType && !["dine-in", "takeaway"].includes(orderType))
             return res.status(400).json({
                 success: false,
@@ -210,31 +205,47 @@ exports.updateOrder = async (req, res) => {
 
         if (orderType) order.orderType = orderType;
 
-        // Validate items
         if (!items || !Array.isArray(items) || items.length === 0)
             return res.status(400).json({
                 success: false,
                 message: "Items required"
             });
 
+        const productIds = [...new Set(items.map(i => i.productId))];
+
+        const products = await Product.find(
+            { _id: { $in: productIds } },
+            { name: 1, variants: 1 }
+        ).lean();
+
+        const productMap = new Map(products.map(p => [p._id.toString(), p]));
+
         let newSubtotal = 0;
         const newItems = [];
 
         for (const item of items) {
+
             if (!item.productId || !mongoose.Types.ObjectId.isValid(item.productId))
                 return res.status(400).json({ success: false, message: "Invalid productId" });
 
-            if (!item.variant) return res.status(400).json({ success: false, message: "Variant required" });
+            if (!item.variant)
+                return res.status(400).json({ success: false, message: "Variant required" });
+
             if (!item.quantity || item.quantity <= 0)
                 return res.status(400).json({ success: false, message: "Quantity must be > 0" });
 
-            const product = await Product.findById(item.productId);
-            if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+            const product = productMap.get(item.productId);
+
+            if (!product)
+                return res.status(404).json({ success: false, message: "Product not found" });
 
             const variant = product.variants.find(v => v.name === item.variant);
-            if (!variant) return res.status(400).json({ success: false, message: "Invalid variant" });
+
+            if (!variant)
+                return res.status(400).json({ success: false, message: "Invalid variant" });
 
             const itemSubtotal = variant.price * item.quantity;
+
             newSubtotal += itemSubtotal;
 
             newItems.push({
@@ -245,6 +256,7 @@ exports.updateOrder = async (req, res) => {
                 quantity: item.quantity,
                 subtotal: itemSubtotal
             });
+
         }
 
         order.items = newItems;
@@ -259,15 +271,20 @@ exports.updateOrder = async (req, res) => {
         });
 
     } catch (error) {
+
         return res.status(500).json({
             success: false,
             message: "Internal server error"
         });
+
     }
 };
 
+
 exports.cancelOrder = async (req, res) => {
+
     try {
+
         const { id } = req.params;
 
         if (!mongoose.Types.ObjectId.isValid(id))
@@ -276,15 +293,20 @@ exports.cancelOrder = async (req, res) => {
                 message: "Invalid order id"
             });
 
-        const order = await Order.findById(id);
+        const order = await Order.findById(id).select("status");
 
         if (!order)
-            return res.status(404).json({ success: false, message: "Order not found" });
+            return res.status(404).json({
+                success: false,
+                message: "Order not found"
+            });
 
         if (order.status === "billed")
-            return res.status(400).json({ success: false, message: "Cannot cancel billed order" });
+            return res.status(400).json({
+                success: false,
+                message: "Cannot cancel billed order"
+            });
 
-        // Replace deleteOne() with findByIdAndDelete
         await Order.findByIdAndDelete(id);
 
         return res.status(200).json({
@@ -301,4 +323,3 @@ exports.cancelOrder = async (req, res) => {
 
     }
 };
-

@@ -20,6 +20,7 @@ const userSchema = new mongoose.Schema(
         validator: validator.isEmail,
         message: "Please provide a valid email address.",
       },
+      index: true
     },
     password: {
       type: String,
@@ -36,6 +37,7 @@ const userSchema = new mongoose.Schema(
     isDeleted: {
       type: Boolean,
       default: false,
+      index: true
     },
     resetPasswordToken: {
       type: String
