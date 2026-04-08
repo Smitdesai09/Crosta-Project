@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext"; // <-- ADD THIS
 import brandLogo from "../assets/logo.png";
 import {
   IconEnvelope,
@@ -12,11 +13,11 @@ import {
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showToast } = useToast(); // <-- ADD THIS
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const validate = () => {
@@ -30,7 +31,6 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setServerError("");
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
@@ -40,13 +40,13 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      await login(form.email, form.password);
+      await login(form.email.trim().toLowerCase(), form.password.trim());
+      showToast("Login successful! Redirecting...", "success"); // <-- TOAST
       navigate("/", { replace: true });
     } catch (err) {
-        console.log("LOGIN ERROR:", err);
       const msg =
         err.response?.data?.message || "Something went wrong. Try again.";
-      setServerError(msg);
+      showToast(msg, "error"); // <-- TOAST
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +55,6 @@ export default function Login() {
   const update = (field) => (e) => {
     setForm((prev) => ({ ...prev, [field]: e.target.value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
-    if (serverError) setServerError("");
   };
 
   return (
@@ -82,14 +81,7 @@ export default function Login() {
             </p>
           </div>
 
-          {/* Server Error */}
-          {serverError && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-              {serverError}
-            </div>
-          )}
-
-          {/* Form */}
+          {/* Form - Notice the server error block is completely removed */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
@@ -167,16 +159,7 @@ export default function Login() {
           </form>
         </div>
 
-        {/* Register Link */}
-        <p className="text-center text-sm text-text-secondary mt-6">
-          Don&apos;t have an account?{" "}
-          <Link
-            to="/register"
-            className="text-brand hover:text-brand-hover font-semibold transition-colors"
-          >
-            Create Account
-          </Link>
-        </p>
+        {/* ❌ "Create Account" link completely removed from here */}
       </div>
     </div>
   );
