@@ -28,6 +28,8 @@ const BillModal = ({ isOpen, onClose, cart, onSavePlaceholder }) => {
         </div>
 
         <div className="p-4 space-y-4">
+          
+          {/* 1. DISCOUNT & GST */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-text-secondary mb-1">DISCOUNT (₹)</label>
@@ -39,6 +41,39 @@ const BillModal = ({ isOpen, onClose, cart, onSavePlaceholder }) => {
             </div>
           </div>
 
+          {/* 2. PAYMENT TYPE */}
+          <div>
+            <label className="block text-[11px] font-semibold text-text-secondary mb-1.5">PAYMENT TYPE</label>
+            <div className="grid grid-cols-3 gap-2">
+              {['Cash', 'Card', 'UPI'].map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => setPaymentType(opt)}
+                  className={`py-2 rounded-lg border-2 transition-all text-xs font-semibold ${
+                    paymentType === opt ? 'bg-brand-pale border-brand text-brand' : 'bg-surface-white border-border-main text-text-secondary hover:border-gray-300'
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. ORDER SUMMARY */}
+          <div className="bg-neutral-deep rounded-lg p-4 text-white space-y-2 text-xs">
+            <div className="flex justify-between"><span className="text-gray-400">Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Discount</span><span className="text-red-400">- ₹{discountAmount.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Updated Subtotal</span><span>₹{updatedSubtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">GST (5%)</span><span>+ ₹{gstAmount.toFixed(2)}</span></div>
+            
+            {/* Increased Final Total Size for better UX */}
+            <div className="border-t border-white/20 pt-3 mt-3 flex justify-between items-end">
+              <span className="text-sm font-bold text-gray-300">Final Total</span>
+              <span className="text-2xl font-extrabold text-brand">₹{finalTotal.toFixed(2)}</span>
+            </div>
+          </div>
+
+          {/* 4. E-BILL (Last) */}
           <div className="bg-surface-gray p-3 rounded-lg border border-border-main">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-semibold text-text-primary">E-Bill</label>
@@ -66,32 +101,6 @@ const BillModal = ({ isOpen, onClose, cart, onSavePlaceholder }) => {
             )}
           </div>
 
-          <div>
-            <label className="block text-[11px] font-semibold text-text-secondary mb-1.5">PAYMENT TYPE</label>
-            <div className="grid grid-cols-3 gap-2">
-              {['Cash', 'Card', 'UPI'].map((opt) => (
-                <button
-                  key={opt}
-                  onClick={() => setPaymentType(opt)}
-                  className={`py-2 rounded-lg border-2 transition-all text-xs font-semibold ${
-                    paymentType === opt ? 'bg-brand-pale border-brand text-brand' : 'bg-surface-white border-border-main text-text-secondary hover:border-gray-300'
-                  }`}
-                >
-                  {opt}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-neutral-deep rounded-lg p-3 text-white space-y-1.5 text-xs">
-            <div className="flex justify-between"><span className="text-gray-400">Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Discount</span><span className="text-red-400">- ₹{discountAmount.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Updated Subtotal</span><span>₹{updatedSubtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">GST (5%)</span><span>+ ₹{gstAmount.toFixed(2)}</span></div>
-            <div className="border-t border-white/20 pt-1.5 mt-1.5 flex justify-between text-sm font-bold">
-              <span>Final Total</span><span className="text-brand">₹{finalTotal.toFixed(2)}</span>
-            </div>
-          </div>
         </div>
 
         <div className="flex gap-2 p-4 border-t border-border-main bg-surface-gray rounded-b-2xl">
