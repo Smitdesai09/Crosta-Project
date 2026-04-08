@@ -3,6 +3,9 @@ import React from 'react';
 const TableCard = ({ table, onClick }) => {
   const isOccupied = table.status === 'Occupied';
   
+  // Truncate MongoDB ID for UI (e.g., ORD_61f2a...)
+  const displayOrderId = table.orderId ? `ORD_${table.orderId.slice(-5)}` : null;
+  
   const cardStyles = isOccupied 
     ? 'bg-orange-50 border-2 border-orange-300 hover:border-orange-400 hover:shadow-lg' 
     : 'bg-surface-white border-2 border-border-main hover:border-gray-300 hover:shadow-lg';
@@ -15,12 +18,10 @@ const TableCard = ({ table, onClick }) => {
       onClick={() => onClick(table.id)}
       className={`flex flex-col items-center justify-between p-3 rounded-2xl cursor-pointer transition-all duration-200 h-44 ${cardStyles}`}
     >
-      {/* Top Center: Table Name */}
       <div className={`text-sm font-bold tracking-wide ${headerColor}`}>
         Table-{table.id}
       </div>
 
-      {/* Middle: Icon */}
       <div className="flex-1 flex items-center justify-center w-full">
         {isOccupied ? (
           <svg className={`w-11 h-11 ${iconColor}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,11 +34,10 @@ const TableCard = ({ table, onClick }) => {
         )}
       </div>
 
-      {/* Bottom: Order Details or Available Pill */}
       <div className="w-full text-center">
         {isOccupied ? (
           <div className="space-y-0.5">
-            <p className="text-xs font-semibold text-text-primary">{table.orderId}</p>
+            <p className="text-xs font-semibold text-text-primary">{displayOrderId}</p>
             <p className="text-lg font-bold text-text-primary">₹{table.subtotal.toFixed(2)}</p>
           </div>
         ) : (

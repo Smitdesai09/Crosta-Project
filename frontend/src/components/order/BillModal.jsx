@@ -1,19 +1,27 @@
-// src/components/order/BillModal.jsx
 import React, { useState } from 'react';
 
-const BillModal = ({ isOpen, onClose, cart, onSavePlaceholder }) => {
+const BillModal = ({ isOpen, onClose, cart, onGenerateBill }) => {
   const [discount, setDiscount] = useState(0);
   const [gstPercent] = useState(5);
   const [eBillNumber, setEBillNumber] = useState('');
   const [isEBillEnabled, setIsEBillEnabled] = useState(false);
   const [paymentType, setPaymentType] = useState('Cash');
-  
+
   const isEBillValid = /^\d{10}$/.test(eBillNumber);
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discountAmount = Number(discount) || 0;
   const updatedSubtotal = subtotal - discountAmount;
   const gstAmount = updatedSubtotal * (gstPercent / 100);
   const finalTotal = updatedSubtotal + gstAmount;
+
+  // Change the handleSave function inside BillModal.jsx
+  const handleSave = (shouldPrint = false) => {
+    // Grab the phone number if toggle is ON and valid
+    const phone = isEBillEnabled && isEBillValid ? eBillNumber : null;
+
+    // Pass it to the backend
+    onGenerateBill(discountAmount, paymentType, phone, shouldPrint);
+  };
 
   if (!isOpen) return null;
 
@@ -28,20 +36,18 @@ const BillModal = ({ isOpen, onClose, cart, onSavePlaceholder }) => {
         </div>
 
         <div className="p-4 space-y-4">
-          
-          {/* 1. DISCOUNT & GST */}
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-text-secondary mb-1">DISCOUNT (₹)</label>
-              <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="0" className="w-full px-3 py-2 bg-surface-gray border border-border-main rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"/>
+              <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="0" className="w-full px-3 py-2 bg-surface-gray border border-border-main rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand" />
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-text-secondary mb-1">GST (%)</label>
-              <input type="text" value={`${gstPercent}%`} disabled className="w-full px-3 py-2 bg-surface-gray border border-border-main rounded-lg text-sm text-text-secondary cursor-not-allowed"/>
+              <input type="text" value={`${gstPercent}%`} disabled className="w-full px-3 py-2 bg-surface-gray border border-border-main rounded-lg text-sm text-text-secondary cursor-not-allowed" />
             </div>
           </div>
 
-          {/* 2. PAYMENT TYPE */}
           <div>
             <label className="block text-[11px] font-semibold text-text-secondary mb-1.5">PAYMENT TYPE</label>
             <div className="grid grid-cols-3 gap-2">
@@ -49,9 +55,8 @@ const BillModal = ({ isOpen, onClose, cart, onSavePlaceholder }) => {
                 <button
                   key={opt}
                   onClick={() => setPaymentType(opt)}
-                  className={`py-2 rounded-lg border-2 transition-all text-xs font-semibold ${
-                    paymentType === opt ? 'bg-brand-pale border-brand text-brand' : 'bg-surface-white border-border-main text-text-secondary hover:border-gray-300'
-                  }`}
+                  className={`py-2 rounded-lg border-2 transition-all text-xs font-semibold ${paymentType === opt ? 'bg-brand-pale border-brand text-brand' : 'bg-surface-white border-border-main text-text-secondary hover:border-gray-300'
+                    }`}
                 >
                   {opt}
                 </button>
@@ -59,42 +64,38 @@ const BillModal = ({ isOpen, onClose, cart, onSavePlaceholder }) => {
             </div>
           </div>
 
-          {/* 3. ORDER SUMMARY */}
           <div className="bg-neutral-deep rounded-lg p-4 text-white space-y-2 text-xs">
             <div className="flex justify-between"><span className="text-gray-400">Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Discount</span><span className="text-red-400">- ₹{discountAmount.toFixed(2)}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Updated Subtotal</span><span>₹{updatedSubtotal.toFixed(2)}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">GST (5%)</span><span>+ ₹{gstAmount.toFixed(2)}</span></div>
-            
-            {/* Increased Final Total Size for better UX */}
+
             <div className="border-t border-white/20 pt-3 mt-3 flex justify-between items-end">
               <span className="text-sm font-bold text-gray-300">Final Total</span>
               <span className="text-2xl font-extrabold text-brand">₹{finalTotal.toFixed(2)}</span>
             </div>
           </div>
 
-          {/* 4. E-BILL (Last) */}
           <div className="bg-surface-gray p-3 rounded-lg border border-border-main">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-semibold text-text-primary">E-Bill</label>
-              <div 
-                onClick={() => isEBillValid && setIsEBillEnabled(!isEBillEnabled)} 
+              <div
+                onClick={() => isEBillValid && setIsEBillEnabled(!isEBillEnabled)}
                 className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 ${isEBillEnabled ? 'bg-brand' : 'bg-gray-300'} ${!isEBillValid ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${isEBillEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
               </div>
             </div>
-            <input 
-              type="text" 
-              value={eBillNumber} 
+            <input
+              type="text"
+              value={eBillNumber}
               onChange={(e) => {
                 setEBillNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
                 if (isEBillEnabled) setIsEBillEnabled(false);
               }}
               placeholder="Enter 10-digit number"
-              className={`w-full px-3 py-2 bg-surface-white border rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-brand/30 ${
-                eBillNumber.length > 0 && !isEBillValid ? 'border-red-400 focus:ring-red-200' : 'border-border-main focus:border-brand'
-              }`}
+              className={`w-full px-3 py-2 bg-surface-white border rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-brand/30 ${eBillNumber.length > 0 && !isEBillValid ? 'border-red-400 focus:ring-red-200' : 'border-border-main focus:border-brand'
+                }`}
             />
             {eBillNumber.length > 0 && !isEBillValid && (
               <p className="text-[10px] text-red-500 mt-1">Must be exactly 10 digits.</p>
@@ -105,8 +106,8 @@ const BillModal = ({ isOpen, onClose, cart, onSavePlaceholder }) => {
 
         <div className="flex gap-2 p-4 border-t border-border-main bg-surface-gray rounded-b-2xl">
           <button onClick={onClose} className="flex-1 py-2 border border-border-main text-text-secondary hover:bg-surface-white rounded-lg text-sm font-medium transition-colors">Cancel</button>
-          <button onClick={() => onSavePlaceholder('save')} className="flex-1 py-2 bg-surface-white border border-border-main text-text-primary hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">Save</button>
-          <button onClick={() => onSavePlaceholder('print')} className="flex-1 py-2 bg-brand hover:bg-brand-hover text-surface-white rounded-lg text-sm font-medium shadow-sm transition-colors">Save & Print</button>
+          <button onClick={() => handleSave(false)} className="flex-1 py-2 bg-surface-white border border-border-main text-text-primary hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">Save</button>
+          <button onClick={() => handleSave(true)} className="flex-1 py-2 bg-brand hover:bg-brand-hover text-surface-white rounded-lg text-sm font-medium shadow-sm transition-colors">Save & Print</button>
         </div>
       </div>
     </div>

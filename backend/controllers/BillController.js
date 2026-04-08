@@ -42,10 +42,13 @@ exports.createBill = async (req, res) => {
         if (!["cash", "upi", "card"].includes(paymentType))
             return res.status(400).json({ success: false, message: "Invalid payment type" });
 
+        // FIX: Safely get operator name (fallback to 'Unknown' if field doesn't exist on req.user)
+        const operatorName = req.user.name || req.user.username || "Unknown Operator";
+
         const bill = await Bill.create({
             orderId,
             tableNumber,
-            orderType,         // <-- added
+            orderType,
             items: billItems,
             subtotal,
             discount,
@@ -54,7 +57,7 @@ exports.createBill = async (req, res) => {
             paymentType,
             customerPhone,
             operatorId: req.user._id,
-            operatorName: req.user.username
+            operatorName: operatorName
         });
 
         // Update order status
@@ -67,6 +70,8 @@ exports.createBill = async (req, res) => {
         });
 
     } catch (error) {
+        // TEMPORARY: Log real error so you can see it in your Node terminal
+        console.error("BILL CREATION ERROR:", error.message);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
@@ -145,6 +150,7 @@ exports.getAllBills = async (req, res) => {
             paymentType: bill.paymentType,
             orderType: bill.orderType,
             customerPhone: bill.customerPhone,
+            operatorName: bill.operatorName, // <-- ADD THIS
             date: bill.createdAt
         }));
 
