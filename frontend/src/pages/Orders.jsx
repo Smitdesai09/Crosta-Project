@@ -72,7 +72,7 @@ const Orders = () => {
 
   const handleUpdateQuantity = (cartId, newQty) => setCart(prev => prev.map(item => item.cartId === cartId ? { ...item, quantity: newQty } : item));
   const handleRemoveItem = (cartId) => setCart(prev => prev.filter(item => item.cartId !== cartId));
-  
+
   const subtotal = useMemo(() => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0), [cart]);
   const isCartEmpty = cart.length === 0;
 
@@ -86,7 +86,7 @@ const Orders = () => {
   };
 
   const handleGoBack = () => setView('tables');
-  
+
   const handleCancelOrder = () => {
     setView('tables');
     setSelectedTable(null);
@@ -100,9 +100,9 @@ const Orders = () => {
   };
 
   return (
-    <div className="h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
+    <div className="h-screen max-h-screen overflow-hidden">
       {view === 'tables' ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 bg-surface-gray">
+        <div className="flex flex-col items-center justify-center h-full p-6 bg-surface-gray overflow-auto">
           <h1 className="text-2xl font-bold text-text-primary mb-2">Select a Table</h1>
           <p className="text-text-secondary mb-8 text-sm">Choose an available table to start an order</p>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 max-w-2xl w-full">
@@ -110,54 +110,51 @@ const Orders = () => {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex gap-4 overflow-hidden">
-          
+        <div className="flex h-full min-h-0 gap-4 px-4 py-2 bg-surface-gray overflow-hidden">
           {/* LEFT: Products Panel */}
-          <div className="flex-1 flex flex-col bg-surface-gray rounded-xl border border-border-main p-4 overflow-hidden">
-            <div className="flex items-center gap-3 mb-4">
-              {/* Added "Back" Label */}
-              <button 
-                onClick={handleGoBack} 
-                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-white border border-border-main text-text-secondary hover:bg-surface-gray hover:border-gray-400 hover:text-text-primary transition-all shadow-sm text-sm font-medium"
+          <div className="flex-1 flex flex-col bg-surface-white rounded-xl border border-border-main p-4 min-h-0 overflow-hidden">
+            <div className="flex items-center gap-3 mb-3 flex-shrink-0">
+              <button
+                onClick={handleGoBack}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-surface-gray border border-border-main text-text-secondary hover:bg-gray-100 hover:border-gray-400 hover:text-text-primary transition-all text-sm font-medium"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                 Back
               </button>
-              
+
               <input
                 type="text"
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="flex-1 px-3 py-2.5 bg-surface-white border border-border-main rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
+                className="flex-1 px-3 py-2.5 bg-surface-gray border border-border-main rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand"
               />
             </div>
 
-            {/* Smaller Pill Categories with subtle hover */}
-            <div className="flex gap-2 overflow-x-auto pb-3 mb-4">
+            <div className="flex gap-2 overflow-x-auto pb-2 mb-3 flex-shrink-0">
               {categories.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${
-                    activeCategory === cat 
-                      ? 'bg-brand-pale border-brand text-brand' 
-                      : 'bg-surface-white border-border-main text-text-secondary hover:bg-gray-100'
-                  }`}
+                  className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${activeCategory === cat ? 'bg-brand-pale border-brand text-brand' : 'bg-surface-white border-border-main text-text-secondary hover:bg-gray-100'
+                    }`}
                 >
                   {cat}
                 </button>
               ))}
             </div>
 
-            <div className="flex-1 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pr-1 content-start">
-              {filteredProducts.length > 0 ? filteredProducts.map(product => (
-                <ProductCard key={product._id} product={product} onAdd={handleAddToCart} />
-              )) : (
-                <div className="col-span-full flex flex-col items-center justify-center py-10 text-text-secondary">
-                  <p className="text-lg font-medium">No products found</p>
-                </div>
-              )}
+            {/* Wrapped in a standard div so the grid doesn't stretch the cards */}
+            <div className="flex-1 overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                {filteredProducts.length > 0 ? filteredProducts.map(product => (
+                  <ProductCard key={product._id} product={product} onAdd={handleAddToCart} />
+                )) : (
+                  <div className="col-span-full flex flex-col items-center justify-center py-10 text-text-secondary">
+                    <p className="text-lg font-medium">No products found</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
