@@ -9,10 +9,8 @@ const SidebarItem = ({ icon, label, path, isCollapsed, onClick }) => {
       className={({ isActive }) =>
         `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
           isActive
-            // Active: #333333 bg OR #FF6D33 highlight. Let's use the Pale Orange bg + Orange text for a modern look
             ? 'bg-brand-pale text-brand font-semibold' 
-            // Inactive: #757575 text
-            : 'text-text-secondary hover:bg-neutral-dark hover:text-surface-white'
+            : 'text-white/70 hover:bg-neutral-dark hover:text-surface-white' // Brightened inactive text
         } ${isCollapsed ? 'justify-center' : ''}`
       }
     >
