@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 import GuestRoute from "./components/GuestRoute";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
@@ -67,106 +68,118 @@ const GlobalShortcuts = () => {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <GlobalShortcuts />
-        <Routes>
-          {/* ---------- Public Auth Routes ---------- */}
-          <Route
-            path="/login"
-            element={
-              <GuestRoute>
-                <Login />
-              </GuestRoute>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <GuestRoute>
-                <Register />
-              </GuestRoute>
-            }
-          />
-          <Route
-            path="/forgot-password"
-            element={
-              <GuestRoute>
-                <ForgotPassword />
-              </GuestRoute>
-            }
-          />
-          <Route
-            path="/reset-password/:token"
-            element={
-              <GuestRoute>
-                <ResetPassword />
-              </GuestRoute>
-            }
-          />
+       <ToastProvider>
+        <AuthProvider>
+          <GlobalShortcuts />
+          <Routes>
+            {/* ---------- Public Auth Routes ---------- */}
+            <Route
+              path="/login"
+              element={
+                <GuestRoute>
+                  <Login />
+                </GuestRoute>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <GuestRoute>
+                  <Register />
+                </GuestRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <GuestRoute>
+                  <ForgotPassword />
+                </GuestRoute>
+              }
+            />
+            <Route
+              path="/reset-password/:token"
+              element={
+                <GuestRoute>
+                  <ResetPassword />
+                </GuestRoute>
+              }
+            />
 
-          {/* ---------- Protected App Routes ---------- */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
+            {/* ---------- Protected App Routes ---------- */}
             <Route
-              index
+              path="/"
               element={
-                <React.Suspense fallback={<SuspenseFallback />}>
-                  <Dashboard />
-                </React.Suspense>
+                <ProtectedRoute>
+                  <Layout />
+                </ProtectedRoute>
               }
-            />
-            <Route
-              path="orders"
-              element={
-                <React.Suspense fallback={<SuspenseFallback />}>
-                  <Orders />
-                </React.Suspense>
-              }
-            />
-            <Route
-              path="bill-history"
-              element={
-                <React.Suspense fallback={<SuspenseFallback />}>
-                  <BillHistory />
-                </React.Suspense>
-              }
-            />
-            <Route
-              path="product-management"
-              element={
-                <React.Suspense fallback={<SuspenseFallback />}>
-                  <ProductManagement />
-                </React.Suspense>
-              }
-            />
-            <Route
-              path="analytics"
-              element={
-                <React.Suspense fallback={<SuspenseFallback />}>
-                  <Analytics />
-                </React.Suspense>
-              }
-            />
-            <Route
-              path="admin-panel"
-              element={
-                <React.Suspense fallback={<SuspenseFallback />}>
-                  <AdminPanel />
-                </React.Suspense>
-              }
-            />
-          </Route>
+            >
+              <Route
+                index
+                element={
+                  <React.Suspense fallback={<SuspenseFallback />}>
+                    <Dashboard />
+                  </React.Suspense>
+                }
+              />
+              <Route
+                path="orders"
+                element={
+                  <React.Suspense fallback={<SuspenseFallback />}>
+                    <Orders />
+                  </React.Suspense>
+                }
+              />
+              <Route
+                path="bill-history"
+                element={
+                  <React.Suspense fallback={<SuspenseFallback />}>
+                    <BillHistory />
+                  </React.Suspense>
+                }
+              />
+              <Route
+                path="product-management"
+                element={
+                  <React.Suspense fallback={<SuspenseFallback />}>
+                    <ProductManagement />
+                  </React.Suspense>
+                }
+              />
+              <Route
+                path="analytics"
+                element={
+                  <React.Suspense fallback={<SuspenseFallback />}>
+                    <Analytics />
+                  </React.Suspense>
+                }
+              />
 
-          {/* ---------- 404 Catch-All ---------- */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </AuthProvider>
+               <Route 
+              path="admin/register-user" 
+              element={
+                <React.Suspense fallback={<SuspenseFallback />}>
+                  <Register />
+                </React.Suspense>
+              } 
+            />
+            
+              <Route
+                path="admin-panel"
+                element={
+                  <React.Suspense fallback={<SuspenseFallback />}>
+                    <AdminPanel />
+                  </React.Suspense>
+                }
+              />
+            </Route>
+
+            {/* ---------- 404 Catch-All ---------- */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AuthProvider>
+      </ToastProvider>
     </Router>
   );
 }
