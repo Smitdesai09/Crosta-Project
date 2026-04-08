@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { user } from '../../constants/auth';
+import { useAuth } from '../../context/AuthContext';
 
 const ProfileDropdown = () => {
+  const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -15,6 +16,11 @@ const ProfileDropdown = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleLogout = async () => {
+    await logout();
+    setIsOpen(false); // Close dropdown immediately
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       <button 
@@ -22,9 +28,9 @@ const ProfileDropdown = () => {
         className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-surface-gray transition-colors"
       >
         <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-surface-white font-bold text-sm">
-          {user.name.charAt(0)}
+          {user?.name?.charAt(0)?.toUpperCase() || "U"}
         </div>
-        <span className="hidden md:block text-sm font-medium text-text-primary">{user.name}</span>
+        <span className="hidden md:block text-sm font-medium text-text-primary">{user?.name || "User"}</span>
         <svg className="w-4 h-4 text-text-secondary hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
       </button>
 
@@ -33,14 +39,19 @@ const ProfileDropdown = () => {
           
           {/* User Info Section */}
           <div className="px-4 pb-3">
-            <p className="text-sm font-bold text-text-primary">{user.name}</p>
-            <p className="text-sm text-text-secondary mt-0.5">{user.email}</p>
-            <span className="inline-block mt-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-pale text-brand rounded-full">{user.role}</span>
+            <p className="text-sm font-bold text-text-primary">{user?.name || "User"}</p>
+            <p className="text-sm text-text-secondary mt-0.5">{user?.email || ""}</p>
+            <span className="inline-block mt-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-brand-pale text-brand rounded-full">
+              {user?.role || "user"}
+            </span>
           </div>
 
-          {/* Logout Button - Clean rounded rectangle on hover */}
+          {/* Logout Button */}
           <div className="px-4 pt-2">
-            <button className="w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-brand hover:bg-brand-pale rounded-lg transition-colors">
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center gap-2.5 px-3 py-2 text-sm font-medium text-brand hover:bg-brand-pale rounded-lg transition-colors"
+            >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
               Logout
             </button>

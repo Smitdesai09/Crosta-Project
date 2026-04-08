@@ -1,13 +1,30 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import Layout from './components/Layout';
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import GuestRoute from "./components/GuestRoute";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
 
-const Dashboard = React.lazy(() => import('./pages/Dashboard'));
-const Orders = React.lazy(() => import('./pages/Orders'));
-const BillHistory = React.lazy(() => import('./pages/BillHistory'));
-const ProductManagement = React.lazy(() => import('./pages/ProductManagement'));
-const Analytics = React.lazy(() => import('./pages/Analytics'));
-const AdminPanel = React.lazy(() => import('./pages/AdminPanel'));
+// Auth Pages (eager — small, need to load instantly)
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+
+// App Pages (lazy — heavy modules, load on demand)
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+const Orders = React.lazy(() => import("./pages/Orders"));
+const BillHistory = React.lazy(() => import("./pages/BillHistory"));
+const ProductManagement = React.lazy(() => import("./pages/ProductManagement"));
+const Analytics = React.lazy(() => import("./pages/Analytics"));
+const AdminPanel = React.lazy(() => import("./pages/AdminPanel"));
+
+// Design-system-compliant Suspense fallback
+const SuspenseFallback = () => (
+  <div className="flex items-center justify-center py-10">
+    <span className="animate-pulse text-text-secondary">Loading...</span>
+  </div>
+);
 
 const GlobalShortcuts = () => {
   const navigate = useNavigate();
@@ -18,18 +35,20 @@ const GlobalShortcuts = () => {
         const key = event.key.toLowerCase();
 
         const shortcuts = {
-          'o': '/orders',
-          'b': '/bill-history',
-          'p': '/product-management', // Ctrl+P mapped here
+          o: "/orders",
+          b: "/bill-history",
+          p: "/product-management",
         };
 
         if (shortcuts[key]) {
-          // This completely stops the browser from opening the print dialog
           event.preventDefault();
-          event.stopPropagation(); // Extra safety to ensure it doesn't bubble up
+          event.stopPropagation();
 
           const activeTag = document.activeElement.tagName.toLowerCase();
-          const isTyping = activeTag === 'input' || activeTag === 'textarea' || document.activeElement.isContentEditable;
+          const isTyping =
+            activeTag === "input" ||
+            activeTag === "textarea" ||
+            document.activeElement.isContentEditable;
 
           if (!isTyping) {
             navigate(shortcuts[key]);
@@ -38,9 +57,8 @@ const GlobalShortcuts = () => {
       }
     };
 
-    // We use 'capture: true' so this intercepts the shortcut BEFORE the browser can act on it
-    window.addEventListener('keydown', handleKeyDown, true);
-    return () => window.removeEventListener('keydown', handleKeyDown, true);
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => window.removeEventListener("keydown", handleKeyDown, true);
   }, [navigate]);
 
   return null;
@@ -49,17 +67,106 @@ const GlobalShortcuts = () => {
 function App() {
   return (
     <Router>
-      <GlobalShortcuts />
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<React.Suspense fallback="Loading..."><Dashboard /></React.Suspense>} />
-          <Route path="orders" element={<React.Suspense fallback="Loading..."><Orders /></React.Suspense>} />
-          <Route path="bill-history" element={<React.Suspense fallback="Loading..."><BillHistory /></React.Suspense>} />
-          <Route path="product-management" element={<React.Suspense fallback="Loading..."><ProductManagement /></React.Suspense>} />
-          <Route path="analytics" element={<React.Suspense fallback="Loading..."><Analytics /></React.Suspense>} />
-          <Route path="admin-panel" element={<React.Suspense fallback="Loading..."><AdminPanel /></React.Suspense>} />
-        </Route>
-      </Routes>
+      <AuthProvider>
+        <GlobalShortcuts />
+        <Routes>
+          {/* ---------- Public Auth Routes ---------- */}
+          <Route
+            path="/login"
+            element={
+              <GuestRoute>
+                <Login />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <GuestRoute>
+                <Register />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <GuestRoute>
+                <ForgotPassword />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/reset-password/:token"
+            element={
+              <GuestRoute>
+                <ResetPassword />
+              </GuestRoute>
+            }
+          />
+
+          {/* ---------- Protected App Routes ---------- */}
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
+            <Route
+              index
+              element={
+                <React.Suspense fallback={<SuspenseFallback />}>
+                  <Dashboard />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <React.Suspense fallback={<SuspenseFallback />}>
+                  <Orders />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="bill-history"
+              element={
+                <React.Suspense fallback={<SuspenseFallback />}>
+                  <BillHistory />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="product-management"
+              element={
+                <React.Suspense fallback={<SuspenseFallback />}>
+                  <ProductManagement />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="analytics"
+              element={
+                <React.Suspense fallback={<SuspenseFallback />}>
+                  <Analytics />
+                </React.Suspense>
+              }
+            />
+            <Route
+              path="admin-panel"
+              element={
+                <React.Suspense fallback={<SuspenseFallback />}>
+                  <AdminPanel />
+                </React.Suspense>
+              }
+            />
+          </Route>
+
+          {/* ---------- 404 Catch-All ---------- */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }

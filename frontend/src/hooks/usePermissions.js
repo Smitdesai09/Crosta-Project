@@ -1,0 +1,10 @@
+import { useAuth } from "../context/AuthContext";
+
+export function usePermissions() {
+  const { user } = useAuth();
+
+  return {
+    VIEW_ANALYTICS: user?.role === "admin",
+    VIEW_ADMIN_PANEL: user?.role === "admin",
+  };
+}
