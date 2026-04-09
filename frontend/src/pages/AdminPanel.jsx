@@ -70,6 +70,15 @@ const getAvatarClass = (index) => {
   return styles[index % styles.length];
 };
 
+const PANEL_BUTTON_HOVER_CLASS =
+  "cursor-pointer hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none";
+
+const PANEL_ICON_BUTTON_HOVER_CLASS =
+  "cursor-pointer hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none";
+
+const PANEL_CARD_HOVER_CLASS =
+  "transition-all duration-200 hover:-translate-y-1 hover:shadow-lg";
+
 const updateUserStatusInList = (users, userId, isDeleted) => {
   return users.map((item) => (
     item._id === userId
@@ -102,7 +111,7 @@ const UserEditModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-gray hover:text-text-primary"
+            className={`rounded-lg p-2 text-text-secondary transition-all duration-200 hover:bg-surface-gray hover:text-text-primary ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -142,10 +151,20 @@ const UserEditModal = ({
           </div>
 
           <div className="mt-5 flex justify-end gap-3 border-t border-border-main pt-4">
-            <Button type="button" variant="secondary" onClick={onClose}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              className={PANEL_BUTTON_HOVER_CLASS}
+            >
               Cancel
             </Button>
-            <Button type="submit" variant="primary" disabled={saving}>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={saving}
+              className={PANEL_BUTTON_HOVER_CLASS}
+            >
               {saving ? "Saving..." : "Save Changes"}
             </Button>
           </div>
@@ -179,7 +198,7 @@ const RegisterUserModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-gray hover:text-text-primary"
+            className={`rounded-lg p-2 text-text-secondary transition-all duration-200 hover:bg-surface-gray hover:text-text-primary ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -198,11 +217,16 @@ const RegisterUserModal = ({
             loadingLabel="Creating..."
             showPasswordHints={false}
             passwordGridClassName="md:grid-cols-2"
-            submitButtonClassName="bg-emerald-500 hover:bg-emerald-600"
+            submitButtonClassName={`bg-emerald-500 hover:bg-emerald-600 ${PANEL_BUTTON_HOVER_CLASS}`}
           />
 
           <div className="mt-5 flex justify-end gap-3 border-t border-border-main pt-4">
-            <Button type="button" variant="secondary" onClick={onClose}>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onClose}
+              className={PANEL_BUTTON_HOVER_CLASS}
+            >
               Cancel
             </Button>
           </div>
@@ -243,7 +267,12 @@ const DeleteConfirmModal = ({ isOpen, user, deleting, onClose, onConfirm }) => {
         </div>
 
         <div className="flex justify-end gap-3 border-t border-border-main px-5 py-4">
-          <Button type="button" variant="secondary" onClick={onClose}>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            className={PANEL_BUTTON_HOVER_CLASS}
+          >
             Cancel
           </Button>
           <Button
@@ -251,6 +280,7 @@ const DeleteConfirmModal = ({ isOpen, user, deleting, onClose, onConfirm }) => {
             variant={isDeletedUser ? "success" : "danger"}
             onClick={onConfirm}
             disabled={deleting}
+            className={PANEL_BUTTON_HOVER_CLASS}
           >
             {deleting ? (isDeletedUser ? "Restoring..." : "Deleting...") : isDeletedUser ? "Restore User" : "Delete User"}
           </Button>
@@ -475,7 +505,7 @@ const AdminPanel = () => {
 
           <Button
             variant="success"
-            className="inline-flex items-center gap-2 self-start px-5 py-3"
+            className={`inline-flex items-center gap-2 self-start px-5 py-3 ${PANEL_BUTTON_HOVER_CLASS}`}
             onClick={() => setIsRegisterModalOpen(true)}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -487,7 +517,7 @@ const AdminPanel = () => {
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {STAT_CARDS.map((card) => (
-            <Card key={card.key} className="min-h-[160px]">
+            <Card key={card.key} className={`min-h-[160px] ${PANEL_CARD_HOVER_CLASS}`}>
               <div className={`mb-6 flex h-12 w-12 items-center justify-center rounded-xl ${card.iconClass}`}>
                 {card.icon}
               </div>
@@ -517,7 +547,7 @@ const AdminPanel = () => {
             <select
               value={roleFilter}
               onChange={(event) => setRoleFilter(event.target.value)}
-              className="w-full appearance-none rounded-lg border border-border-main bg-surface-white px-4 py-3 pr-10 text-sm font-medium text-text-primary outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/30"
+              className="w-full cursor-pointer appearance-none rounded-lg border border-border-main bg-surface-white px-4 py-3 pr-10 text-sm font-medium text-text-primary outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/30"
             >
               {ROLE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -597,7 +627,7 @@ const AdminPanel = () => {
                       <button
                         type="button"
                         onClick={() => openEditModal(item)}
-                        className="rounded-lg border border-border-main p-2 text-text-secondary transition-colors hover:bg-surface-gray hover:text-text-primary"
+                        className={`rounded-lg border border-border-main p-2 text-text-secondary transition-all duration-200 hover:bg-surface-gray hover:text-text-primary ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
                         title="Edit user"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -609,11 +639,11 @@ const AdminPanel = () => {
                         type="button"
                         onClick={() => setDeleteUserTarget(item)}
                         disabled={isCurrentUser && !isInactive}
-                        className={`rounded-lg border p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
+                        className={`rounded-lg border p-2 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${
                           isInactive
                             ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
                             : "border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
-                        }`}
+                        } ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
                         title={
                           isCurrentUser && !isInactive
                             ? "You cannot delete your current account here"
@@ -643,7 +673,7 @@ const AdminPanel = () => {
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="flex items-center gap-1 rounded-lg border border-border-main px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className={`flex items-center gap-1 rounded-lg border border-border-main px-3 py-1.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-white disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -653,7 +683,7 @@ const AdminPanel = () => {
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="flex items-center gap-1 rounded-lg border border-border-main px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className={`flex items-center gap-1 rounded-lg border border-border-main px-3 py-1.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-white disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
                 >
                   Next
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

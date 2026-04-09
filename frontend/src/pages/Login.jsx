@@ -41,7 +41,7 @@ const Login = () => {
 
     try {
       await login(form.email.trim().toLowerCase(), form.password.trim());
-      showToast("Login successful! Redirecting...", "success"); // <-- TOAST
+      showToast("Login successful!", "success"); // <-- TOAST
       navigate("/", { replace: true });
     } catch (err) {
       const msg =
