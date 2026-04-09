@@ -11,6 +11,8 @@ const orderService = {
   // Add these inside orderService
   getBills: (params) => api.get("/api/bills/", { params }),
   getBillById: (id) => api.get(`/api/bills/${id}`),
+  // Add this inside orderService
+  getDashboardData: () => api.get("/api/dashboard/")
 };
 
 export default orderService;
