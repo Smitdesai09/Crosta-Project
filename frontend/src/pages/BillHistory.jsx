@@ -21,19 +21,18 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        // 2. Added font-semibold to active state for bold orange look
-        className={`w-full px-3 py-2 border rounded-lg text-sm text-left flex items-center justify-between transition-colors ${
-          isActive 
-            ? 'bg-brand-pale border-brand text-brand font-semibold' 
-            : 'bg-surface-gray border-border-main text-text-placeholder hover:border-gray-400'
-        } focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand`}
+        // 2. Standard, non-annoying grey for active filters
+        className={`w-full px-3 py-2 rounded-lg text-sm text-left flex items-center justify-between transition-all ${isActive
+            ? 'bg-neutral-100 border border-neutral-400 text-text-primary font-medium'
+            : 'bg-surface-gray border border-border-main text-text-placeholder hover:border-gray-400'
+          } focus:outline-none focus:ring-2 focus:ring-neutral-300 focus:border-neutral-400`}
       >
         <span className="truncate">{selectedLabel}</span>
         <svg className="w-4 h-4 flex-shrink-0 ml-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      
+
       {isOpen && (
         <div className="absolute z-20 mt-1 w-full bg-surface-white border border-border-main rounded-xl shadow-xl overflow-hidden">
           <div className="max-h-60 overflow-y-auto py-1">
@@ -42,11 +41,10 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
                 key={opt.value}
                 type="button"
                 onClick={() => { onChange(opt.value); setIsOpen(false); }}
-                className={`w-full text-left px-3 py-2 text-sm transition-colors ${
-                  value === opt.value 
-                    ? "bg-brand-pale text-brand font-medium" 
+                className={`w-full text-left px-3 py-2 text-sm transition-colors ${value === opt.value
+                    ? "bg-surface-gray text-text-primary font-medium"
                     : "text-text-primary hover:bg-surface-gray"
-                }`}
+                  }`}
               >
                 {opt.label}
               </button>
@@ -63,7 +61,7 @@ const BillHistory = () => {
 
   const [bills, setBills] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 10, pages: 0 });
-  
+
   const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
   const currentYear = String(new Date().getFullYear());
 
@@ -72,7 +70,7 @@ const BillHistory = () => {
   const [year, setYear] = useState(currentYear);
   const [paymentType, setPaymentType] = useState("");
   const [orderType, setOrderType] = useState("");
-  
+
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
@@ -102,15 +100,23 @@ const BillHistory = () => {
     { value: "takeaway", label: "Takeaway" }
   ];
 
+  const handleResetFilters = () => {
+    setSearch("");
+    setMonth(currentMonth);
+    setYear(currentYear);
+    setPaymentType("");
+    setOrderType("");
+  };
+
   const fetchBills = useCallback(async (page = 1) => {
     setLoading(true);
     try {
       const params = { page, limit: 10 };
-      
+
       if (search) params.search = search;
       if (month) params.month = parseInt(month);
       if (year) params.year = parseInt(year);
-      else if (month) params.year = parseInt(currentYear); 
+      else if (month) params.year = parseInt(currentYear);
       if (paymentType) params.paymentType = paymentType;
       if (orderType) params.orderType = orderType;
 
@@ -158,7 +164,7 @@ const BillHistory = () => {
   };
 
   const formatDateTime = (dateStr) => {
-    return new Date(dateStr).toLocaleString('en-IN', { 
+    return new Date(dateStr).toLocaleString('en-IN', {
       day: '2-digit', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit', hour12: true
     });
@@ -166,7 +172,18 @@ const BillHistory = () => {
 
   return (
     <div className="h-full w-full flex flex-col gap-4 overflow-hidden">
-      
+
+      {/* PAGE TITLE & RESET */}
+      <div className="flex items-end justify-between flex-shrink-0">
+        <h1 className="text-3xl font-extrabold text-text-primary tracking-tight">Bill History</h1>
+        <button
+          onClick={handleResetFilters}
+          className="text-xs font-semibold text-text-secondary hover:text-text-primary px-3 py-1.5 rounded-lg border border-border-main hover:bg-surface-gray transition-colors"
+        >
+          Reset Filters
+        </button>
+      </div>
+
       {/* TOP FILTERS */}
       <div className="bg-surface-white rounded-xl border border-border-main p-4 shadow-sm flex-shrink-0">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -176,12 +193,12 @@ const BillHistory = () => {
               placeholder="Search phone, item, operator..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`w-full pl-3 pr-9 py-2 border rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-colors ${
-                search ? 'bg-brand-pale border-brand font-semibold' : 'bg-surface-gray border-border-main'
-              }`}
+              // 2. Standard grey for active search
+              className={`w-full pl-3 pr-9 py-2 rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-neutral-300 focus:border-neutral-400 transition-all ${search ? 'bg-neutral-100 border border-neutral-400 font-medium' : 'bg-surface-gray border border-border-main'
+                }`}
             />
             {search && (
-              <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-brand hover:text-brand-hover">
+              <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-neutral-700">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             )}
@@ -189,7 +206,7 @@ const BillHistory = () => {
 
           <FilterSelect value={month} onChange={setMonth} options={months} placeholder="Select Month" />
           <FilterSelect value={year} onChange={setYear} options={years} placeholder="Select Year" />
-          
+
           <div className="flex gap-2">
             <div className="flex-1">
               <FilterSelect value={paymentType} onChange={setPaymentType} options={paymentOptions} placeholder="Payment" />
@@ -203,19 +220,19 @@ const BillHistory = () => {
 
       {/* LIST & PAGINATION CONTAINER */}
       <div className="flex-1 bg-surface-white rounded-xl border border-border-main shadow-sm flex flex-col overflow-hidden min-h-0">
-        
-        {/* 3. Clever Table Header using subtle orange gradient and bottom border */}
-        <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-gradient-to-r from-orange-50 via-orange-50/50 to-surface-gray border-b-2 border-orange-200 text-[11px] font-bold uppercase tracking-wider text-orange-700 flex-shrink-0">
-          <div className="col-span-3">Date</div>
-          <div className="col-span-2 text-right">Amount</div>
-          <div className="col-span-1 text-center">Pay</div>
-          <div className="col-span-1 text-center">Type</div>
-          <div className="col-span-2 text-center">Operator</div>
-          <div className="col-span-2 text-center">Phone</div>
-          <div className="col-span-1 text-center">View</div>
+
+        {/* HEADER: 7 equal columns, standout slate background */}
+        <div className="grid grid-cols-7 gap-4 px-5 py-3 bg-slate-100 border-b-2 border-slate-300 text-[11px] font-bold uppercase tracking-widest text-slate-600 flex-shrink-0">
+          <div className="text-left">Date</div>
+          <div className="text-right">Amount</div>
+          <div className="text-center">Pay</div>
+          <div className="text-center">Type</div>
+          <div className="text-center">Operator</div>
+          <div className="text-center">Phone</div>
+          <div className="text-center">View</div>
         </div>
 
-        {/* Table Body */}
+        {/* BODY: Exact same 7 equal columns */}
         <div className="flex-1 overflow-y-auto divide-y divide-border-main">
           {loading ? (
             <div className="flex items-center justify-center h-full">
@@ -228,42 +245,41 @@ const BillHistory = () => {
             </div>
           ) : (
             bills.map((bill) => (
-              <div key={bill.billId} className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-surface-gray/50 transition-colors">
-                
-                <div className="col-span-3 text-xs text-text-primary leading-tight">
+              <div key={bill.billId} className="grid grid-cols-7 gap-4 px-5 py-3 items-center hover:bg-slate-50/50 transition-colors">
+
+                <div className="text-xs text-text-primary leading-tight truncate text-left">
                   {formatDateTime(bill.date)}
                 </div>
 
-                <div className="col-span-2 text-lg text-brand font-semibold text-right">
+                <div className="text-sm text-text-primary text-right">
                   ₹{bill.totalAmount.toFixed(2)}
                 </div>
 
-                {/* 1. Reverted to full names */}
-                <div className="col-span-1 flex justify-center">
+                <div className="flex justify-center">
                   <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-surface-gray border border-border-main text-text-secondary">
                     {bill.paymentType}
                   </span>
                 </div>
 
-                <div className="col-span-1 flex justify-center">
+                <div className="flex justify-center">
                   <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-surface-gray border border-border-main text-text-secondary">
                     {bill.orderType === 'dine-in' ? 'Dine-in' : 'Takeaway'}
                   </span>
                 </div>
 
-                <div className="col-span-2 text-center text-xs text-text-primary truncate px-1">
+                <div className="text-center text-xs text-text-primary truncate">
                   {bill.operatorName || <span className="text-gray-300">—</span>}
                 </div>
 
-                <div className="col-span-2 text-center text-xs text-text-secondary">
+                <div className="text-center text-xs text-text-secondary truncate">
                   {bill.customerPhone || <span className="text-gray-300">—</span>}
                 </div>
 
-                <div className="col-span-1 flex justify-center">
-                  <button 
-                    onClick={() => handleViewBill(bill.billId)} 
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => handleViewBill(bill.billId)}
                     disabled={viewLoading}
-                    className="p-1.5 text-gray-400 hover:text-brand hover:bg-brand-pale rounded-lg transition-colors disabled:opacity-50"
+                    className="p-1.5 text-gray-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors disabled:opacity-50"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                   </button>
@@ -273,11 +289,11 @@ const BillHistory = () => {
           )}
         </div>
 
-        {/* PAGINATION */}
+        {/* PAGINATION (unchanged) */}
         {pagination.pages > 0 && (
           <div className="flex items-center justify-between px-4 py-3 border-t border-border-main bg-surface-gray flex-shrink-0">
             <p className="text-xs text-text-secondary">
-              Page <span className="text-text-primary font-medium">{pagination.page}</span> out of <span className="text-text-primary font-medium">{pagination.pages}</span>
+              Page {pagination.page} out of {pagination.pages}
             </p>
             <div className="flex items-center gap-2">
               <button onClick={() => handlePageChange(pagination.page - 1)} disabled={pagination.page === 1} className="flex items-center gap-1 px-3 py-1.5 border border-border-main rounded-lg text-sm font-medium text-text-secondary hover:bg-surface-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
@@ -295,7 +311,7 @@ const BillHistory = () => {
       {isModalOpen && selectedBill && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-surface-white rounded-2xl shadow-xl w-full max-w-lg mx-4 border border-border-main flex flex-col max-h-[90vh]">
-            
+
             <div className="flex items-center justify-between p-4 border-b border-border-main flex-shrink-0">
               <div>
                 <h2 className="text-base font-bold text-text-primary">Bill Details</h2>
@@ -308,7 +324,7 @@ const BillHistory = () => {
             </div>
 
             <div className="p-4 overflow-y-auto flex-1 space-y-4">
-              
+
               <div className={`grid gap-3 ${selectedBill.customerPhone ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 <div className="bg-surface-gray p-2 rounded-lg text-center">
                   <p className="text-[10px] font-semibold text-text-secondary uppercase">Type</p>
@@ -318,7 +334,7 @@ const BillHistory = () => {
                   <p className="text-[10px] font-semibold text-text-secondary uppercase">Payment</p>
                   <p className="text-sm font-medium text-text-primary uppercase mt-0.5">{selectedBill.paymentType}</p>
                 </div>
-                
+
                 {selectedBill.customerPhone && (
                   <div className="bg-surface-gray p-2 rounded-lg text-center">
                     <p className="text-[10px] font-semibold text-text-secondary uppercase">Phone</p>
