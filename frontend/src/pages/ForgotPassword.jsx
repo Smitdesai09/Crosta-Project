@@ -9,7 +9,7 @@ import {
 } from "../components/icons/AuthIcons";
 import { useToast } from "../context/ToastContext";
 
-export default function ForgotPassword() {
+const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   // REMOVED: const [error, setError] = useState(""); 
   const [isLoading, setIsLoading] = useState(false);
@@ -172,7 +172,9 @@ export default function ForgotPassword() {
       </div>
     </div>
   );
-}
+};
+
+export default ForgotPassword;
 
 // import { useState } from "react";
 // import { Link } from "react-router-dom";

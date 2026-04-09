@@ -34,8 +34,9 @@ exports.getMe = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await User
-      .find({ isDeleted: false })
-      .select("name email role")
+      .find({})
+      .select("name email role isDeleted")
+      .sort({ isDeleted: 1, createdAt: -1 })
       .lean();
 
     res.status(200).json({

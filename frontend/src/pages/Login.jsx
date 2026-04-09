@@ -10,7 +10,7 @@ import {
   IconEyeSlash,
 } from "../components/icons/AuthIcons";
 
-export default function Login() {
+const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { showToast } = useToast(); // <-- ADD THIS
@@ -163,4 +163,6 @@ export default function Login() {
       </div>
     </div>
   );
-}
+};
+
+export default Login;

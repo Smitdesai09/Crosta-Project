@@ -9,6 +9,7 @@ const pageTitles = {
   "/bill-history": "Bill History",
   "/product-management": "Products",
   "/analytics": "Analytics",
+  "/admin/register-user": "Register User",
   "/admin-panel": "Admin Panel",
 };
 
