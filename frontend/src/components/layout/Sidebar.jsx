@@ -2,6 +2,7 @@ import React from 'react';
 import SidebarItem from './SidebarItem';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useAuth } from '../../context/AuthContext';
+import brandLogo from '../../assets/logo3.png';
 
 const Icons = {
   dashboard: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1" /></svg>,
@@ -35,91 +36,85 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen, setIsSidebarColla
 
   const toggleCollapse = () => {
     setIsSidebarCollapsed(!isCollapsed);
-    if(isMobileOpen) setIsMobileOpen(false);
+    if (isMobileOpen) setIsMobileOpen(false);
   };
 
-  // Helper to handle item clicks: close mobile AND auto-collapse desktop
   const handleItemClick = () => {
     setIsMobileOpen(false);
-    setIsSidebarCollapsed(true); 
+    setIsSidebarCollapsed(true);
   };
 
   const sidebarContent = (
+    // Clean standard wrapper. No inner w-64 clipping trick needed anymore!
     <div className="flex flex-col h-full bg-neutral-deep">
-      {/* Top: Hamburger Menu Button */}
-      <div className={`border-b border-white/10 px-3 py-3`}>
-        <button 
-          onClick={toggleCollapse}
-          className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors w-full cursor-pointer ${isCollapsed ? 'justify-center' : ''}`}
-        >
-          <span className={`flex-shrink-0 ${isCollapsed ? 'mx-auto' : ''}`}>
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-          </span>
-          {!isCollapsed && <span className="whitespace-nowrap text-sm font-medium">Menu</span>}
+
+      {/* Top: Logo & Hamburger */}
+      <div className={`flex items-center h-16 shrink-0 px-3 border-b border-white/10 transition-all ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+
+        <div className="grid transition-[grid-template-columns] duration-300" style={{ gridTemplateColumns: isCollapsed ? '0fr' : '1fr' }}>
+          <div className="overflow-hidden min-w-0">
+            {/* Changed h-10 to h-12 */}
+            <img src={brandLogo} alt="Crosta Logo" className="h-12 object-contain" />
+          </div>
+        </div>
+
+        <button onClick={toggleCollapse} className="shrink-0 flex items-center justify-center w-10 h-10 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors cursor-pointer">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
         {menuItems.map((item) => (
-          <SidebarItem 
-            key={item.path} 
-            icon={item.icon} 
-            label={item.label} 
-            path={item.path} 
-            isCollapsed={isCollapsed} 
-            onClick={handleItemClick} // <-- Calls the auto-collapse function
+          <SidebarItem
+            key={item.path}
+            icon={item.icon}
+            label={item.label}
+            path={item.path}
+            isCollapsed={isCollapsed}
+            onClick={handleItemClick}
           />
         ))}
       </nav>
 
-      {/* User Info & Logout — pinned to bottom */}
-      <div className={`border-t border-white/10 ${isCollapsed ? 'p-3' : 'p-4'}`}>
-        {isCollapsed ? (
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-brand flex items-center justify-center text-surface-white text-sm font-bold shrink-0">
-              {user?.name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
-            <button
-              onClick={handleLogout}
-              // Increased base opacity to text-white/70, red hover color
-              className="p-2 rounded-lg text-white/70 hover:bg-red-500/10 hover:text-red-500 transition-colors cursor-pointer"
-              title="Sign Out"
-            >
-              {Icons.logout}
-            </button>
+      {/* User Info & Logout */}
+      <div className="border-t border-white/10 p-4 shrink-0">
+        <div className="flex items-center gap-3 mb-3 px-1">
+          <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-surface-white text-sm font-bold shrink-0">
+            {user?.name?.charAt(0)?.toUpperCase() || "U"}
           </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-3 mb-3 px-1">
-              <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-surface-white text-sm font-bold shrink-0">
-                {user?.name?.charAt(0)?.toUpperCase() || "U"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{user?.name || "User"}</p>
-                <p className="text-xs text-white/50 truncate">{user?.email || ""}</p>
-              </div>
+
+          <div className="grid transition-[grid-template-columns] duration-300" style={{ gridTemplateColumns: isCollapsed ? '0fr' : '1fr' }}>
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium text-white truncate">{user?.name || "User"}</p>
+              <p className="text-xs text-white/50 truncate">{user?.email || ""}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              // Increased base opacity to text-white/70, red hover color
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-white/70 hover:bg-red-500/10 hover:text-red-500 transition-colors text-sm cursor-pointer"
-            >
-              {Icons.logout}
-              Sign Out
-            </button>
-          </>
-        )}
+          </div>
+        </div>
+
+        {/* FIX: Removed gap-3, added conditional ml-3 to the text wrapper */}
+        <button
+          onClick={handleLogout}
+          className={`flex items-center rounded-lg text-white/70 hover:bg-red-500/10 hover:text-red-500 transition-colors text-sm cursor-pointer ${isCollapsed ? 'w-10 h-10 mx-auto justify-center' : 'w-full px-3 py-2.5'
+            }`}
+        >
+          {Icons.logout}
+          <div className={`grid transition-[grid-template-columns] duration-300 ${isCollapsed ? '' : 'ml-3'}`} style={{ gridTemplateColumns: isCollapsed ? '0fr' : '1fr' }}>
+            <span className="whitespace-nowrap overflow-hidden">Sign Out</span>
+          </div>
+        </button>
       </div>
     </div>
   );
 
   return (
     <>
-      <aside className={`hidden lg:block h-screen sticky top-0 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
+      {/* Desktop Sidebar - Clean outer container */}
+      <aside className={`hidden lg:block h-screen sticky top-0 flex-shrink-0 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
         {sidebarContent}
       </aside>
 
+      {/* Mobile Sidebar */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)} />
