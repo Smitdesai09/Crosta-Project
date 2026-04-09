@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/immutability */
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import orderService from '../services/orderService';
+import dashboardService from '../services/dashboardService';
 import { useToast } from '../context/ToastContext';
 
 // --- Icons ---
@@ -25,38 +26,62 @@ const summaryCards = [
   { title: "Active Products", key: "activeProducts", icon: Icons.active, color: "text-emerald-600 bg-emerald-50" },
 ];
 
-const DonutChart = ({ data, colors }) => {
-  const total = data.reduce((sum, item) => sum + item.count, 0);
-  if (total === 0) return <div className="flex items-center justify-center h-full text-sm text-text-secondary">No data today</div>;
+const productPieColors = [
+  '#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444',
+  '#f59e0b', '#06b6d4', '#ec4899', '#14b8a6', '#a855f7',
+  '#6b7280'
+];
+
+// --- Unified Pie Chart Component (Adapted for Dashboard counts) ---
+const PieChart = ({ data, colors, size = 'md' }) => {
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  const dim = size === 'sm' ? 'w-28 h-28' : 'w-36 h-36';
+  const textMain = size === 'sm' ? 'text-sm' : 'text-lg';
+  const textSub = size === 'sm' ? 'text-[8px]' : 'text-[9px]';
+
+  if (total === 0) {
+    return (
+      <div className={`flex items-center justify-center ${dim} text-sm text-text-secondary`}>
+        No data
+      </div>
+    );
+  }
 
   let cumulativePercent = 0;
+  const slices = data.map((item, index) => {
+    const percent = (item.value / total) * 100;
+    const slice = {
+      id: item._id,
+      percent,
+      dashArray: `${percent} ${100 - percent}`,
+      dashOffset: -cumulativePercent,
+      color: colors[index] || '#e5e7eb'
+    };
+    cumulativePercent += percent;
+    return slice;
+  });
 
   return (
-    <div className="relative w-32 h-32 mx-auto">
+    <div className={`relative ${dim} shrink-0`}>
       <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-        {data.map((item, index) => {
-          const percent = (item.count / total) * 100;
-          const dashArray = `${percent} ${100 - percent}`;
-          const dashOffset = -cumulativePercent;
-          // eslint-disable-next-line react-hooks/immutability
-          cumulativePercent += percent;
-          return (
-            <circle
-              key={item.type}
-              cx="18" cy="18" r="15.91549430918954"
-              fill="transparent"
-              stroke={colors[index] || "#e5e7eb"}
-              strokeWidth="3.5"
-              strokeDasharray={dashArray}
-              strokeDashoffset={dashOffset}
-              className="transition-all duration-500"
-            />
-          );
-        })}
+        {slices.map((slice) => (
+          <circle
+            key={slice.id}
+            cx="18"
+            cy="18"
+            r="15.91549430918954"
+            fill="transparent"
+            stroke={slice.color}
+            strokeWidth="3"
+            strokeDasharray={slice.dashArray}
+            strokeDashoffset={slice.dashOffset}
+            className="transition-all duration-500"
+          />
+        ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-xl font-bold text-text-primary">{total}</span>
-        <span className="text-[10px] text-text-secondary uppercase">Total</span>
+        <span className={`${textMain} font-bold text-text-primary`}>{total}</span>
+        <span className={`${textSub} text-text-secondary uppercase`}>Total</span>
       </div>
     </div>
   );
@@ -71,7 +96,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await orderService.getDashboardData();
+        const res = await dashboardService.getDashboardData();
         setData(res.data);
       } catch (error) {
         showToast("Failed to load dashboard", error);
@@ -82,6 +107,21 @@ const Dashboard = () => {
     fetchDashboard();
   }, [showToast]);
 
+  // --- Map data to standardized format for Pie Charts ---
+  const prodPieData = useMemo(() => 
+    (data?.topProducts || []).map(p => ({ _id: p.name, value: p.quantity })), 
+  [data?.topProducts]);
+
+  const payPieData = useMemo(() => 
+    (data?.paymentDistribution || []).map(p => ({ _id: p.type, value: p.count }))
+    .sort((a, b) => b.value - a.value), 
+  [data?.paymentDistribution]);
+
+  const typePieData = useMemo(() => 
+    (data?.orderTypeDistribution || []).map(o => ({ _id: o.type, value: o.count }))
+    .sort((a, b) => b.value - a.value), 
+  [data?.orderTypeDistribution]);
+
   const todayDate = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   const formatDateTime = (dateStr) => new Date(dateStr).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
 
@@ -89,7 +129,6 @@ const Dashboard = () => {
 
   return (
     <>
-      {/* 4. Minimal, hidden-by-default Scrollbar CSS */}
       <style>{`
         .dashboard-scroll::-webkit-scrollbar { width: 6px; }
         .dashboard-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -134,14 +173,12 @@ const Dashboard = () => {
         </div>
 
         {/* RECENT BILLS */}
-        {/* 1 & 2. Grid columns for perfect equal spacing */}
         <div className="bg-surface-white border border-border-main rounded-xl shadow-sm flex-shrink-0 overflow-hidden">
           <div className="px-5 py-3 border-b border-border-main bg-surface-gray flex items-center justify-between">
             <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">Recent Bills</h2>
             <button onClick={() => navigate('/bill-history')} className="text-xs font-semibold text-brand hover:underline">View more &gt;</button>
           </div>
           
-          {/* Sub-header for exact column alignment */}
           <div className="grid grid-cols-4 gap-4 px-5 py-2 border-b border-border-main bg-surface-gray/50 text-[11px] font-bold text-text-secondary uppercase tracking-wider">
             <div>Date</div>
             <div>Operator</div>
@@ -167,81 +204,125 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* TOP PRODUCTS */}
-        <div className="bg-surface-white border border-border-main rounded-xl shadow-sm flex-shrink-0 overflow-hidden">
-          <div className="px-5 py-3 border-b border-border-main bg-surface-gray">
-            <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">Top Products Today</h2>
-          </div>
-          {data?.topProducts?.length === 0 ? (
-            <p className="text-sm text-text-secondary text-center py-4">No products sold today yet.</p>
-          ) : (
-            <div className="divide-y divide-border-main">
-              {data.topProducts.map((prod, idx) => (
-                <div key={prod.name} className="flex items-center justify-between px-5 py-3 hover:bg-surface-gray/50 transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="w-6 h-6 rounded-full bg-surface-gray border border-border-main flex items-center justify-center text-[10px] font-bold text-text-secondary shrink-0">#{idx + 1}</span>
-                    <span className="text-sm font-medium text-text-primary truncate">{prod.name}</span>
-                  </div>
-                  <span className="text-sm font-bold text-text-primary shrink-0 ml-4">{prod.quantity} qty</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* CHARTS ROW */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-shrink-0">
+        {/* NEW ANALYTICS-STYLE TRIO ROW: Products (Left 3/5) + Payments & Order Types (Right Stacked 2/5) */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-shrink-0">
           
-          {/* Payment Distribution */}
-          {/* 3. Top-left aligned header matching other sections */}
-          <div className="bg-surface-white border border-border-main rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-border-main bg-surface-gray">
-              <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">Payment Distribution</h2>
+          {/* Products Pie — LEFT (3/5 width) */}
+          <div className="lg:col-span-3 bg-surface-white border border-border-main rounded-xl shadow-sm overflow-hidden flex flex-col">
+            <div className="px-5 py-3 border-b border-border-main bg-surface-gray shrink-0">
+              <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">
+                Top Products Today
+              </h2>
             </div>
-            <div className="p-5">
-              <DonutChart data={data?.paymentDistribution || []} colors={['#64748b', '#94a3b8', '#cbd5e1']} />
-              <div className="flex justify-center gap-4 mt-4">
-                {(data?.paymentDistribution || []).map((p, i) => {
-                  const total = data.paymentDistribution.reduce((s, i) => s + i.count, 0);
-                  const percent = total > 0 ? Math.round((p.count / total) * 100) : 0;
-                  const colors = ['bg-slate-500', 'bg-slate-400', 'bg-slate-300'];
-                  return (
-                    <div key={p.type} className="flex items-center gap-1.5 text-xs text-text-secondary">
-                      <div className={`w-2.5 h-2.5 rounded-full ${colors[i]}`}></div>
-                      <span className="capitalize">{p.type}</span>
-                      <span className="font-bold text-text-primary">({percent}%)</span>
-                    </div>
-                  );
-                })}
+            <div className="p-6 flex-1 flex items-center">
+              <div className="flex items-center gap-10 w-full">
+                <PieChart data={prodPieData} colors={productPieColors} size="md" />
+                <div className="flex flex-col gap-3 min-w-0">
+                  {prodPieData.length === 0 ? (
+                    <p className="text-sm text-text-secondary">No products sold yet.</p>
+                  ) : (
+                    prodPieData.map((prod, i) => {
+                      const total = prodPieData.reduce((s, p) => s + p.value, 0);
+                      const percent = total > 0 ? ((prod.value / total) * 100).toFixed(1) : '0';
+                      return (
+                        <div key={prod._id} className="flex items-center gap-2.5">
+                          <div
+                            className="w-2.5 h-2.5 rounded-sm shrink-0"
+                            style={{ backgroundColor: productPieColors[i] }}
+                          />
+                          <span className="text-sm text-text-primary truncate font-medium" style={{ maxWidth: '180px' }}>
+                            {prod._id}
+                          </span>
+                          <span className="text-xs text-text-secondary shrink-0 tabular-nums">
+                            {prod.value} qty
+                          </span>
+                          <span className="text-xs font-bold text-text-primary shrink-0 tabular-nums pl-1">
+                            {percent}%
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Order Type Distribution */}
-          <div className="bg-surface-white border border-border-main rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-border-main bg-surface-gray">
-              <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">Order Type Distribution</h2>
-            </div>
-            <div className="p-5">
-              <DonutChart data={data?.orderTypeDistribution || []} colors={['#d97757', '#9ca3af']} />
-              <div className="flex justify-center gap-4 mt-4">
-                {(data?.orderTypeDistribution || []).map((o, i) => {
-                  const total = data.orderTypeDistribution.reduce((s, i) => s + i.count, 0);
-                  const percent = total > 0 ? Math.round((o.count / total) * 100) : 0;
-                  const colors = ['bg-orange-400', 'bg-gray-400'];
-                  const labels = { 'dine-in': 'Dine-in', 'takeaway': 'Takeaway' };
-                  return (
-                    <div key={o.type} className="flex items-center gap-1.5 text-xs text-text-secondary">
-                      <div className={`w-2.5 h-2.5 rounded-full ${colors[i]}`}></div>
-                      <span className="capitalize">{labels[o.type] || o.type}</span>
-                      <span className="font-bold text-text-primary">({percent}%)</span>
-                    </div>
-                  );
-                })}
+          {/* Right Container (2/5 width) */}
+          <div className="lg:col-span-2 flex flex-col gap-4">
+            
+            {/* Payment Distribution */}
+            <div className="bg-surface-white border border-border-main rounded-xl shadow-sm overflow-hidden">
+              <div className="px-5 py-3 border-b border-border-main bg-surface-gray">
+                <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">
+                  Payments
+                </h2>
+              </div>
+              <div className="p-5">
+                <div className="flex items-center gap-5">
+                  <PieChart data={payPieData} colors={['#64748b', '#94a3b8', '#cbd5e1']} size="sm" />
+                  <div className="flex flex-col gap-2.5 min-w-0">
+                    {payPieData.map((p, i) => {
+                      const total = payPieData.reduce((s, item) => s + item.value, 0);
+                      const percent = total > 0 ? ((p.value / total) * 100).toFixed(1) : '0';
+                      const bgColors = ['bg-slate-500', 'bg-slate-400', 'bg-slate-300'];
+                      return (
+                        <div key={p._id} className="flex items-center gap-2">
+                          <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
+                          <span className="text-xs text-text-primary capitalize truncate" style={{ maxWidth: '90px' }}>
+                            {p._id}
+                          </span>
+                          <span className="text-[11px] text-text-secondary shrink-0 tabular-nums">
+                            {p.value}
+                          </span>
+                          <span className="text-[11px] font-bold text-text-primary shrink-0 tabular-nums pl-1">
+                            {percent}%
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
+            {/* Order Type Distribution */}
+            <div className="bg-surface-white border border-border-main rounded-xl shadow-sm overflow-hidden">
+              <div className="px-5 py-3 border-b border-border-main bg-surface-gray">
+                <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">
+                  Order Types
+                </h2>
+              </div>
+              <div className="p-5">
+                <div className="flex items-center gap-5">
+                  <PieChart data={typePieData} colors={['#d97757', '#9ca3af', '#fbbf24']} size="sm" />
+                  <div className="flex flex-col gap-2.5 min-w-0">
+                    {typePieData.map((o, i) => {
+                      const total = typePieData.reduce((s, item) => s + item.value, 0);
+                      const percent = total > 0 ? ((o.value / total) * 100).toFixed(1) : '0';
+                      const bgColors = ['bg-orange-400', 'bg-gray-400', 'bg-amber-400'];
+                      const labels = { 'dine-in': 'Dine-in', takeaway: 'Takeaway' };
+                      return (
+                        <div key={o._id} className="flex items-center gap-2">
+                          <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
+                          <span className="text-xs text-text-primary capitalize truncate" style={{ maxWidth: '90px' }}>
+                            {labels[o._id] || o._id}
+                          </span>
+                          <span className="text-[11px] text-text-secondary shrink-0 tabular-nums">
+                            {o.value}
+                          </span>
+                          <span className="text-[11px] font-bold text-text-primary shrink-0 tabular-nums pl-1">
+                            {percent}%
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </>

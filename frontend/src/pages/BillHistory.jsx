@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import orderService from '../services/orderService';
+import billService from '../services/billService';
 import { useToast } from '../context/ToastContext';
 
 // --- Custom Dropdown Component ---
@@ -120,7 +120,7 @@ const BillHistory = () => {
       if (paymentType) params.paymentType = paymentType;
       if (orderType) params.orderType = orderType;
 
-      const res = await orderService.getBills(params);
+      const res = await billService.getBills(params);
       setBills(res.data.data);
       setPagination(res.data.pagination);
     } catch (error) {
@@ -141,7 +141,7 @@ const BillHistory = () => {
   const handleViewBill = async (billId) => {
     setViewLoading(true);
     try {
-      const res = await orderService.getBillById(billId);
+      const res = await billService.getBillById(billId);
       setSelectedBill(res.data.data);
       setIsModalOpen(true);
     } catch (error) {

@@ -5,6 +5,7 @@ import CartItem from '../components/order/CartItem';
 import OrderTypeCard from '../components/order/OrderTypeCard';
 import BillModal from '../components/order/BillModal';
 import orderService from '../services/orderService';
+import billService from '../services/billService';
 import { useToast } from '../context/ToastContext';
 
 const Orders = () => {
@@ -22,6 +23,13 @@ const Orders = () => {
   const [tables, setTables] = useState([]);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Edge Case States
+  const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const [currentTimeState, setCurrentTimeState] = useState(currentTime);
+  const [isCartDirty, setIsCartDirty] = useState(false);
+  const [isBillingLoading, setIsBillingLoading] = useState(false);
+  const [isSavingForBill, setIsSavingForBill] = useState(false); // New state for auto-save loading
 
   const fetchInitialData = async () => {
     setIsLoading(true);
@@ -43,7 +51,13 @@ const Orders = () => {
         const tableNum = i + 1;
         const activeOrder = activeMap[tableNum];
         if (activeOrder) {
-          return { id: tableNum, status: 'Occupied', orderId: activeOrder._id, subtotal: activeOrder.subtotal };
+          return {
+            id: tableNum,
+            status: 'Occupied',
+            orderId: activeOrder._id,
+            subtotal: activeOrder.subtotal,
+            orderType: activeOrder.orderType
+          };
         }
         return { id: tableNum, status: 'Available' };
       });
@@ -57,8 +71,48 @@ const Orders = () => {
     }
   };
 
+  // Lightweight fetch to update tables in the background without triggering full-page loader
+  const fetchTables = async () => {
+    try {
+      const ordersRes = await orderService.getActiveOrders();
+      const activeOrders = ordersRes.data.data;
+
+      const activeMap = {};
+      activeOrders.forEach(order => {
+        activeMap[order.tableNumber] = order;
+      });
+
+      const mappedTables = Array.from({ length: 6 }, (_, i) => {
+        const tableNum = i + 1;
+        const activeOrder = activeMap[tableNum];
+        if (activeOrder) {
+          return {
+            id: tableNum,
+            status: 'Occupied',
+            orderId: activeOrder._id,
+            subtotal: activeOrder.subtotal,
+            orderType: activeOrder.orderType
+          };
+        }
+        return { id: tableNum, status: 'Available' };
+      });
+
+      setTables(mappedTables);
+    } catch (error) {
+      showToast("Failed to refresh tables", error);
+    }
+  };
+
   useEffect(() => {
     fetchInitialData();
+  }, []);
+
+  // Live Clock
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTimeState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }));
+    }, 1000);
+    return () => clearInterval(timer);
   }, []);
 
   const categories = useMemo(() => {
@@ -74,7 +128,9 @@ const Orders = () => {
     });
   }, [searchTerm, activeCategory, products]);
 
+  // --- Cart Modifiers (Set dirty state) ---
   const handleAddToCart = (product, variantName, variantPrice) => {
+    setIsCartDirty(true);
     setCart(prev => {
       const existingIndex = prev.findIndex(item => item._id === product._id && item.variant === variantName);
       if (existingIndex !== -1) {
@@ -84,8 +140,15 @@ const Orders = () => {
     });
   };
 
-  const handleUpdateQuantity = (cartId, newQty) => setCart(prev => prev.map(item => item.cartId === cartId ? { ...item, quantity: newQty } : item));
-  const handleRemoveItem = (cartId) => setCart(prev => prev.filter(item => item.cartId !== cartId));
+  const handleUpdateQuantity = (cartId, newQty) => {
+    setIsCartDirty(true);
+    setCart(prev => prev.map(item => item.cartId === cartId ? { ...item, quantity: newQty } : item));
+  };
+
+  const handleRemoveItem = (cartId) => {
+    setIsCartDirty(true);
+    setCart(prev => prev.filter(item => item.cartId !== cartId));
+  };
 
   const subtotal = useMemo(() => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0), [cart]);
   const isCartEmpty = cart.length === 0;
@@ -103,6 +166,7 @@ const Orders = () => {
         setOrderType(orderData.orderType === 'dine-in' ? 'Dine-in' : 'Takeaway');
         const mappedCart = orderData.items.map(item => ({ cartId: Date.now() + Math.random(), _id: item.productId, name: item.name, variant: item.variant, price: item.price, quantity: item.quantity }));
         setCart(mappedCart);
+        setIsCartDirty(false); // Fetched cart is clean
       } catch (error) {
         showToast(error.response?.data?.message || "Failed to fetch order", "error");
         resetToTables();
@@ -111,10 +175,10 @@ const Orders = () => {
       setOrderId(null);
       setCart([]);
       setOrderType('Dine-in');
+      setIsCartDirty(false);
     }
   };
 
-  // --- CENTRAL RESET FUNCTION ---
   const resetToTables = () => {
     setView('tables');
     setSelectedTable(null);
@@ -190,9 +254,10 @@ const Orders = () => {
         setOrderId(res.data.data._id);
       }
 
+      setIsCartDirty(false); // Mark as clean once saved
+
       if (shouldPrint) {
         printKOT();
-        // Wait briefly for print dialog to process, then go back
         setTimeout(() => {
           fetchInitialData();
           resetToTables();
@@ -222,20 +287,62 @@ const Orders = () => {
     resetToTables();
   };
 
-  // --- GENERATE BILL ---
-  // --- GENERATE BILL ---
+  // --- BILLING EDGE CASES (Auto-save logic) ---
+  const handleOpenBillModal = async () => {
+    if (isCartEmpty || isSavingForBill) return;
+
+    // Auto-save if there are unsaved changes or if it's a completely new order
+    if (isCartDirty || !orderId) {
+      setIsSavingForBill(true);
+      try {
+        const payload = {
+          tableNumber: selectedTable,
+          orderType: orderType === 'Dine-in' ? 'dine-in' : 'takeaway',
+          items: cart.map(item => ({ productId: item._id, variant: item.variant, quantity: item.quantity }))
+        };
+
+        if (orderId) {
+          await orderService.updateOrder(orderId, payload);
+        } else {
+          const res = await orderService.createOrder(payload);
+          setOrderId(res.data.data._id);
+        }
+
+        setIsCartDirty(false);
+        fetchTables();
+
+        // Fix 1: Show toast so user knows it saved in the background
+        showToast("KOT Saved!", "success");
+
+      } catch (error) {
+        showToast(error.response?.data?.message || "Failed to save KOT before billing", "error");
+        return;
+      } finally {
+        setIsSavingForBill(false);
+      }
+    }
+
+    setIsBillModalOpen(true);
+  };
+
+  // Removed sendSMS from parameters
   const handleGenerateBill = async (discount, paymentType, customerPhone, shouldPrint = false) => {
+    if (isBillingLoading) return;
+
+    setIsBillingLoading(true);
+
     if (!orderId) {
       showToast("Please save the KOT before billing", "error");
+      setIsBillingLoading(false);
       return;
     }
 
     try {
-      const res = await orderService.createBill({
+      const res = await billService.createBill({
         orderId,
         discount: Number(discount),
         paymentType: paymentType.toLowerCase(),
-        customerPhone: customerPhone || null  // <-- ADDED BACK
+        customerPhone: customerPhone || null // Saves the 10 digits if valid, otherwise saves null
       });
 
       showToast("Bill generated successfully!", "success");
@@ -243,9 +350,6 @@ const Orders = () => {
 
       if (shouldPrint) {
         generateReceipt(res.data.data, true);
-      }
-
-      if (shouldPrint) {
         setTimeout(() => {
           fetchInitialData();
           resetToTables();
@@ -258,12 +362,14 @@ const Orders = () => {
     } catch (error) {
       console.log("Bill Error:", error?.response?.data?.message);
       showToast(error?.response?.data?.message || "Failed to generate bill", "error");
+    } finally {
+      setIsBillingLoading(false);
     }
   };
 
   // --- SHARED RECEIPT GENERATOR (Print Only) ---
   const generateReceipt = (billData, shouldPrint) => {
-    if (!shouldPrint) return; // Early exit if not printing
+    if (!shouldPrint) return;
 
     const itemsHtml = billData.items.map(item => `
       <tr>
@@ -282,10 +388,8 @@ const Orders = () => {
             .sub { text-align: center; font-size: 12px; color: #555; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
             th { text-align: left; font-size: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }
-            .totals { width: 100%; font-size: 12px; }
-            .totals tr td:last-child { text-align: right; }
-            .final-total { font-size: 16px; font-weight: bold; border-top: 2px solid #000; margin-top: 10px; }
-            .final-total td { padding-top: 8px !important; }
+            .totals { width: 100%; font-size: 12px; } .totals tr td:last-child { text-align: right; }
+            .final-total { font-size: 16px; font-weight: bold; border-top: 2px solid #000; margin-top: 10px; } .final-total td { padding-top: 8px !important; }
             .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #555; }
           </style>
         </head>
@@ -304,8 +408,9 @@ const Orders = () => {
           </table>
 
           <div class="footer">
+            Operator: ${billData.operatorName}<br>
             Payment: ${billData.paymentType.toUpperCase()}<br>
-            Printed: ${new Date().toLocaleString()}
+            Billed: ${new Date(billData.createdAt).toLocaleString()}
           </div>
         </body>
       </html>
@@ -326,24 +431,46 @@ const Orders = () => {
 
   if (isLoading && view === 'tables') {
     return (
-      <div className="h-[calc(100vh-3.5rem)] w-full bg-surface-gray flex items-center justify-center">
+      <div className="h-full w-full bg-surface-gray flex items-center justify-center">
         <span className="animate-pulse text-text-secondary font-medium">Loading tables...</span>
       </div>
     );
   }
 
   return (
-    // Changed h-[calc(100vh-3.5rem)] to h-full
-    <div className="h-full w-full bg-surface-gray flex flex-col overflow-hidden">
+    <div className="h-full w-full bg-surface-gray flex flex-col gap-4 overflow-hidden">
+
+      {/* TOP TITLE: Only shows when in Cart View */}
+      {view !== 'tables' && (
+        <div className="flex items-end justify-between flex-shrink-0">
+          <h1 className="text-3xl font-extrabold italic tracking-tight text-text-primary">Orders</h1>
+        </div>
+      )}
+
       {view === 'tables' ? (
-        // ... rest remains exactly the same
         <div className="p-6">
+
+          {/* TABLES VIEW HEADER: Contains Title, Status, and Clock */}
+          <div className="bg-surface-white border border-border-main rounded-xl px-5 py-4 mb-6 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-4">
+              <h1 className="text-3xl font-extrabold italic tracking-tight text-text-primary">Orders</h1>
+              <div className="h-6 w-px bg-border-main"></div>
+              <span className="text-sm font-medium text-text-secondary">
+                {tables.filter(t => t.status === 'Occupied').length}/6 Tables Active
+              </span>
+            </div>
+            <div className="text-xs font-mono text-text-secondary bg-surface-gray px-3 py-1.5 rounded-md border border-border-main">
+              {currentTimeState}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl">
             {tables.map(table => <TableCard key={table.id} table={table} onClick={handleSelectTable} />)}
           </div>
         </div>
       ) : (
         <div className="flex-1 flex gap-2 px-2 pb-0.5 pt-0 min-h-0 min-w-0">
+
           {/* LEFT: Products Panel */}
           <div className="flex-1 flex flex-col bg-surface-white rounded-xl border border-border-main shadow-sm min-h-0 min-w-0 overflow-hidden">
             <div className="px-3 pt-3 pb-2 border-b border-border-main flex-shrink-0">
@@ -411,12 +538,17 @@ const Orders = () => {
               </div>
               <div className="flex flex-col gap-1.5">
                 <div className="flex gap-2">
-                  {/* Notice: passing false/true here for print */}
                   <button disabled={isCartEmpty} onClick={() => handleSaveKOT(false)} className="flex-1 py-1.5 border border-border-main text-text-secondary hover:bg-surface-gray disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save KOT</button>
                   <button disabled={isCartEmpty} onClick={() => handleSaveKOT(true)} className="flex-1 py-1.5 border border-border-main text-text-primary hover:bg-surface-gray disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save & Print KOT</button>
                 </div>
-                <button onClick={() => setIsBillModalOpen(true)} disabled={isCartEmpty || !orderId} className="w-full py-2.5 bg-brand hover:bg-brand-hover disabled:bg-gray-300 text-surface-white rounded-lg text-sm font-bold shadow-sm transition-colors disabled:cursor-not-allowed">
-                  Proceed to Bill
+
+                {/* Proceed to bill - Auto-saves KOT if dirty or new */}
+                <button
+                  onClick={handleOpenBillModal}
+                  disabled={isCartEmpty || isSavingForBill}
+                  className="w-full py-2.5 bg-brand hover:bg-brand-hover disabled:bg-gray-300 text-surface-white rounded-lg text-sm font-bold shadow-sm transition-colors disabled:cursor-not-allowed"
+                >
+                  {isSavingForBill ? 'Saving...' : 'Proceed to Bill'}
                 </button>
               </div>
             </div>
@@ -427,6 +559,9 @@ const Orders = () => {
             onClose={() => setIsBillModalOpen(false)}
             cart={cart}
             onGenerateBill={handleGenerateBill}
+            isBillingLoading={isBillingLoading}
+            tableNumber={selectedTable}
+            orderType={orderType}
           />
         </div>
       )}

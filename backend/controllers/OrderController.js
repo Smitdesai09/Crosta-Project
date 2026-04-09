@@ -8,7 +8,7 @@ exports.getActiveOrders = async (req, res) => {
 
         const orders = await Order.find(
             { status: "active" },
-            { tableNumber: 1, subtotal: 1 }
+            { tableNumber: 1, subtotal: 1, orderType: 1, createdAt: 1 }
         )
             .sort({ createdAt: -1 })
             .lean();

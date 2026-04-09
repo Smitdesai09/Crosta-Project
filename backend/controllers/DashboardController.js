@@ -45,7 +45,7 @@ exports.getSummary = async (req, res) => {
         }
       },
       { $sort: { quantity: -1 } },
-      { $limit: 5 }
+      { $limit: 7 }
     ]);
 
     const topProducts = topProductsAgg.map(p => ({

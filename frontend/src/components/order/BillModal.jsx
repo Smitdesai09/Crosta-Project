@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
-const BillModal = ({ isOpen, onClose, cart, onGenerateBill }) => {
+// eslint-disable-next-line no-unused-vars
+const BillModal = ({ isOpen, onClose, cart, onGenerateBill, isBillingLoading, tableNumber, orderType }) => {
   const [discount, setDiscount] = useState(0);
   const [gstPercent] = useState(5);
   const [eBillNumber, setEBillNumber] = useState('');
@@ -14,20 +15,16 @@ const BillModal = ({ isOpen, onClose, cart, onGenerateBill }) => {
   const gstAmount = updatedSubtotal * (gstPercent / 100);
   const finalTotal = updatedSubtotal + gstAmount;
 
-  // Change the handleSave function inside BillModal.jsx
   const handleSave = (shouldPrint = false) => {
-    // Grab the phone number if toggle is ON and valid
-    const phone = isEBillEnabled && isEBillValid ? eBillNumber : null;
-
-    // Pass it to the backend
+    // Pass phone if valid, otherwise null. Ignore the toggle state for the backend.
+    const phone = isEBillValid ? eBillNumber : null;
     onGenerateBill(discountAmount, paymentType, phone, shouldPrint);
   };
-
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-white rounded-2xl shadow-xl w-full max-w-md mx-4 border border-border-main">
+      <div className="bg-surface-white rounded-2xl shadow-xl w-full max-w-md mx-4 border border-border-main flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-4 border-b border-border-main">
           <h2 className="text-base font-bold text-text-primary">Generate Bill</h2>
           <button onClick={onClose} className="text-text-secondary hover:text-text-primary p-1 rounded-lg hover:bg-surface-gray">
@@ -78,10 +75,10 @@ const BillModal = ({ isOpen, onClose, cart, onGenerateBill }) => {
 
           <div className="bg-surface-gray p-3 rounded-lg border border-border-main">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-semibold text-text-primary">E-Bill</label>
+              <label className="text-xs font-semibold text-text-primary">E-Bill (WhatsApp)</label>
               <div
                 onClick={() => isEBillValid && setIsEBillEnabled(!isEBillEnabled)}
-                className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 ${isEBillEnabled ? 'bg-brand' : 'bg-gray-300'} ${!isEBillValid ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 ${isEBillEnabled ? 'bg-green-500' : 'bg-gray-300'} ${!isEBillValid ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${isEBillEnabled ? 'translate-x-4' : 'translate-x-0'}`} />
               </div>
@@ -105,9 +102,9 @@ const BillModal = ({ isOpen, onClose, cart, onGenerateBill }) => {
         </div>
 
         <div className="flex gap-2 p-4 border-t border-border-main bg-surface-gray rounded-b-2xl">
-          <button onClick={onClose} className="flex-1 py-2 border border-border-main text-text-secondary hover:bg-surface-white rounded-lg text-sm font-medium transition-colors">Cancel</button>
-          <button onClick={() => handleSave(false)} className="flex-1 py-2 bg-surface-white border border-border-main text-text-primary hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors">Save</button>
-          <button onClick={() => handleSave(true)} className="flex-1 py-2 bg-brand hover:bg-brand-hover text-surface-white rounded-lg text-sm font-medium shadow-sm transition-colors">Save & Print</button>
+          <button onClick={onClose} disabled={isBillingLoading} className="flex-1 py-2 border border-border-main text-text-secondary hover:bg-surface-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+          <button onClick={() => handleSave(false)} disabled={isBillingLoading} className="flex-1 py-2 bg-surface-white border border-border-main text-text-primary hover:bg-gray-50 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Save</button>
+          <button onClick={() => handleSave(true)} disabled={isBillingLoading} className="flex-1 py-2 bg-brand hover:bg-brand-hover text-surface-white rounded-lg text-sm font-medium shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Save & Print</button>
         </div>
       </div>
     </div>
