@@ -10,7 +10,7 @@ import {
   IconEyeSlash,
 } from "../components/icons/AuthIcons";
 
-export default function Login() {
+const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { showToast } = useToast(); // <-- ADD THIS
@@ -41,7 +41,7 @@ export default function Login() {
 
     try {
       await login(form.email.trim().toLowerCase(), form.password.trim());
-      showToast("Login successful! Redirecting...", "success"); // <-- TOAST
+      showToast("Login successful!", "success"); // <-- TOAST
       navigate("/", { replace: true });
     } catch (err) {
       const msg =
@@ -163,4 +163,6 @@ export default function Login() {
       </div>
     </div>
   );
-}
+};
+
+export default Login;

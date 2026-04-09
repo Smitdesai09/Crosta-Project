@@ -156,14 +156,15 @@ function App() {
                 }
               />
 
-               <Route 
-              path="admin/register-user" 
-              element={
-                <React.Suspense fallback={<SuspenseFallback />}>
-                  <Register />
-                </React.Suspense>
-              } 
-            />
+              <Route
+                path="admin/register-user"
+                element={
+                  <React.Suspense fallback={<SuspenseFallback />}>
+                    <Register />
+                  </React.Suspense>
+                }
+              />
+
             
               <Route
                 path="admin-panel"
