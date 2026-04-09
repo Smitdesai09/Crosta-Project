@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import { useAuth } from "../context/AuthContext";
@@ -18,7 +18,7 @@ const PRODUCT_STATS = [
   },
   {
     key: "available",
-    label: "Available",
+    label: "Available Products",
     iconClass: "bg-blue-50 text-blue-500",
     icon: (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,7 +28,7 @@ const PRODUCT_STATS = [
   },
   {
     key: "unavailable",
-    label: "Unavailable",
+    label: "Unavailable Products",
     iconClass: "bg-amber-50 text-amber-600",
     icon: (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -43,6 +43,9 @@ const PRODUCT_CARD_HOVER_CLASS =
 
 const PRODUCT_ACTION_BUTTON_CLASS =
   "cursor-pointer hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none";
+
+const PRODUCT_ICON_BUTTON_CLASS =
+  "cursor-pointer rounded-lg border p-2 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40";
 
 const PRODUCT_SKELETON_COUNT = 6;
 const PRODUCT_SKELETON_VARIANT_COUNT = 3;
@@ -83,21 +86,89 @@ const SkeletonBlock = ({ className = "" }) => (
 const ProductStatsSkeleton = () => (
   <>
     {PRODUCT_STATS.map((card) => (
-      <Card key={`product-stat-skeleton-${card.key}`} className={`min-h-[160px] ${PRODUCT_CARD_HOVER_CLASS}`}>
-        <SkeletonBlock className="mb-6 h-12 w-12 rounded-xl" />
-        <SkeletonBlock className="h-10 w-20" />
-        <SkeletonBlock className="mt-3 h-4 w-28" />
+      <Card
+        key={`product-stat-skeleton-${card.key}`}
+        className={`min-h-[112px] ${PRODUCT_CARD_HOVER_CLASS}`}
+      >
+        <div className="flex items-center gap-4">
+          <SkeletonBlock className="h-12 w-12 rounded-xl" />
+          <SkeletonBlock className="h-4 w-28" />
+          <SkeletonBlock className="ml-auto h-10 w-16" />
+        </div>
       </Card>
     ))}
   </>
 );
 
 const ProductFiltersSkeleton = () => (
-  <div className="flex flex-col gap-3 md:flex-row md:items-center">
-    <SkeletonBlock className="h-12 w-full md:max-w-md" />
-    <SkeletonBlock className="h-12 w-full md:w-56" />
+  <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)_minmax(180px,1fr)]">
+    <SkeletonBlock className="h-12 w-full" />
+    <SkeletonBlock className="h-12 w-full" />
+    <SkeletonBlock className="h-12 w-full" />
   </div>
 );
+
+const FilterSelect = ({ value, onChange, options, placeholder }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selectedLabel = options.find((option) => option.value === value)?.label || placeholder;
+  const isActive = value !== "" && value !== undefined;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left text-sm transition-colors ${
+          isActive
+            ? "border-brand bg-brand-pale font-semibold text-brand"
+            : "border-border-main bg-surface-white text-text-primary hover:border-gray-400"
+        } focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand`}
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <svg className="ml-2 h-4 w-4 flex-shrink-0 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen ? (
+        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-border-main bg-surface-white shadow-xl">
+          <div className="max-h-60 overflow-y-auto py-1">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                  value === option.value
+                    ? "bg-brand-pale font-medium text-brand"
+                    : "text-text-primary hover:bg-surface-gray"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+};
 
 const ProductCardSkeleton = ({ showActions }) => (
   <Card className={`pointer-events-none ${PRODUCT_CARD_HOVER_CLASS}`}>
@@ -163,11 +234,6 @@ const ProductFormModal = ({
             <h2 className="text-lg font-bold text-text-primary">
               {mode === "edit" ? "Update Product" : "Add New Product"}
             </h2>
-            <p className="mt-1 text-sm text-text-secondary">
-              {mode === "edit"
-                ? "Update product details, variants and availability."
-                : "Create a new product that only admins can manage."}
-            </p>
           </div>
 
           <button
@@ -298,9 +364,6 @@ const ProductFormModal = ({
             />
             <div>
               <p className="text-sm font-medium text-text-primary">Available for sale</p>
-              <p className="text-xs text-text-secondary">
-                Turn this off to hide the product from operators and other users.
-              </p>
             </div>
           </label>
 
@@ -340,11 +403,6 @@ const ProductStatusModal = ({ isOpen, product, deleting, onClose, onConfirm }) =
           <h2 className="text-lg font-bold text-text-primary">
             {isUnavailable ? "Restore Product" : "Delete Product"}
           </h2>
-          <p className="mt-1 text-sm text-text-secondary">
-            {isUnavailable
-              ? "This will make the product visible again for operators and other users."
-              : "This will hide the product from operators and other users."}
-          </p>
         </div>
 
         <div className="px-5 py-4">
@@ -388,6 +446,11 @@ const ProductManagement = () => {
   const isAdmin = user?.role === "admin";
 
   const [products, setProducts] = useState([]);
+  const [productStats, setProductStats] = useState({
+    total: 0,
+    available: 0,
+    unavailable: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -407,13 +470,28 @@ const ProductManagement = () => {
     setLoading(true);
 
     try {
-      const response = isAdmin
-        ? await productService.getAllProductsAdmin()
-        : await productService.getAvailableProducts();
+      const [productsResponse, statsResponse] = await Promise.all([
+        isAdmin
+          ? productService.getAllProductsAdmin()
+          : productService.getAvailableProducts(),
+        productService.getProductStats(),
+      ]);
 
-      setProducts(response.data.data || []);
+      setProducts(productsResponse.data.data || []);
+      setProductStats(
+        statsResponse.data.data || {
+          total: 0,
+          available: 0,
+          unavailable: 0,
+        }
+      );
     } catch (error) {
       setProducts([]);
+      setProductStats({
+        total: 0,
+        available: 0,
+        unavailable: 0,
+      });
       showToast(error.response?.data?.message || "Failed to load products", "error");
     } finally {
       setLoading(false);
@@ -429,6 +507,16 @@ const ProductManagement = () => {
     return [...new Set(products.map((product) => product.category))].sort((a, b) => a.localeCompare(b));
   }, [products]);
 
+  const categoryFilterOptions = useMemo(() => {
+    return [
+      { value: "", label: "All Categories" },
+      ...categoryOptions.map((category) => ({
+        value: category,
+        label: formatCategory(category),
+      })),
+    ];
+  }, [categoryOptions]);
+
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
@@ -443,14 +531,6 @@ const ProductManagement = () => {
       return matchesCategory && matchesSearch;
     });
   }, [categoryFilter, products, searchTerm]);
-
-  const stats = useMemo(() => {
-    return {
-      total: products.length,
-      available: products.filter((product) => product.isAvailable).length,
-      unavailable: products.filter((product) => !product.isAvailable).length,
-    };
-  }, [products]);
 
   const resetProductForm = () => {
     setProductForm(createInitialProductForm());
@@ -642,29 +722,9 @@ const ProductManagement = () => {
                 {isAdmin ? "Admin View" : "Operator View"}
               </span>
             </div>
-            <p className="mt-1 text-sm text-text-secondary">
-              {isAdmin
-                ? "Admins can add, update, delete and restore products from the live catalog."
-                : "Browse only the products that are currently available for sale."}
-            </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button
-              type="button"
-              variant="secondary"
-              className={`inline-flex items-center gap-2 self-start px-5 py-3 ${PRODUCT_ACTION_BUTTON_CLASS}`}
-              onClick={() => {
-                setSearchTerm("");
-                setCategoryFilter("");
-              }}
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
-              </svg>
-              Reset Filters
-            </Button>
-
             {isAdmin ? (
               <Button
                 type="button"
@@ -686,12 +746,14 @@ const ProductManagement = () => {
             <ProductStatsSkeleton />
           ) : (
             PRODUCT_STATS.map((card) => (
-              <Card key={card.key} className={`min-h-[160px] ${PRODUCT_CARD_HOVER_CLASS}`}>
-                <div className={`mb-6 flex h-12 w-12 items-center justify-center rounded-xl ${card.iconClass}`}>
-                  {card.icon}
+              <Card key={card.key} className={`min-h-[112px] ${PRODUCT_CARD_HOVER_CLASS}`}>
+                <div className="flex items-center gap-4">
+                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass}`}>
+                    {card.icon}
+                  </div>
+                  <p className="text-base font-semibold text-text-secondary">{card.label}</p>
+                  <p className="ml-auto text-4xl font-bold leading-none text-text-primary">{productStats[card.key]}</p>
                 </div>
-                <p className="text-4xl font-bold leading-none text-text-primary">{stats[card.key]}</p>
-                <p className="mt-2 text-sm text-text-secondary">{card.label}</p>
               </Card>
             ))
           )}
@@ -700,8 +762,8 @@ const ProductManagement = () => {
         {isPageLoading ? (
           <ProductFiltersSkeleton />
         ) : (
-          <div className="flex flex-col gap-3 md:flex-row md:items-center">
-            <div className="relative w-full md:max-w-md">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)_minmax(180px,1fr)]">
+            <div className="relative w-full">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -712,29 +774,44 @@ const ProductManagement = () => {
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search by product, category or variant..."
-                className="w-full rounded-lg border border-border-main bg-surface-white py-3 pl-11 pr-4 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30"
+                className="w-full rounded-lg border border-border-main bg-surface-white py-3 pl-11 pr-12 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30"
               />
+              {searchTerm ? (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm("")}
+                  className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-surface-gray hover:text-text-primary"
+                  aria-label="Clear search"
+                  title="Clear search"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              ) : null}
             </div>
 
-            <div className="relative w-full md:w-56">
-              <select
-                value={categoryFilter}
-                onChange={(event) => setCategoryFilter(event.target.value)}
-                className="w-full cursor-pointer appearance-none rounded-lg border border-border-main bg-surface-white px-4 py-3 pr-10 text-sm font-medium text-text-primary outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/30"
-              >
-                <option value="">All Categories</option>
-                {categoryOptions.map((category) => (
-                  <option key={category} value={category}>
-                    {formatCategory(category)}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary">
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </span>
-            </div>
+            <FilterSelect
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+              options={categoryFilterOptions}
+              placeholder="Select Category"
+            />
+
+            <Button
+              type="button"
+              variant="secondary"
+              className={`inline-flex w-full items-center justify-center gap-2 px-5 py-3 ${PRODUCT_ACTION_BUTTON_CLASS}`}
+              onClick={() => {
+                setSearchTerm("");
+                setCategoryFilter("");
+              }}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
+              </svg>
+              Reset Filters
+            </Button>
           </div>
         )}
 
@@ -754,7 +831,6 @@ const ProductManagement = () => {
           ) : (
             filteredProducts.map((product) => {
               const sortedVariants = [...product.variants].sort((first, second) => first.price - second.price);
-              const lowestPrice = sortedVariants[0]?.price || 0;
 
               return (
                 <Card key={product._id} className={PRODUCT_CARD_HOVER_CLASS}>
@@ -772,15 +848,53 @@ const ProductManagement = () => {
                           {product.isAvailable ? "Available" : "Unavailable"}
                         </span>
                       </div>
-                      <p className="mt-1 text-sm text-text-secondary">
-                        Category: <span className="font-medium text-text-primary">{formatCategory(product.category)}</span>
-                      </p>
+                      <div className="mt-2">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
+                          <span>Category:</span>
+                          <span className="inline-flex rounded-full bg-surface-gray px-2.5 py-1 text-text-primary">
+                            {formatCategory(product.category)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="rounded-xl bg-brand-pale px-3 py-2 text-right">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-brand">Starting At</p>
-                      <p className="text-sm font-bold text-brand">{formatCurrency(lowestPrice)}</p>
-                    </div>
+                    {isAdmin ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          className={`border-border-main text-text-secondary hover:bg-surface-gray hover:text-text-primary ${PRODUCT_ICON_BUTTON_CLASS}`}
+                          onClick={() => openEditModal(product)}
+                          title="Update product"
+                          aria-label="Update product"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-8.5a2.121 2.121 0 113 3L12 16l-4 1 1-4 8.5-8.5z" />
+                          </svg>
+                        </button>
+
+                        <button
+                          type="button"
+                          className={`${
+                            product.isAvailable
+                              ? "border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
+                              : "border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
+                          } ${PRODUCT_ICON_BUTTON_CLASS}`}
+                          onClick={() => openStatusModal(product)}
+                          title={product.isAvailable ? "Delete product" : "Restore product"}
+                          aria-label={product.isAvailable ? "Delete product" : "Restore product"}
+                        >
+                          {product.isAvailable ? (
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16" />
+                            </svg>
+                          ) : (
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="mt-5 grid gap-2">
@@ -797,27 +911,6 @@ const ProductManagement = () => {
                       </div>
                     ))}
                   </div>
-
-                  {isAdmin ? (
-                    <div className="mt-5 flex gap-3 border-t border-border-main pt-4">
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        className={`flex-1 ${PRODUCT_ACTION_BUTTON_CLASS}`}
-                        onClick={() => openEditModal(product)}
-                      >
-                        Edit Product
-                      </Button>
-                      <Button
-                        type="button"
-                        variant={product.isAvailable ? "danger" : "success"}
-                        className={`flex-1 ${PRODUCT_ACTION_BUTTON_CLASS}`}
-                        onClick={() => openStatusModal(product)}
-                      >
-                        {product.isAvailable ? "Delete Product" : "Restore Product"}
-                      </Button>
-                    </div>
-                  ) : null}
                 </Card>
               );
             })
