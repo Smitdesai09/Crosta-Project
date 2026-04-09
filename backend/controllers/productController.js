@@ -13,7 +13,9 @@ const validateVariants = (variants) => {
 
 exports.getAllProductsAdmin = async (req, res) => {
     try {
-        const products = await Product.find().lean();
+        const products = await Product.find()
+            .sort({ isAvailable: -1, createdAt: -1 })
+            .lean();
         res.status(200).json({ 
             success: true, 
             message: "All products fetched", data: products
@@ -29,6 +31,7 @@ exports.getAllProductsAdmin = async (req, res) => {
 exports.getAvailableProducts = async (req, res) => {
     try {
         const products = await Product.find({ isAvailable: true }).lean();
+
         res.status(200).json({ 
             success: true, 
             message: "Available products fetched", 
@@ -138,9 +141,9 @@ exports.deleteProduct = async (req,res) => {
         }
 
         const deletedProduct = await Product.findOneAndUpdate(
-            {_id : productId , isAvailable : false},
-            {isAvailable : true},
-            {new : true}
+            { _id: productId, isAvailable: true },
+            { isAvailable: false },
+            { new: true }
         );
 
         // const deletedProduct = await Product.findByIdAndDelete(req.params.id);
@@ -148,7 +151,7 @@ exports.deleteProduct = async (req,res) => {
         if(!deletedProduct) {
             return res.status(404).json({
                 success:false,
-                message:"Product not Found!"
+                message:"Product not found or already unavailable!"
             })
         }
         
@@ -177,13 +180,13 @@ exports.restoreProduct = async(req,res)=>{
         }
 
 
-        const restoreProduct = await Product.findOneAndUpdate(
-            {_id : productId, isAvailable : true},
-            {isAvailable : false},
-            {new : true}
+        const restoredProduct = await Product.findOneAndUpdate(
+            { _id: productId, isAvailable: false },
+            { isAvailable: true },
+            { new: true }
         );
 
-        if(!restoreProduct) {
+        if(!restoredProduct) {
             return res.status(404).json({
                 success : false,
                 message : "Product Not Found or Already Active"
