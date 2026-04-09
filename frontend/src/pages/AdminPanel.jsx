@@ -14,7 +14,7 @@ const ROLE_OPTIONS = [
   { value: "user", label: "User" },
 ];
 
-const USERS_PER_PAGE = 5;
+const USERS_PER_PAGE = 10;
 
 const STAT_CARDS = [
   {
@@ -29,7 +29,7 @@ const STAT_CARDS = [
   },
   {
     key: "user",
-    label: "Users",
+    label: "Active Users",
     iconClass: "bg-blue-50 text-blue-500",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
