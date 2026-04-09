@@ -77,12 +77,15 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen, setIsSidebarColla
 
       {/* User Info & Logout */}
       <div className="border-t border-white/10 p-4 shrink-0">
-        <div className="flex items-center gap-3 mb-3 px-1">
+
+        {/* FIX: Applied the exact same centering logic as the logout button */}
+        <div className={`flex items-center mb-3 ${isCollapsed ? 'w-10 h-10 mx-auto justify-center' : 'px-1'}`}>
           <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-surface-white text-sm font-bold shrink-0">
             {user?.name?.charAt(0)?.toUpperCase() || "U"}
           </div>
 
-          <div className="grid transition-[grid-template-columns] duration-300" style={{ gridTemplateColumns: isCollapsed ? '0fr' : '1fr' }}>
+          {/* FIX: Removed gap-3, added ml-3 only when expanded */}
+          <div className={`grid transition-[grid-template-columns] duration-300 ${isCollapsed ? '' : 'ml-3'}`} style={{ gridTemplateColumns: isCollapsed ? '0fr' : '1fr' }}>
             <div className="overflow-hidden">
               <p className="text-sm font-medium text-white truncate">{user?.name || "User"}</p>
               <p className="text-xs text-white/50 truncate">{user?.email || ""}</p>
@@ -90,7 +93,7 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen, setIsSidebarColla
           </div>
         </div>
 
-        {/* FIX: Removed gap-3, added conditional ml-3 to the text wrapper */}
+        {/* Logout button (unchanged from last step) */}
         <button
           onClick={handleLogout}
           className={`flex items-center rounded-lg text-white/70 hover:bg-red-500/10 hover:text-red-500 transition-colors text-sm cursor-pointer ${isCollapsed ? 'w-10 h-10 mx-auto justify-center' : 'w-full px-3 py-2.5'
