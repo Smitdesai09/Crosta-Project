@@ -101,10 +101,10 @@ const ProductStatsSkeleton = () => (
 );
 
 const ProductFiltersSkeleton = () => (
-  <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)_minmax(180px,1fr)]">
-    <SkeletonBlock className="h-12 w-full" />
-    <SkeletonBlock className="h-12 w-full" />
-    <SkeletonBlock className="h-12 w-full" />
+  <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+    <SkeletonBlock className="h-12 w-full md:col-span-7" />
+    <SkeletonBlock className="h-12 w-full md:col-span-3" />
+    <SkeletonBlock className="h-12 w-full md:col-span-2" />
   </div>
 );
 
@@ -718,9 +718,7 @@ const ProductManagement = () => {
               <h1 className="text-2xl font-bold text-text-primary">
                 Product <span className="text-brand">Management</span>
               </h1>
-              <span className="rounded-full bg-brand-pale px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
-                {isAdmin ? "Admin View" : "Operator View"}
-              </span>
+              
             </div>
           </div>
 
@@ -762,8 +760,8 @@ const ProductManagement = () => {
         {isPageLoading ? (
           <ProductFiltersSkeleton />
         ) : (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)_minmax(180px,1fr)]">
-            <div className="relative w-full">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+            <div className="relative w-full md:col-span-7">
               <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -791,27 +789,31 @@ const ProductManagement = () => {
               ) : null}
             </div>
 
-            <FilterSelect
-              value={categoryFilter}
-              onChange={setCategoryFilter}
-              options={categoryFilterOptions}
-              placeholder="Select Category"
-            />
+            <div className="md:col-span-3">
+              <FilterSelect
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+                options={categoryFilterOptions}
+                placeholder="Select Category"
+              />
+            </div>
 
-            <Button
-              type="button"
-              variant="secondary"
-              className={`inline-flex w-full items-center justify-center gap-2 px-5 py-3 ${PRODUCT_ACTION_BUTTON_CLASS}`}
-              onClick={() => {
-                setSearchTerm("");
-                setCategoryFilter("");
-              }}
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
-              </svg>
-              Reset Filters
-            </Button>
+            <div className="md:col-span-2">
+              <Button
+                type="button"
+                variant="secondary"
+                className={`inline-flex w-full items-center justify-center gap-2 px-4 py-3 ${PRODUCT_ACTION_BUTTON_CLASS}`}
+                onClick={() => {
+                  setSearchTerm("");
+                  setCategoryFilter("");
+                }}
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
+                </svg>
+                Reset Filters
+              </Button>
+            </div>
           </div>
         )}
 
@@ -850,7 +852,6 @@ const ProductManagement = () => {
                       </div>
                       <div className="mt-2">
                         <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
-                          <span>Category:</span>
                           <span className="inline-flex rounded-full bg-surface-gray px-2.5 py-1 text-text-primary">
                             {formatCategory(product.category)}
                           </span>
