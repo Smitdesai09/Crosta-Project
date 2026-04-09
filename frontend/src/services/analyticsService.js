@@ -1,7 +1,10 @@
-import api from "./api";
+import api from './api'; // Adjust this import based on your actual axios instance path
 
 const analyticsService = {
-  getAnalytics: (params) => api.get("/api/analytics", { params }),
+  getAnalytics: async (params) => {
+    const response = await api.get('/api/analytics', { params });
+    return response;
+  }
 };
 
 export default analyticsService;
