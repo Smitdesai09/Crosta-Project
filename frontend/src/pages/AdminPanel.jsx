@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import RegisterUserForm from "../components/user/RegisterUserForm";
@@ -79,6 +79,68 @@ const PANEL_ICON_BUTTON_HOVER_CLASS =
 const PANEL_CARD_HOVER_CLASS =
   "transition-all duration-200 hover:-translate-y-1 hover:shadow-lg";
 
+const FilterSelect = ({ value, onChange, options, placeholder }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handler = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const selectedLabel = options.find((option) => option.value === value)?.label || placeholder;
+  const isActive = value !== "" && value !== undefined;
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setIsOpen((current) => !current)}
+        className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left text-sm transition-colors ${
+          isActive
+            ? "border-brand bg-brand-pale font-semibold text-brand"
+            : "border-border-main bg-surface-white text-text-primary hover:border-gray-400"
+        } focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand`}
+      >
+        <span className="truncate">{selectedLabel}</span>
+        <svg className="ml-2 h-4 w-4 flex-shrink-0 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {isOpen ? (
+        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-border-main bg-surface-white shadow-xl">
+          <div className="max-h-60 overflow-y-auto py-1">
+            {options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+                className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                  value === option.value
+                    ? "bg-brand-pale font-medium text-brand"
+                    : "text-text-primary hover:bg-surface-gray"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
 const updateUserStatusInList = (users, userId, isDeleted) => {
   return users.map((item) => (
     item._id === userId
@@ -104,9 +166,7 @@ const UserEditModal = ({
         <div className="flex items-center justify-between border-b border-border-main px-5 py-4">
           <div>
             <h2 className="text-lg font-bold text-text-primary">Edit User</h2>
-            <p className="mt-1 text-sm text-text-secondary">
-              Update name, email and role using the same Crosta admin style.
-            </p>
+           
           </div>
           <button
             type="button"
@@ -191,9 +251,6 @@ const RegisterUserModal = ({
         <div className="flex items-center justify-between border-b border-border-main px-5 py-4">
           <div>
             <h2 className="text-lg font-bold text-text-primary">Register User</h2>
-            <p className="mt-1 text-sm text-text-secondary">
-              Add a new operator without leaving the Admin Panel.
-            </p>
           </div>
           <button
             type="button"
@@ -248,11 +305,6 @@ const DeleteConfirmModal = ({ isOpen, user, deleting, onClose, onConfirm }) => {
           <h2 className="text-lg font-bold text-text-primary">
             {isDeletedUser ? "Restore User" : "Delete User"}
           </h2>
-          <p className="mt-1 text-sm text-text-secondary">
-            {isDeletedUser
-              ? "This will restore the selected user back to the active users list."
-              : "This will remove the selected user from the active users list."}
-          </p>
         </div>
 
         <div className="px-5 py-4">
@@ -498,9 +550,6 @@ const AdminPanel = () => {
             <h1 className="text-2xl font-bold text-text-primary">
               User <span className="text-brand">Management</span>
             </h1>
-            <p className="mt-1 text-sm text-text-secondary">
-              Register operators, manage roles and permissions.
-            </p>
           </div>
 
           <Button
@@ -517,18 +566,20 @@ const AdminPanel = () => {
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {STAT_CARDS.map((card) => (
-            <Card key={card.key} className={`min-h-[160px] ${PANEL_CARD_HOVER_CLASS}`}>
-              <div className={`mb-6 flex h-12 w-12 items-center justify-center rounded-xl ${card.iconClass}`}>
-                {card.icon}
+            <Card key={card.key} className={`min-h-[112px] ${PANEL_CARD_HOVER_CLASS}`}>
+              <div className="flex items-center gap-4">
+                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass}`}>
+                  {card.icon}
+                </div>
+                <p className="text-base font-semibold text-text-secondary">{card.label}</p>
+                <p className="ml-auto text-4xl font-bold leading-none text-text-primary">{stats[card.key]}</p>
               </div>
-              <p className="text-4xl font-bold leading-none text-text-primary">{stats[card.key]}</p>
-              <p className="mt-2 text-sm text-text-secondary">{card.label}</p>
             </Card>
           ))}
         </div>
 
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <div className="relative w-full md:max-w-md">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)]">
+          <div className="relative w-full">
             <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -539,28 +590,29 @@ const AdminPanel = () => {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
               placeholder="Search by name or email..."
-              className="w-full rounded-lg border border-border-main bg-surface-white py-3 pl-11 pr-4 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30"
+              className="w-full rounded-lg border border-border-main bg-surface-white py-3 pl-11 pr-12 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30"
             />
+            {searchTerm ? (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-surface-gray hover:text-text-primary"
+                aria-label="Clear search"
+                title="Clear search"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            ) : null}
           </div>
 
-          <div className="relative w-full md:w-44">
-            <select
-              value={roleFilter}
-              onChange={(event) => setRoleFilter(event.target.value)}
-              className="w-full cursor-pointer appearance-none rounded-lg border border-border-main bg-surface-white px-4 py-3 pr-10 text-sm font-medium text-text-primary outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/30"
-            >
-              {ROLE_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </span>
-          </div>
+          <FilterSelect
+            value={roleFilter}
+            onChange={setRoleFilter}
+            options={ROLE_OPTIONS}
+            placeholder="Select Role"
+          />
         </div>
 
         <div className="overflow-hidden rounded-xl border border-border-main bg-surface-white shadow-sm">
@@ -588,7 +640,7 @@ const AdminPanel = () => {
                 const isInactive = item.isDeleted;
 
                 return (
-                  <div key={item._id} className={`grid grid-cols-12 gap-2 px-6 py-4 ${isInactive ? "bg-emerald-50/40" : ""}`}>
+                  <div key={item._id} className="grid grid-cols-12 gap-2 px-6 py-4">
                     <div className="col-span-5 flex min-w-0 items-center gap-4">
                       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${getAvatarClass(avatarIndex)}`}>
                         {getInitials(item.name)}
@@ -603,8 +655,8 @@ const AdminPanel = () => {
                       <span
                         className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${
                           item.role === "admin"
-                            ? "bg-brand-pale text-brand"
-                            : "bg-emerald-50 text-emerald-600"
+                            ? "bg-violet-50 text-violet-700"
+                            : "bg-sky-50 text-sky-700"
                         }`}
                       >
                         {item.role}
@@ -652,9 +704,15 @@ const AdminPanel = () => {
                               : "Delete user"
                         }
                       >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16" />
-                        </svg>
+                        {isInactive ? (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16" />
+                          </svg>
+                        )}
                       </button>
                     </div>
                   </div>

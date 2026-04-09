@@ -4,6 +4,7 @@ const router = express.Router();
 const {
     getAllProductsAdmin,
     getAvailableProducts,
+    getProductStats,
     createProduct,
     updateProduct,
     deleteProduct,
@@ -13,6 +14,7 @@ const {
 const { isAuthenticated, authorizeRoles } = require("../middlewares/authMiddleware");
 
 router.get("/admin", isAuthenticated, authorizeRoles("admin") , getAllProductsAdmin);
+router.get("/stats", isAuthenticated, getProductStats);
 router.get("/",isAuthenticated, getAvailableProducts);
 router.post("/", isAuthenticated, authorizeRoles("admin"), createProduct);
 router.put("/:id", isAuthenticated, authorizeRoles("admin"), updateProduct);

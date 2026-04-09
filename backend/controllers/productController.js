@@ -45,6 +45,30 @@ exports.getAvailableProducts = async (req, res) => {
     }
 };
 
+exports.getProductStats = async (req, res) => {
+    try {
+        const [total, available] = await Promise.all([
+            Product.countDocuments(),
+            Product.countDocuments({ isAvailable: true })
+        ]);
+
+        res.status(200).json({
+            success: true,
+            message: "Product stats fetched",
+            data: {
+                total,
+                available,
+                unavailable: total - available
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
 exports.createProduct = async (req, res) => {
     try {
         const { name, category, variants, isAvailable } = req.body;
