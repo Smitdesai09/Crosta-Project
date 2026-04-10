@@ -44,7 +44,8 @@ const STAT_CARDS = [
   {
     key: "total",
     label: "Total Users",
-    iconClass: "bg-[#FFF5E9] text-[#FF7A00]",
+    // FIX: Neutral icons instead of orange
+    iconClass: "bg-neutral-100 text-neutral-600",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5V9H2v11h5m10 0v-1a3 3 0 00-3-3H10a3 3 0 00-3 3v1m10 0H7m8-11a2 2 0 11-4 0 2 2 0 014 0zm-8 2a2 2 0 11-4 0 2 2 0 014 0zm12 0a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -54,7 +55,7 @@ const STAT_CARDS = [
   {
     key: "user",
     label: "Active Users",
-    iconClass: "bg-[#FFF5E9] text-[#FF7A00]",
+    iconClass: "bg-neutral-100 text-neutral-600",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A9 9 0 1118.88 17.8M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -64,7 +65,7 @@ const STAT_CARDS = [
   {
     key: "customer",
     label: "Customers",
-    iconClass: "bg-[#FFF5E9] text-[#FF7A00]",
+    iconClass: "bg-neutral-100 text-neutral-600",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l6-6m-5.5-.5h.01M18 11.5v5A2.5 2.5 0 0115.5 19h-8A2.5 2.5 0 015 16.5v-8A2.5 2.5 0 017.5 6h5" />
@@ -84,7 +85,7 @@ const getInitials = (name) => {
 
 const getAvatarClass = (index) => {
   const styles = [
-    "bg-[#FF7A00] text-white",
+    "bg-[#ff6d33] text-white",
     "bg-[#F59E0B] text-white",
     "bg-[#333333] text-white",
     "bg-[#EF4444] text-white",
@@ -103,6 +104,7 @@ const PANEL_ICON_BUTTON_HOVER_CLASS =
 const PANEL_CARD_HOVER_CLASS =
   "transition-all duration-200 hover:-translate-y-1 hover:shadow-lg";
 
+// FIX: Clean neutral dropdown matching Bills page
 const FilterSelect = ({ value, onChange, options, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
@@ -127,9 +129,9 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left text-sm transition-colors ${isActive
-          ? "border-[#FF7A00] bg-[#FFF5E9] font-semibold text-[#FF7A00]"
-          : "border-orange-100 bg-white text-[#333333] hover:border-orange-300"
-          } focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00]`}
+          ? "border-[#ff6d33]/30 bg-[#fff5f1] font-semibold text-[#ff6d33]"
+          : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-400"
+          } focus:outline-none focus:ring-2 focus:ring-[#ff6d33]/20 focus:border-[#ff6d33]`}
       >
         <span className="truncate">{selectedLabel}</span>
         <svg className="ml-2 h-4 w-4 flex-shrink-0 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +140,7 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
       </button>
 
       {isOpen ? (
-        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-orange-100 bg-white shadow-xl">
+        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xl">
           <div className="max-h-60 overflow-y-auto py-1">
             {options.map((option) => (
               <button
@@ -149,8 +151,8 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
                   setIsOpen(false);
                 }}
                 className={`w-full px-3 py-2 text-left text-sm transition-colors ${value === option.value
-                  ? "bg-[#FFF5E9] font-medium text-[#FF7A00]"
-                  : "text-[#333333] hover:bg-[#FFF5E9]"
+                  ? "bg-[#fff5f1] font-medium text-[#ff6d33]"
+                  : "text-neutral-800 hover:bg-neutral-50"
                   }`}
               >
                 {option.label}
@@ -184,15 +186,16 @@ const UserEditModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      <div className="w-full max-w-xl rounded-xl border border-orange-100 bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-orange-100 px-5 py-4">
+      {/* FIX: Neutral borders */}
+      <div className="w-full max-w-xl rounded-xl border border-neutral-200 bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-[#333333]">Edit User</h2>
+            <h2 className="text-lg font-bold text-neutral-900">Edit User</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className={`rounded-lg p-2 text-[#9E9E9E] transition-all duration-200 hover:bg-[#FFF5E9] hover:text-[#333333] ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+            className={`rounded-lg p-2 text-neutral-400 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-900 ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -203,12 +206,13 @@ const UserEditModal = ({
         <form onSubmit={onSubmit} className="p-5">
           <div className="grid gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-[#333333]">Full Name</label>
+              <label className="mb-1.5 block text-sm font-medium text-neutral-900">Full Name</label>
+              {/* FIX: Neutral input bg/border, orange ONLY on focus */}
               <input
                 type="text"
                 value={form.name}
                 onChange={(event) => onChange("name", event.target.value)}
-                className={`w-full rounded-lg border bg-[#FFF5E9] px-3 py-2.5 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30 ${errors.name ? "border-red-400" : "border-orange-100"
+                className={`w-full rounded-lg border bg-neutral-50 px-3 py-2.5 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-[#ff6d33] focus:ring-2 focus:ring-[#ff6d33]/30 ${errors.name ? "border-red-400" : "border-neutral-200"
                   }`}
                 placeholder="Enter full name"
               />
@@ -216,12 +220,12 @@ const UserEditModal = ({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-[#333333]">Email Address</label>
+              <label className="mb-1.5 block text-sm font-medium text-neutral-900">Email Address</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(event) => onChange("email", event.target.value)}
-                className={`w-full rounded-lg border bg-[#FFF5E9] px-3 py-2.5 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30 ${errors.email ? "border-red-400" : "border-orange-100"
+                className={`w-full rounded-lg border bg-neutral-50 px-3 py-2.5 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-[#ff6d33] focus:ring-2 focus:ring-[#ff6d33]/30 ${errors.email ? "border-red-400" : "border-neutral-200"
                   }`}
                 placeholder="Enter email address"
               />
@@ -229,7 +233,7 @@ const UserEditModal = ({
             </div>
           </div>
 
-          <div className="mt-5 flex justify-end gap-3 border-t border-orange-100 pt-4">
+          <div className="mt-5 flex justify-end gap-3 border-t border-neutral-200 pt-4">
             <Button
               type="button"
               variant="secondary"
@@ -266,15 +270,15 @@ const RegisterUserModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      <div className="w-full max-w-xl rounded-xl border border-orange-100 bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-orange-100 px-5 py-4">
+      <div className="w-full max-w-xl rounded-xl border border-neutral-200 bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-[#333333]">Register User</h2>
+            <h2 className="text-lg font-bold text-neutral-900">Register User</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className={`rounded-lg p-2 text-[#9E9E9E] transition-all duration-200 hover:bg-[#FFF5E9] hover:text-[#333333] ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+            className={`rounded-lg p-2 text-neutral-400 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-900 ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -293,19 +297,8 @@ const RegisterUserModal = ({
             loadingLabel="Creating..."
             showPasswordHints={false}
             passwordGridClassName="md:grid-cols-2"
-            submitButtonClassName={`bg-[#FF7A00] hover:bg-orange-600 ${PANEL_BUTTON_HOVER_CLASS}`}
+            submitButtonClassName={`bg-[#ff6d33] hover:bg-orange-700 ${PANEL_BUTTON_HOVER_CLASS}`}
           />
-
-          {/* <div className="mt-5 flex justify-end gap-3 border-t border-orange-100 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              className={PANEL_BUTTON_HOVER_CLASS}
-            >
-              Cancel
-            </Button>
-          </div> */}
         </div>
       </div>
     </div>
@@ -319,9 +312,9 @@ const DeleteConfirmModal = ({ isOpen, user, deleting, onClose, onConfirm }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      <div className="w-full max-w-md rounded-xl border border-orange-100 bg-white shadow-xl">
-        <div className="border-b border-orange-100 px-5 py-4">
-          <h2 className="text-lg font-bold text-[#333333]">
+      <div className="w-full max-w-md rounded-xl border border-neutral-200 bg-white shadow-xl">
+        <div className="border-b border-neutral-200 px-5 py-4">
+          <h2 className="text-lg font-bold text-neutral-900">
             {isDeletedUser ? "Restore User" : "Delete User"}
           </h2>
         </div>
@@ -331,12 +324,12 @@ const DeleteConfirmModal = ({ isOpen, user, deleting, onClose, onConfirm }) => {
             className={`rounded-xl p-4 ${isDeletedUser ? "border border-[#E0F2F1] bg-[#E0F2F1]" : "border border-red-100 bg-red-50"
               }`}
           >
-            <p className="text-sm font-medium text-[#333333]">{user.name}</p>
-            <p className="mt-1 text-sm text-[#9E9E9E]">{user.email}</p>
+            <p className="text-sm font-medium text-neutral-900">{user.name}</p>
+            <p className="mt-1 text-sm text-neutral-500">{user.email}</p>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-orange-100 px-5 py-4">
+        <div className="flex justify-end gap-3 border-t border-neutral-200 px-5 py-4">
           <Button
             type="button"
             variant="secondary"
@@ -565,14 +558,15 @@ const AdminPanel = () => {
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[#333333]">
-            User <span className="text-[#FF7A00]">Management</span>
+          <h1 className="text-3xl font-extrabold italic tracking-tight text-neutral-900">
+            User Management
           </h1>
         </div>
 
+        {/* Reserve dark orange EXCLUSIVELY for the primary CTA */}
         <Button
           variant="success"
-          className={`inline-flex items-center gap-2 self-start px-5 py-3 ${PANEL_BUTTON_HOVER_CLASS}`}
+          className={`inline-flex items-center gap-2 self-start px-5 py-3 bg-[#ff6d33] hover:bg-orange-700 focus:ring-[#ff6d33]/50 ${PANEL_BUTTON_HOVER_CLASS}`}
           onClick={() => setIsRegisterModalOpen(true)}
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -589,8 +583,8 @@ const AdminPanel = () => {
               <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass}`}>
                 {card.icon}
               </div>
-              <p className="text-base font-semibold text-[#9E9E9E]">{card.label}</p>
-              <p className="ml-auto text-4xl font-bold leading-none text-[#333333]">{stats[card.key]}</p>
+              <p className="text-base font-semibold text-neutral-500">{card.label}</p>
+              <p className="ml-auto text-4xl font-bold leading-none text-neutral-900">{stats[card.key]}</p>
             </div>
           </Card>
         ))}
@@ -598,7 +592,7 @@ const AdminPanel = () => {
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)]">
         <div className="relative w-full">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9E9E9E]">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -608,17 +602,17 @@ const AdminPanel = () => {
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             placeholder="Search by name or email..."
-            className="w-full rounded-lg border border-orange-100 bg-white py-3 pl-11 pr-12 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30"
+            className="w-full rounded-lg border border-neutral-200 bg-white py-3 pl-11 pr-12 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-[#ff6d33] focus:ring-2 focus:ring-[#ff6d33]/30"
           />
           {searchTerm ? (
             <button
               type="button"
               onClick={() => setSearchTerm("")}
-              className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[#9E9E9E] transition-colors hover:bg-[#FFF5E9] hover:text-[#333333]"
+              className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
               aria-label="Clear search"
               title="Clear search"
             >
-              <svg className="w-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -633,22 +627,23 @@ const AdminPanel = () => {
         />
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-orange-100 bg-white shadow-sm">
-        <div className="grid flex-shrink-0 grid-cols-12 gap-2 border-b border-orange-100 bg-[#FFF5E9] px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#9E9E9E]">
+      {/* FIX: Clean neutral table container */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+        <div className="grid flex-shrink-0 grid-cols-12 gap-2 border-b border-neutral-200 bg-neutral-50 px-6 py-4 text-xs font-semibold uppercase tracking-wider text-neutral-500">
           <div className="col-span-5">User</div>
           <div className="col-span-2 text-center">Role</div>
           <div className="col-span-2 text-center">Status</div>
           <div className="col-span-3 text-right">Actions</div>
         </div>
 
-        <div className="flex-1 overflow-y-auto divide-y divide-orange-50">
+        <div className="flex-1 overflow-y-auto divide-y divide-neutral-100">
           {loading ? (
             <div className="flex items-center justify-center py-10">
-              <span className="animate-pulse text-[#9E9E9E]">Loading...</span>
+              <span className="animate-pulse text-neutral-400">Loading...</span>
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-[#9E9E9E]">
-              <p className="text-lg font-medium text-[#333333]">No users found</p>
+            <div className="flex flex-col items-center justify-center py-10 text-neutral-400">
+              <p className="text-lg font-medium text-neutral-900">No users found</p>
               <p className="mt-1 text-sm">Try changing the search or role filter.</p>
             </div>
           ) : (
@@ -658,22 +653,23 @@ const AdminPanel = () => {
               const isInactive = item.isDeleted;
 
               return (
-                <div key={item._id} className="grid grid-cols-12 gap-2 px-6 py-4 hover:bg-[#FFF5E9]/50 transition-colors">
+                <div key={item._id} className="grid grid-cols-12 gap-2 px-6 py-4 hover:bg-neutral-50 transition-colors">
                   <div className="col-span-5 flex min-w-0 items-center gap-4">
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${getAvatarClass(avatarIndex)}`}>
                       {getInitials(item.name)}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-[#333333]">{item.name}</p>
-                      <p className="truncate text-sm text-[#9E9E9E]">{item.email}</p>
+                      <p className="truncate text-sm font-semibold text-neutral-900">{item.name}</p>
+                      <p className="truncate text-sm text-neutral-500">{item.email}</p>
                     </div>
                   </div>
 
+                  {/* FIX: Neutral badges instead of orange */}
                   <div className="col-span-2 flex items-center justify-center">
                     <span
                       className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${item.role === "admin"
-                        ? "bg-[#FFF5E9] text-[#FF7A00]"
-                        : "bg-orange-50 text-orange-700"
+                        ? "bg-neutral-100 text-neutral-700"
+                        : "bg-neutral-50 text-neutral-500"
                         }`}
                     >
                       {item.role}
@@ -695,7 +691,7 @@ const AdminPanel = () => {
                     <button
                       type="button"
                       onClick={() => openEditModal(item)}
-                      className={`rounded-lg border border-orange-100 p-2 text-[#9E9E9E] transition-all duration-200 hover:bg-[#FFF5E9] hover:text-[#333333] ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+                      className={`rounded-lg border border-neutral-200 p-2 text-neutral-500 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-900 ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
                       title="Edit user"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -736,17 +732,18 @@ const AdminPanel = () => {
           )}
         </div>
 
+        {/* FIX: Clean, minimal pagination footer */}
         {filteredUsers.length > 0 ? (
-          <div className="flex flex-shrink-0 items-center justify-between border-t border-orange-100 bg-[#FFF5E9]/50 px-4 py-3">
-            <p className="text-xs text-[#9E9E9E]">
-              Page <span className="font-medium text-[#333333]">{currentPage}</span> out of{" "}
-              <span className="font-medium text-[#333333]">{totalPages}</span>
+          <div className="flex flex-shrink-0 items-center justify-between border-t border-neutral-200 bg-white px-4 py-3">
+            <p className="text-xs text-neutral-500">
+              Page <span className="font-medium text-neutral-900">{currentPage}</span> out of{" "}
+              <span className="font-medium text-neutral-900">{totalPages}</span>
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`flex items-center gap-1 rounded-lg border border-orange-200 px-3 py-1.5 text-sm font-medium text-[#333333] transition-all duration-200 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
+                className={`flex items-center gap-1 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm font-medium text-neutral-700 transition-all duration-200 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -756,7 +753,7 @@ const AdminPanel = () => {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`flex items-center gap-1 rounded-lg border border-orange-200 px-3 py-1.5 text-sm font-medium text-[#333333] transition-all duration-200 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
+                className={`flex items-center gap-1 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm font-medium text-neutral-700 transition-all duration-200 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
               >
                 Next
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -15,15 +15,15 @@ const Icons = {
 };
 
 const quickActions = [
-  { title: "New Order", sub: "Ctrl + O", icon: Icons.plus, path: "/orders", color: "text-[#FF7A00] bg-[#FFF5E9]" },
-  { title: "View Bills", sub: "Ctrl + B", icon: Icons.bill, path: "/bill-history", color: "text-[#FF7A00] bg-[#FFF5E9]" },
-  { title: "Manage Products", sub: "Ctrl + P", icon: Icons.product, path: "/product-management", color: "text-[#FF7A00] bg-[#FFF5E9]" },
+  { title: "New Order", sub: "Ctrl + O", icon: Icons.plus, path: "/orders" },
+  { title: "View Bills", sub: "Ctrl + B", icon: Icons.bill, path: "/bill-history" },
+  { title: "Manage Products", sub: "Ctrl + P", icon: Icons.product, path: "/product-management" },
 ];
 
 const summaryCards = [
-  { title: "Today's Orders", key: "todayOrders", icon: Icons.order, color: "text-[#FF7A00] bg-[#FFF5E9]" },
-  { title: "Today's Revenue", key: "todayRevenue", icon: Icons.revenue, color: "text-[#FF7A00] bg-[#FFF5E9]", isCurrency: true },
-  { title: "Active Products", key: "activeProducts", icon: Icons.active, color: "text-[#FF7A00] bg-[#FFF5E9]" },
+  { title: "Today's Orders", key: "todayOrders", icon: Icons.order },
+  { title: "Today's Revenue", key: "todayRevenue", icon: Icons.revenue, isCurrency: true },
+  { title: "Active Products", key: "activeProducts", icon: Icons.active },
 ];
 
 const productPieColors = [
@@ -41,7 +41,7 @@ const PieChart = ({ data, colors, size = 'md' }) => {
 
   if (total === 0) {
     return (
-      <div className={`flex items-center justify-center ${dim} text-sm text-[#9E9E9E]`}>
+      <div className={`flex items-center justify-center ${dim} text-sm text-neutral-400`}>
         No data
       </div>
     );
@@ -80,8 +80,8 @@ const PieChart = ({ data, colors, size = 'md' }) => {
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`${textMain} font-bold text-[#333333]`}>{total}</span>
-        <span className={`${textSub} text-[#9E9E9E] uppercase`}>Total</span>
+        <span className={`${textMain} font-bold text-neutral-900`}>{total}</span>
+        <span className={`${textSub} text-neutral-500 uppercase`}>Total</span>
       </div>
     </div>
   );
@@ -125,7 +125,7 @@ const Dashboard = () => {
   const todayDate = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   const formatDateTime = (dateStr) => new Date(dateStr).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
 
-  if (loading) return <div className="flex items-center justify-center h-full"><span className="animate-pulse text-[#9E9E9E]">Loading dashboard...</span></div>;
+  if (loading) return <div className="flex items-center justify-center h-full"><span className="animate-pulse text-neutral-400">Loading dashboard...</span></div>;
 
   return (
     <>
@@ -133,25 +133,25 @@ const Dashboard = () => {
         .dashboard-scroll::-webkit-scrollbar { width: 6px; }
         .dashboard-scroll::-webkit-scrollbar-track { background: transparent; }
         .dashboard-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 10px; }
-        .dashboard-scroll:hover::-webkit-scrollbar-thumb { background: rgba(255, 122, 0, 0.2); }
+        .dashboard-scroll:hover::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); }
       `}</style>
 
       <div className="h-full w-full flex flex-col gap-6 overflow-y-auto p-4 lg:p-6 pb-10 dashboard-scroll">
 
         {/* HEADER */}
         <div className="flex items-end justify-between flex-shrink-0">
-          <h1 className="text-3xl font-extrabold text-[#333333] tracking-tight">Dashboard</h1>
-          <p className="text-sm text-[#9E9E9E] font-medium bg-white px-3 py-1.5 rounded-lg border border-orange-100">{todayDate}</p>
+          <h1 className="text-3xl font-extrabold italic text-neutral-900 tracking-tight">Dashboard</h1>
+          <p className="text-sm text-neutral-500 font-medium bg-white px-3 py-1.5 rounded-lg border border-neutral-200">{todayDate}</p>
         </div>
 
         {/* QUICK ACTIONS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
           {quickActions.map((action) => (
-            <button key={action.title} onClick={() => navigate(action.path)} className="relative bg-white border border-orange-100 rounded-xl p-5 text-left shadow-sm hover:shadow-md hover:border-[#FF7A00]/30 transition-all duration-200 group">
-              <div className={`absolute top-4 left-4 p-2 rounded-lg ${action.color} opacity-80 group-hover:opacity-100 transition-opacity`}>{action.icon}</div>
+            <button key={action.title} onClick={() => navigate(action.path)} className="relative bg-white border border-neutral-200 rounded-xl p-5 text-left shadow-sm hover:shadow-md hover:border-neutral-300 transition-all duration-200 group">
+              <div className="absolute top-4 left-4 p-2 rounded-lg bg-neutral-100 text-neutral-600 group-hover:bg-[#fff5f1] group-hover:text-[#ff6d33] transition-colors">{action.icon}</div>
               <div className="pl-12">
-                <h3 className="text-base font-bold text-[#333333]">{action.title}</h3>
-                <p className="text-xs text-[#9E9E9E] mt-1 font-mono">{action.sub}</p>
+                <h3 className="text-base font-bold text-neutral-900">{action.title}</h3>
+                <p className="text-xs text-neutral-400 mt-1 font-mono">{action.sub}</p>
               </div>
             </button>
           ))}
@@ -160,11 +160,11 @@ const Dashboard = () => {
         {/* SUMMARY CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
           {summaryCards.map((card) => (
-            <div key={card.key} className="relative bg-white border border-orange-100 rounded-xl p-5 text-left shadow-sm">
-              <div className={`absolute top-4 left-4 p-2 rounded-lg ${card.color} opacity-80`}>{card.icon}</div>
+            <div key={card.key} className="relative bg-white border border-neutral-200 rounded-xl p-5 text-left shadow-sm">
+              <div className="absolute top-4 left-4 p-2 rounded-lg bg-neutral-100 text-neutral-600">{card.icon}</div>
               <div className="pl-12">
-                <p className="text-xs font-semibold text-[#9E9E9E] uppercase">{card.title}</p>
-                <p className="text-3xl font-extrabold text-[#333333] mt-2">
+                <p className="text-xs font-semibold text-neutral-400 uppercase">{card.title}</p>
+                <p className="text-3xl font-extrabold text-neutral-900 mt-2">
                   {card.isCurrency ? `₹${(data?.summary[card.key] || 0).toFixed(2)}` : (data?.summary[card.key] || 0)}
                 </p>
               </div>
@@ -173,13 +173,14 @@ const Dashboard = () => {
         </div>
 
         {/* RECENT BILLS */}
-        <div className="bg-white border border-orange-100 rounded-xl shadow-sm flex-shrink-0 overflow-hidden">
-          <div className="px-5 py-3 border-b border-orange-100 bg-[#FFF5E9] flex items-center justify-between">
-            <h2 className="text-sm font-bold text-[#333333] uppercase tracking-wide">Recent Bills</h2>
-            <button onClick={() => navigate('/bill-history')} className="text-xs font-semibold text-[#FF7A00] hover:underline">View more &gt;</button>
+        <div className="bg-white border border-neutral-200 rounded-xl shadow-sm flex-shrink-0 overflow-hidden">
+          <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50 flex items-center justify-between">
+            <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">Recent Bills</h2>
+            {/* Reserved dark orange ONLY for core navigational actions */}
+            <button onClick={() => navigate('/bill-history')} className="text-xs font-semibold text-[#ff6d33] hover:underline">View more &gt;</button>
           </div>
-
-          <div className="grid grid-cols-4 gap-4 px-5 py-2 border-b border-orange-100 bg-[#FFF5E9]/50 text-[11px] font-bold text-[#9E9E9E] uppercase tracking-wider">
+          
+          <div className="grid grid-cols-4 gap-4 px-5 py-2 border-b border-neutral-200 bg-neutral-50 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
             <div>Date</div>
             <div>Operator</div>
             <div className="text-right">Amount</div>
@@ -187,16 +188,16 @@ const Dashboard = () => {
           </div>
 
           {data?.recentBills?.length === 0 ? (
-            <p className="p-5 text-sm text-[#9E9E9E] text-center">No bills today yet.</p>
+            <p className="p-5 text-sm text-neutral-400 text-center">No bills today yet.</p>
           ) : (
-            <div className="divide-y divide-orange-50">
+            <div className="divide-y divide-neutral-100">
               {data.recentBills.map(bill => (
-                <div key={bill._id} className="grid grid-cols-4 gap-4 px-5 py-3 items-center hover:bg-[#FFF5E9]/50 transition-colors">
-                  <div className="text-xs text-[#9E9E9E] truncate">{formatDateTime(bill.createdAt)}</div>
-                  <div className="text-xs text-[#333333] truncate">{bill.operatorName || 'Unknown'}</div>
-                  <div className="text-sm font-bold text-[#333333] text-right">₹{bill.totalAmount.toFixed(2)}</div>
+                <div key={bill._id} className="grid grid-cols-4 gap-4 px-5 py-3 items-center hover:bg-neutral-50 transition-colors">
+                  <div className="text-xs text-neutral-500 truncate">{formatDateTime(bill.createdAt)}</div>
+                  <div className="text-xs text-neutral-900 truncate">{bill.operatorName || 'Unknown'}</div>
+                  <div className="text-sm font-bold text-neutral-900 text-right">₹{bill.totalAmount.toFixed(2)}</div>
                   <div className="flex justify-end">
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-[#FFF5E9] border border-orange-200 text-[#FF7A00] w-16 text-center">{bill.paymentType}</span>
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-neutral-100 text-neutral-600 w-16 text-center">{bill.paymentType}</span>
                   </div>
                 </div>
               ))}
@@ -206,11 +207,11 @@ const Dashboard = () => {
 
         {/* NEW ANALYTICS-STYLE TRIO ROW: Products (Left 3/5) + Payments & Order Types (Right Stacked 2/5) */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-shrink-0">
-
+          
           {/* Products Pie — LEFT (3/5 width) */}
-          <div className="lg:col-span-3 bg-white border border-orange-100 rounded-xl shadow-sm overflow-hidden flex flex-col">
-            <div className="px-5 py-3 border-b border-orange-100 bg-[#FFF5E9] shrink-0">
-              <h2 className="text-sm font-bold text-[#333333] uppercase tracking-wide">
+          <div className="lg:col-span-3 bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+            <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50 shrink-0">
+              <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
                 Top Products Today
               </h2>
             </div>
@@ -219,7 +220,7 @@ const Dashboard = () => {
                 <PieChart data={prodPieData} colors={productPieColors} size="md" />
                 <div className="flex flex-col gap-3 min-w-0">
                   {prodPieData.length === 0 ? (
-                    <p className="text-sm text-[#9E9E9E]">No products sold yet.</p>
+                    <p className="text-sm text-neutral-400">No products sold yet.</p>
                   ) : (
                     prodPieData.map((prod, i) => {
                       const total = prodPieData.reduce((s, p) => s + p.value, 0);
@@ -230,13 +231,13 @@ const Dashboard = () => {
                             className="w-2.5 h-2.5 rounded-sm shrink-0"
                             style={{ backgroundColor: productPieColors[i] }}
                           />
-                          <span className="text-sm text-[#333333] truncate font-medium" style={{ maxWidth: '180px' }}>
+                          <span className="text-sm text-neutral-900 truncate font-medium" style={{ maxWidth: '180px' }}>
                             {prod._id}
                           </span>
-                          <span className="text-xs text-[#9E9E9E] shrink-0 tabular-nums">
+                          <span className="text-xs text-neutral-500 shrink-0 tabular-nums">
                             {prod.value} qty
                           </span>
-                          <span className="text-xs font-bold text-[#333333] shrink-0 tabular-nums pl-1">
+                          <span className="text-xs font-bold text-neutral-900 shrink-0 tabular-nums pl-1">
                             {percent}%
                           </span>
                         </div>
@@ -250,11 +251,11 @@ const Dashboard = () => {
 
           {/* Right Container (2/5 width) */}
           <div className="lg:col-span-2 flex flex-col gap-4">
-
+            
             {/* Payment Distribution */}
-            <div className="bg-white border border-orange-100 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-orange-100 bg-[#FFF5E9]">
-                <h2 className="text-sm font-bold text-[#333333] uppercase tracking-wide">
+            <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
+              <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50">
+                <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
                   Payments
                 </h2>
               </div>
@@ -269,13 +270,13 @@ const Dashboard = () => {
                       return (
                         <div key={p._id} className="flex items-center gap-2">
                           <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                          <span className="text-xs text-[#333333] capitalize truncate" style={{ maxWidth: '90px' }}>
+                          <span className="text-xs text-neutral-900 capitalize truncate" style={{ maxWidth: '90px' }}>
                             {p._id}
                           </span>
-                          <span className="text-[11px] text-[#9E9E9E] shrink-0 tabular-nums">
+                          <span className="text-[11px] text-neutral-500 shrink-0 tabular-nums">
                             {p.value}
                           </span>
-                          <span className="text-[11px] font-bold text-[#333333] shrink-0 tabular-nums pl-1">
+                          <span className="text-[11px] font-bold text-neutral-900 shrink-0 tabular-nums pl-1">
                             {percent}%
                           </span>
                         </div>
@@ -287,9 +288,9 @@ const Dashboard = () => {
             </div>
 
             {/* Order Type Distribution */}
-            <div className="bg-white border border-orange-100 rounded-xl shadow-sm overflow-hidden">
-              <div className="px-5 py-3 border-b border-orange-100 bg-[#FFF5E9]">
-                <h2 className="text-sm font-bold text-[#333333] uppercase tracking-wide">
+            <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
+              <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50">
+                <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
                   Order Types
                 </h2>
               </div>
@@ -305,13 +306,13 @@ const Dashboard = () => {
                       return (
                         <div key={o._id} className="flex items-center gap-2">
                           <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                          <span className="text-xs text-[#333333] capitalize truncate" style={{ maxWidth: '90px' }}>
+                          <span className="text-xs text-neutral-900 capitalize truncate" style={{ maxWidth: '90px' }}>
                             {labels[o._id] || o._id}
                           </span>
-                          <span className="text-[11px] text-[#9E9E9E] shrink-0 tabular-nums">
+                          <span className="text-[11px] text-neutral-500 shrink-0 tabular-nums">
                             {o.value}
                           </span>
-                          <span className="text-[11px] font-bold text-[#333333] shrink-0 tabular-nums pl-1">
+                          <span className="text-[11px] font-bold text-neutral-900 shrink-0 tabular-nums pl-1">
                             {percent}%
                           </span>
                         </div>

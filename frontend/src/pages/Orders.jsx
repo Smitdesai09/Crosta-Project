@@ -24,12 +24,11 @@ const Orders = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Edge Case States
   const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   const [currentTimeState, setCurrentTimeState] = useState(currentTime);
   const [isCartDirty, setIsCartDirty] = useState(false);
   const [isBillingLoading, setIsBillingLoading] = useState(false);
-  const [isSavingForBill, setIsSavingForBill] = useState(false); // New state for auto-save loading
+  const [isSavingForBill, setIsSavingForBill] = useState(false);
 
   const fetchInitialData = async () => {
     setIsLoading(true);
@@ -71,7 +70,6 @@ const Orders = () => {
     }
   };
 
-  // Lightweight fetch to update tables in the background without triggering full-page loader
   const fetchTables = async () => {
     try {
       const ordersRes = await orderService.getActiveOrders();
@@ -107,7 +105,6 @@ const Orders = () => {
     fetchInitialData();
   }, []);
 
-  // Live Clock
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTimeState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }));
@@ -128,7 +125,6 @@ const Orders = () => {
     });
   }, [searchTerm, activeCategory, products]);
 
-  // --- Cart Modifiers (Set dirty state) ---
   const handleAddToCart = (product, variantName, variantPrice) => {
     setIsCartDirty(true);
     setCart(prev => {
@@ -166,7 +162,7 @@ const Orders = () => {
         setOrderType(orderData.orderType === 'dine-in' ? 'Dine-in' : 'Takeaway');
         const mappedCart = orderData.items.map(item => ({ cartId: Date.now() + Math.random(), _id: item.productId, name: item.name, variant: item.variant, price: item.price, quantity: item.quantity }));
         setCart(mappedCart);
-        setIsCartDirty(false); // Fetched cart is clean
+        setIsCartDirty(false);
       } catch (error) {
         showToast(error.response?.data?.message || "Failed to fetch order", "error");
         resetToTables();
@@ -186,7 +182,6 @@ const Orders = () => {
     setOrderId(null);
   };
 
-  // --- PRINT KOT LOGIC ---
   const printKOT = () => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
@@ -235,7 +230,6 @@ const Orders = () => {
     };
   };
 
-  // --- SAVE KOT ---
   const handleSaveKOT = async (shouldPrint = false) => {
     if (isCartEmpty) return;
 
@@ -254,7 +248,7 @@ const Orders = () => {
         setOrderId(res.data.data._id);
       }
 
-      setIsCartDirty(false); // Mark as clean once saved
+      setIsCartDirty(false);
 
       if (shouldPrint) {
         printKOT();
@@ -272,7 +266,6 @@ const Orders = () => {
     }
   };
 
-  // --- CANCEL ORDER ---
   const handleCancelOrder = async () => {
     if (orderId) {
       try {
@@ -287,11 +280,9 @@ const Orders = () => {
     resetToTables();
   };
 
-  // --- BILLING EDGE CASES (Auto-save logic) ---
   const handleOpenBillModal = async () => {
     if (isCartEmpty || isSavingForBill) return;
 
-    // Auto-save if there are unsaved changes or if it's a completely new order
     if (isCartDirty || !orderId) {
       setIsSavingForBill(true);
       try {
@@ -310,8 +301,6 @@ const Orders = () => {
 
         setIsCartDirty(false);
         fetchTables();
-
-        // Fix 1: Show toast so user knows it saved in the background
         showToast("KOT Saved!", "success");
 
       } catch (error) {
@@ -325,7 +314,6 @@ const Orders = () => {
     setIsBillModalOpen(true);
   };
 
-  // Removed sendSMS from parameters
   const handleGenerateBill = async (discount, paymentType, customerPhone, shouldPrint = false) => {
     if (isBillingLoading) return;
 
@@ -342,7 +330,7 @@ const Orders = () => {
         orderId,
         discount: Number(discount),
         paymentType: paymentType.toLowerCase(),
-        customerPhone: customerPhone || null // Saves the 10 digits if valid, otherwise saves null
+        customerPhone: customerPhone || null
       });
 
       showToast("Bill generated successfully!", "success");
@@ -367,7 +355,6 @@ const Orders = () => {
     }
   };
 
-  // --- SHARED RECEIPT GENERATOR (Print Only) ---
   const generateReceipt = (billData, shouldPrint) => {
     if (!shouldPrint) return;
 
@@ -432,16 +419,14 @@ const Orders = () => {
   if (isLoading && view === 'tables') {
     return (
       <div className="h-full w-full flex items-center justify-center">
-        <span className="animate-pulse text-[#9E9E9E] font-medium">Loading tables...</span>
+        <span className="animate-pulse text-gray-400 font-medium">Loading tables...</span>
       </div>
     );
   }
 
   return (
-    // FIX: Removed bg-surface-gray to let the Layout.tsx beige background (#F5E6D3) show through seamlessly
     <div className="h-full w-full flex flex-col gap-4 overflow-hidden">
 
-      {/* TOP TITLE: Only shows when in Cart View */}
       {view !== 'tables' && (
         <div className="flex items-end justify-between flex-shrink-0 px-4 lg:px-6">
           <h1 className="text-3xl font-extrabold italic tracking-tight text-[#333333]">Orders</h1>
@@ -451,16 +436,15 @@ const Orders = () => {
       {view === 'tables' ? (
         <div className="p-6">
 
-          {/* TABLES VIEW HEADER: Contains Title, Status, and Clock */}
-          <div className="bg-white border border-orange-100 rounded-xl px-5 py-4 mb-6 flex items-center justify-between shadow-sm">
+          <div className="bg-white border border-gray-200 rounded-xl px-5 py-4 mb-6 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-extrabold italic tracking-tight text-[#333333]">Orders</h1>
-              <div className="h-6 w-px bg-orange-100"></div>
-              <span className="text-sm font-medium text-[#9E9E9E]">
+              <div className="h-6 w-px bg-gray-200"></div>
+              <span className="text-sm font-medium text-gray-400">
                 {tables.filter(t => t.status === 'Occupied').length}/6 Tables Active
               </span>
             </div>
-            <div className="text-xs font-mono text-[#9E9E9E] bg-[#FFF5E9] px-3 py-1.5 rounded-md border border-orange-100">
+            <div className="text-xs font-mono text-gray-400 bg-gray-100 px-3 py-1.5 rounded-md border border-gray-200">
               {currentTimeState}
             </div>
           </div>
@@ -473,34 +457,37 @@ const Orders = () => {
         <div className="flex-1 flex gap-2 px-2 pb-2 pt-0 min-h-0 min-w-0">
 
           {/* LEFT: Products Panel */}
-          <div className="flex-1 flex flex-col bg-white rounded-xl border border-orange-100 shadow-sm min-h-0 min-w-0 overflow-hidden">
-            <div className="px-3 pt-3 pb-2 border-b border-orange-100 flex-shrink-0">
+          <div className="flex-1 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm min-h-0 min-w-0 overflow-hidden">
+            <div className="px-3 pt-3 pb-2 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center gap-2 mb-2">
-                <button onClick={resetToTables} className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FFF5E9] border border-orange-200 text-[#9E9E9E] hover:bg-orange-100 hover:border-orange-300 hover:text-[#333333] transition-all text-sm font-medium">
+                <button onClick={resetToTables} className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 text-[#333333] hover:bg-[#FFF5E9] hover:border-[#FF7A00] hover:text-[#FF7A00] transition-all text-sm font-medium">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                   Back
                 </button>
                 <div className="flex-1 min-w-0 relative">
-                  <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 pr-9 bg-[#FFF5E9] border border-orange-100 rounded-lg text-sm text-[#333333] placeholder:text-[#9E9E9E] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00]" />
+                  <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 pr-9 bg-white border border-gray-200 rounded-lg text-sm text-[#333333] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400" />
                   {searchTerm && (
-                    <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9E9E9E] hover:text-[#333333] transition-colors">
+                    <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#333333] hover:text-[#333333] transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   )}
                 </div>
               </div>
+
+              {/* Category filters — orange on active + hover */}
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${activeCategory === cat ? 'bg-[#FFF5E9] border-[#FF7A00] text-[#FF7A00]' : 'bg-white border-orange-100 text-[#9E9E9E] hover:bg-[#FFF5E9]'}`}>{cat}</button>
+                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${activeCategory === cat ? 'bg-[#FFF5E9] border-[#FF7A00] text-[#FF7A00]' : 'bg-white border-gray-200 text-gray-400 hover:bg-[#FFF5E9] hover:border-[#FF7A00] hover:text-[#FF7A00]'}`}>{cat}</button>
                 ))}
               </div>
             </div>
+            {/* Back to white — same as cart panel */}
             <div className="flex-1 overflow-y-auto p-3 min-h-0 bg-white">
               <div className="grid grid-cols-2 gap-2.5">
                 {filteredProducts.length > 0 ? filteredProducts.map(product => (
                   <ProductCard key={product._id} product={product} onAdd={handleAddToCart} />
                 )) : (
-                  <div className="col-span-full flex flex-col items-center justify-center py-10 text-[#9E9E9E]">
+                  <div className="col-span-full flex flex-col items-center justify-center py-10 text-gray-400">
                     <p className="text-lg font-medium text-[#333333]">No products found</p>
                   </div>
                 )}
@@ -509,8 +496,8 @@ const Orders = () => {
           </div>
 
           {/* RIGHT: Cart Panel */}
-          <div className="w-96 flex-shrink-0 bg-white rounded-xl border border-orange-100 flex flex-col shadow-sm min-h-0">
-            <div className="px-3 pt-3 pb-2 border-b border-orange-100 flex-shrink-0">
+          <div className="w-96 flex-shrink-0 bg-white rounded-xl border border-gray-200 flex flex-col shadow-sm min-h-0">
+            <div className="px-3 pt-3 pb-2 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center justify-between mb-2">
                 <h2 className="text-lg font-bold text-[#333333]">Table {selectedTable}</h2>
                 <button onClick={handleCancelOrder} className="text-xs font-semibold text-red-500 hover:text-red-700">{orderId ? 'Cancel Order' : 'Clear Order'}</button>
@@ -521,29 +508,29 @@ const Orders = () => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto min-h-0 max-h-[28.5rem] px-3 py-1.5 divide-y divide-orange-50">
+            <div className="flex-1 overflow-y-auto min-h-0 max-h-[28.5rem] px-3 py-1.5 divide-y divide-gray-100">
               {cart.length > 0 ? cart.map(item => (
                 <CartItem key={item.cartId} item={item} onUpdate={handleUpdateQuantity} onRemove={handleRemoveItem} />
               )) : (
-                <div className="flex flex-col items-center justify-center py-4 text-[#9E9E9E] text-sm">
+                <div className="flex flex-col items-center justify-center py-4 text-gray-400 text-sm">
                   <p>Cart is empty</p>
                   <p className="text-xs mt-1">Click a variant to add</p>
                 </div>
               )}
             </div>
 
-            <div className="px-3 pt-3 pb-0.5 border-t border-orange-100 flex-shrink-0">
+            <div className="px-3 pt-3 pb-0.5 border-t border-gray-200 flex-shrink-0">
               <div className="flex justify-between items-center mb-8">
-                <span className="text-sm font-medium text-[#9E9E9E]">Subtotal</span>
+                <span className="text-sm font-medium text-gray-400">Subtotal</span>
                 <span className="text-xl font-bold text-[#333333]">₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex flex-col gap-1.5">
                 <div className="flex gap-2">
-                  <button disabled={isCartEmpty} onClick={() => handleSaveKOT(false)} className="flex-1 py-1.5 border border-orange-200 text-[#333333] hover:bg-[#FFF5E9] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save KOT</button>
-                  <button disabled={isCartEmpty} onClick={() => handleSaveKOT(true)} className="flex-1 py-1.5 border border-orange-200 text-[#333333] hover:bg-[#FFF5E9] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save & Print KOT</button>
+                  <button disabled={isCartEmpty} onClick={() => handleSaveKOT(false)} className="flex-1 py-1.5 border border-gray-200 text-[#333333] hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save KOT</button>
+                  <button disabled={isCartEmpty} onClick={() => handleSaveKOT(true)} className="flex-1 py-1.5 border border-gray-200 text-[#333333] hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save & Print KOT</button>
                 </div>
 
-                {/* Proceed to bill - Auto-saves KOT if dirty or new */}
+                {/* Only CTA button keeps orange */}
                 <button
                   onClick={handleOpenBillModal}
                   disabled={isCartEmpty || isSavingForBill}
