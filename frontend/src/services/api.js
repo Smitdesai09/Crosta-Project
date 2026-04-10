@@ -16,7 +16,6 @@ api.interceptors.response.use(
     const pathname = window.location.pathname;
     const isAuthPage =
       pathname.startsWith("/login") ||
-      pathname.startsWith("/register") ||
       pathname.startsWith("/forgot-password") ||
       pathname.startsWith("/reset-password");
 

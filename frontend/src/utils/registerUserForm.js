@@ -5,7 +5,7 @@ export const createInitialRegisterForm = () => ({
   confirmPassword: "",
 });
 
-export function validateRegisterForm(form) {
+export const validateRegisterForm = (form) => {
   const errors = {};
 
   if (!form.name.trim()) errors.name = "Name is required";
@@ -21,4 +21,4 @@ export function validateRegisterForm(form) {
   else if (form.password !== form.confirmPassword) errors.confirmPassword = "Passwords do not match";
 
   return errors;
-}
+};

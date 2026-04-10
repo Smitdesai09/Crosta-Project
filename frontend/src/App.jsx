@@ -8,7 +8,6 @@ import Layout from "./components/Layout";
 
 // Auth Pages (eager — small, need to load instantly)
 import Login from "./pages/Login";
-import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
@@ -82,14 +81,6 @@ function App() {
               }
             />
             <Route
-              path="/register"
-              element={
-                <GuestRoute>
-                  <Register />
-                </GuestRoute>
-              }
-            />
-            <Route
               path="/forgot-password"
               element={
                 <GuestRoute>
@@ -156,16 +147,6 @@ function App() {
                 }
               />
 
-              <Route
-                path="admin/register-user"
-                element={
-                  <React.Suspense fallback={<SuspenseFallback />}>
-                    <Register />
-                  </React.Suspense>
-                }
-              />
-
-            
               <Route
                 path="admin-panel"
                 element={

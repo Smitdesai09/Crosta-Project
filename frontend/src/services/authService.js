@@ -7,7 +7,6 @@ const authService = {
   resetPassword: (token, data) =>
     api.post(`/api/auth/reset-password/${token}`, data),
   getMe: () => api.get("/api/user/me"),
-  register: (data) => api.post("/api/user", data),
 };
 
 export default authService;

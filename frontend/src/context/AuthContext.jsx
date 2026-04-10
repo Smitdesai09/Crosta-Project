@@ -3,7 +3,7 @@ import authService from "../services/authService";
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,24 +36,19 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (name, email, password) => {
-    const res = await authService.register({ name, email, password });
-    return res.data;
-  };
-
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, checkAuth }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
 
 // NOTICE: This is OUTSIDE of AuthProvider
 // eslint-disable-next-line react-refresh/only-export-components
-export function useAuth() {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}
+};

@@ -4,7 +4,7 @@ import { IconX } from "../components/icons/AuthIcons";
 
 const ToastContext = createContext(null);
 
-export function ToastProvider({ children }) {
+export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
   const showToast = useCallback((message, type = "success") => {
@@ -49,12 +49,12 @@ export function ToastProvider({ children }) {
       )}
     </ToastContext.Provider>
   );
-}
+};
 
 // NOTICE: This is OUTSIDE of ToastProvider
 // eslint-disable-next-line react-refresh/only-export-components
-export function useToast() {
+export const useToast = () => {
   const context = useContext(ToastContext);
   if (!context) throw new Error("useToast must be used within ToastProvider");
   return context;
-}
+};

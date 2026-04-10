@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext"; // <-- ADD THIS
+import { useToast } from "../context/ToastContext"; 
 import brandLogo from "../assets/logo.png";
 import {
   IconEnvelope,
@@ -13,7 +13,7 @@ import {
 const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { showToast } = useToast(); // <-- ADD THIS
+  const { showToast } = useToast(); 
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -60,7 +60,6 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-surface-gray flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="flex justify-center mb-8">
           <img
             src={brandLogo}
@@ -69,9 +68,7 @@ const Login = () => {
           />
         </div>
 
-        {/* Card */}
         <div className="bg-surface-white border border-border-main rounded-xl shadow-sm p-6">
-          {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-text-primary">
               Welcome Back
@@ -81,9 +78,7 @@ const Login = () => {
             </p>
           </div>
 
-          {/* Form - Notice the server error block is completely removed */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1.5">
                 Email Address
@@ -107,7 +102,6 @@ const Login = () => {
               )}
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1.5">
                 Password
@@ -138,7 +132,6 @@ const Login = () => {
               )}
             </div>
 
-            {/* Forgot Password Link */}
             <div className="flex justify-end">
               <Link
                 to="/forgot-password"
@@ -148,7 +141,6 @@ const Login = () => {
               </Link>
             </div>
 
-            {/* Submit */}
             <button
               type="submit"
               disabled={isLoading}
@@ -158,8 +150,6 @@ const Login = () => {
             </button>
           </form>
         </div>
-
-        {/* ❌ "Create Account" link completely removed from here */}
       </div>
     </div>
   );

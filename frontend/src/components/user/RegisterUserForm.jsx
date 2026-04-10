@@ -8,7 +8,7 @@ import {
   IconCheck,
 } from "../icons/AuthIcons";
 
-export default function RegisterUserForm({
+const RegisterUserForm = ({
   form,
   errors,
   isLoading,
@@ -19,7 +19,7 @@ export default function RegisterUserForm({
   showPasswordHints = true,
   passwordGridClassName = "grid-cols-1",
   submitButtonClassName = "",
-}) {
+}) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -151,4 +151,6 @@ export default function RegisterUserForm({
       </button>
     </form>
   );
-}
+};
+
+export default RegisterUserForm;

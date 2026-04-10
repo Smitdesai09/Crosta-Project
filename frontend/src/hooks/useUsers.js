@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import userService from "../services/userService";
 
-export function useUsers() {
+export const useUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -41,4 +41,4 @@ export function useUsers() {
     error,
     refreshUsers: fetchUsers,
   };
-}
+};

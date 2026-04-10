@@ -1,6 +1,6 @@
 import { useAuth } from "../context/AuthContext";
 
-export function usePermissions() {
+export const usePermissions = () => {
   const { user } = useAuth();
 
   return {
@@ -8,4 +8,4 @@ export function usePermissions() {
     VIEW_ADMIN_PANEL: user?.role === "admin",
     CAN_REGISTER_USER: user?.role === "admin", 
   };
-}
+};

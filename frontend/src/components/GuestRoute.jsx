@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function GuestRoute({ children }) {
+const GuestRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -17,4 +17,6 @@ export default function GuestRoute({ children }) {
   }
 
   return children;
-}
+};
+
+export default GuestRoute;
