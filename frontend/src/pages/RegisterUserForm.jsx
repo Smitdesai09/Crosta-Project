@@ -6,7 +6,7 @@ import {
   IconEye,
   IconEyeSlash,
   IconCheck,
-} from "../icons/AuthIcons";
+} from "../components/icons/AuthIcons";
 
 const RegisterUserForm = ({
   form,

@@ -7,7 +7,7 @@ const Layout = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-surface-gray overflow-hidden">
+    <div className="flex h-screen overflow-hidden">
       
       {/* SIDEBAR */}
       <Sidebar 
@@ -17,8 +17,8 @@ const Layout = () => {
         setIsMobileOpen={setIsMobileOpen}
       />
 
-      {/* MAIN AREA (No Navbar) */}
-      <main className="flex-1 overflow-y-scroll p-4 lg:p-6">
+      {/* MAIN AREA */}
+      <main className="flex-1 overflow-y-scroll bg-[#F5E6D3]">
         <Outlet />
       </main>
 

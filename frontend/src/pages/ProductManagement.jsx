@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Button from "../components/ui/Button";
-import Card from "../components/ui/Card";
-import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
+import Button from "../components/Button";
+import Card from "../components/Card";
+import { useAuth } from "../lib/AuthContext";
+import { useToast } from "../lib/ToastContext";
 import productService from "../services/productService";
 
 const PRODUCT_STATS = [
   {
     key: "total",
     label: "Total Products",
-    iconClass: "bg-emerald-50 text-emerald-600",
+    iconClass: "bg-[#FFF5E9] text-[#FF7A00]",
     icon: (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 13V7a2 2 0 00-2-2h-3V3H9v2H6a2 2 0 00-2 2v6m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0H4m5 4h6" />
@@ -19,7 +19,7 @@ const PRODUCT_STATS = [
   {
     key: "available",
     label: "Available Products",
-    iconClass: "bg-blue-50 text-blue-500",
+    iconClass: "bg-[#FFF5E9] text-[#FF7A00]",
     icon: (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
@@ -29,7 +29,7 @@ const PRODUCT_STATS = [
   {
     key: "unavailable",
     label: "Unavailable Products",
-    iconClass: "bg-amber-50 text-amber-600",
+    iconClass: "bg-[#FFF5E9] text-[#FF7A00]",
     icon: (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -80,7 +80,7 @@ const formatCurrency = (value) => {
 };
 
 const SkeletonBlock = ({ className = "" }) => (
-  <div aria-hidden="true" className={`animate-pulse rounded-lg bg-surface-gray ${className}`} />
+  <div aria-hidden="true" className={`animate-pulse rounded-lg bg-[#FFF5E9] ${className}`} />
 );
 
 const ProductStatsSkeleton = () => (
@@ -133,9 +133,9 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
         onClick={() => setIsOpen((current) => !current)}
         className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left text-sm transition-colors ${
           isActive
-            ? "border-brand bg-brand-pale font-semibold text-brand"
-            : "border-border-main bg-surface-white text-text-primary hover:border-gray-400"
-        } focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand`}
+            ? "border-[#FF7A00] bg-[#FFF5E9] font-semibold text-[#FF7A00]"
+            : "border-orange-100 bg-white text-[#333333] hover:border-orange-300"
+        } focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00]`}
       >
         <span className="truncate">{selectedLabel}</span>
         <svg className="ml-2 h-4 w-4 flex-shrink-0 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,7 +144,7 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
       </button>
 
       {isOpen ? (
-        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-border-main bg-surface-white shadow-xl">
+        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-orange-100 bg-white shadow-xl">
           <div className="max-h-60 overflow-y-auto py-1">
             {options.map((option) => (
               <button
@@ -156,8 +156,8 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
                 }}
                 className={`w-full px-3 py-2 text-left text-sm transition-colors ${
                   value === option.value
-                    ? "bg-brand-pale font-medium text-brand"
-                    : "text-text-primary hover:bg-surface-gray"
+                    ? "bg-[#FFF5E9] font-medium text-[#FF7A00]"
+                    : "text-[#333333] hover:bg-[#FFF5E9]"
                 }`}
               >
                 {option.label}
@@ -181,9 +181,9 @@ const ProductCardSkeleton = ({ showActions }) => (
         <SkeletonBlock className="mt-3 h-4 w-40" />
       </div>
 
-      <div className="rounded-xl bg-brand-pale/50 px-3 py-2">
-        <SkeletonBlock className="h-3 w-16 bg-brand/10" />
-        <SkeletonBlock className="mt-2 h-4 w-20 bg-brand/15" />
+      <div className="rounded-xl bg-[#FFF5E9]/50 px-3 py-2">
+        <SkeletonBlock className="h-3 w-16 bg-[#FF7A00]/10" />
+        <SkeletonBlock className="mt-2 h-4 w-20 bg-[#FF7A00]/15" />
       </div>
     </div>
 
@@ -191,7 +191,7 @@ const ProductCardSkeleton = ({ showActions }) => (
       {Array.from({ length: PRODUCT_SKELETON_VARIANT_COUNT }, (_, index) => (
         <div
           key={`product-variant-skeleton-${index}`}
-          className="flex items-center justify-between rounded-xl border border-border-main bg-surface-gray px-4 py-3"
+          className="flex items-center justify-between rounded-xl border border-orange-100 bg-[#FFF5E9] px-4 py-3"
         >
           <div>
             <SkeletonBlock className="h-4 w-24" />
@@ -203,7 +203,7 @@ const ProductCardSkeleton = ({ showActions }) => (
     </div>
 
     {showActions ? (
-      <div className="mt-5 flex gap-3 border-t border-border-main pt-4">
+      <div className="mt-5 flex gap-3 border-t border-orange-100 pt-4">
         <SkeletonBlock className="h-10 flex-1" />
         <SkeletonBlock className="h-10 flex-1" />
       </div>
@@ -228,10 +228,10 @@ const ProductFormModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-border-main bg-surface-white shadow-xl">
-        <div className="flex items-start justify-between border-b border-border-main px-5 py-4">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-orange-100 bg-white shadow-xl">
+        <div className="flex items-start justify-between border-b border-orange-100 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-text-primary">
+            <h2 className="text-lg font-bold text-[#333333]">
               {mode === "edit" ? "Update Product" : "Add New Product"}
             </h2>
           </div>
@@ -239,7 +239,7 @@ const ProductFormModal = ({
           <button
             type="button"
             onClick={onClose}
-            className="cursor-pointer rounded-lg p-2 text-text-secondary transition-all duration-200 hover:bg-surface-gray hover:text-text-primary"
+            className="cursor-pointer rounded-lg p-2 text-[#9E9E9E] transition-all duration-200 hover:bg-[#FFF5E9] hover:text-[#333333]"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -250,39 +250,39 @@ const ProductFormModal = ({
         <form onSubmit={onSubmit} className="p-5">
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-text-primary">Product Name</label>
+              <label className="mb-1.5 block text-sm font-medium text-[#333333]">Product Name</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(event) => onChange("name", event.target.value)}
                 placeholder="Enter product name"
-                className={`w-full rounded-lg border bg-surface-gray px-3 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30 ${
-                  errors.name ? "border-red-400" : "border-border-main"
+                className={`w-full rounded-lg border bg-[#FFF5E9] px-3 py-2.5 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30 ${
+                  errors.name ? "border-red-400" : "border-orange-100"
                 }`}
               />
               {errors.name ? <p className="mt-1 text-xs text-red-600">{errors.name}</p> : null}
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-text-primary">Category</label>
+              <label className="mb-1.5 block text-sm font-medium text-[#333333]">Category</label>
               <input
                 type="text"
                 value={form.category}
                 onChange={(event) => onChange("category", event.target.value)}
                 placeholder="e.g. pizza, beverage"
-                className={`w-full rounded-lg border bg-surface-gray px-3 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30 ${
-                  errors.category ? "border-red-400" : "border-border-main"
+                className={`w-full rounded-lg border bg-[#FFF5E9] px-3 py-2.5 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30 ${
+                  errors.category ? "border-red-400" : "border-orange-100"
                 }`}
               />
               {errors.category ? <p className="mt-1 text-xs text-red-600">{errors.category}</p> : null}
             </div>
           </div>
 
-          <div className="mt-4 rounded-xl border border-border-main bg-surface-gray/40 p-4">
+          <div className="mt-4 rounded-xl border border-orange-100 bg-[#FFF5E9]/40 p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
-                <h3 className="text-sm font-semibold text-text-primary">Variants</h3>
-                <p className="text-xs text-text-secondary">Add at least one size or variant with a price.</p>
+                <h3 className="text-sm font-semibold text-[#333333]">Variants</h3>
+                <p className="text-xs text-[#9E9E9E]">Add at least one size or variant with a price.</p>
               </div>
 
               <Button
@@ -299,10 +299,10 @@ const ProductFormModal = ({
               {form.variants.map((variant, index) => (
                 <div
                   key={`variant-${index}`}
-                  className="grid gap-3 rounded-xl border border-border-main bg-surface-white p-3 md:grid-cols-[1fr_180px_auto]"
+                  className="grid gap-3 rounded-xl border border-orange-100 bg-white p-3 md:grid-cols-[1fr_180px_auto]"
                 >
                   <div>
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#9E9E9E]">
                       Variant Name
                     </label>
                     <input
@@ -310,8 +310,8 @@ const ProductFormModal = ({
                       value={variant.name}
                       onChange={(event) => onVariantChange(index, "name", event.target.value)}
                       placeholder="Regular, Medium, Large"
-                      className={`w-full rounded-lg border bg-surface-gray px-3 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30 ${
-                        errors.variants[index]?.name ? "border-red-400" : "border-border-main"
+                      className={`w-full rounded-lg border bg-[#FFF5E9] px-3 py-2.5 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30 ${
+                        errors.variants[index]?.name ? "border-red-400" : "border-orange-100"
                       }`}
                     />
                     {errors.variants[index]?.name ? (
@@ -320,7 +320,7 @@ const ProductFormModal = ({
                   </div>
 
                   <div>
-                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-text-secondary">
+                    <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#9E9E9E]">
                       Price
                     </label>
                     <input
@@ -330,8 +330,8 @@ const ProductFormModal = ({
                       value={variant.price}
                       onChange={(event) => onVariantChange(index, "price", event.target.value)}
                       placeholder="0.00"
-                      className={`w-full rounded-lg border bg-surface-gray px-3 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30 ${
-                        errors.variants[index]?.price ? "border-red-400" : "border-border-main"
+                      className={`w-full rounded-lg border bg-[#FFF5E9] px-3 py-2.5 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30 ${
+                        errors.variants[index]?.price ? "border-red-400" : "border-orange-100"
                       }`}
                     />
                     {errors.variants[index]?.price ? (
@@ -355,19 +355,19 @@ const ProductFormModal = ({
             </div>
           </div>
 
-          <label className="mt-4 flex items-center gap-3 rounded-xl border border-border-main bg-surface-gray/40 px-4 py-3">
+          <label className="mt-4 flex items-center gap-3 rounded-xl border border-orange-100 bg-[#FFF5E9]/40 px-4 py-3">
             <input
               type="checkbox"
               checked={form.isAvailable}
               onChange={(event) => onChange("isAvailable", event.target.checked)}
-              className="h-4 w-4 rounded border-border-main text-brand focus:ring-brand/30"
+              className="h-4 w-4 rounded border-orange-200 text-[#FF7A00] focus:ring-[#FF7A00]/30"
             />
             <div>
-              <p className="text-sm font-medium text-text-primary">Available for sale</p>
+              <p className="text-sm font-medium text-[#333333]">Available for sale</p>
             </div>
           </label>
 
-          <div className="mt-5 flex justify-end gap-3 border-t border-border-main pt-4">
+          <div className="mt-5 flex justify-end gap-3 border-t border-orange-100 pt-4">
             <Button
               type="button"
               variant="secondary"
@@ -398,9 +398,9 @@ const ProductStatusModal = ({ isOpen, product, deleting, onClose, onConfirm }) =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-xl border border-border-main bg-surface-white shadow-xl">
-        <div className="border-b border-border-main px-5 py-4">
-          <h2 className="text-lg font-bold text-text-primary">
+      <div className="w-full max-w-md rounded-xl border border-orange-100 bg-white shadow-xl">
+        <div className="border-b border-orange-100 px-5 py-4">
+          <h2 className="text-lg font-bold text-[#333333]">
             {isUnavailable ? "Restore Product" : "Delete Product"}
           </h2>
         </div>
@@ -408,15 +408,15 @@ const ProductStatusModal = ({ isOpen, product, deleting, onClose, onConfirm }) =
         <div className="px-5 py-4">
           <div
             className={`rounded-xl border p-4 ${
-              isUnavailable ? "border-emerald-100 bg-emerald-50" : "border-red-100 bg-red-50"
+              isUnavailable ? "border-[#E0F2F1] bg-[#E0F2F1]" : "border-red-100 bg-red-50"
             }`}
           >
-            <p className="text-sm font-semibold text-text-primary">{product.name}</p>
-            <p className="mt-1 text-sm text-text-secondary">{formatCategory(product.category)}</p>
+            <p className="text-sm font-semibold text-[#333333]">{product.name}</p>
+            <p className="mt-1 text-sm text-[#9E9E9E]">{formatCategory(product.category)}</p>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-border-main px-5 py-4">
+        <div className="flex justify-end gap-3 border-t border-orange-100 px-5 py-4">
           <Button
             type="button"
             variant="secondary"
@@ -710,213 +710,212 @@ const ProductManagement = () => {
   };
 
   return (
-    <div className="h-full w-full bg-surface-gray">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-text-primary">
-                Product <span className="text-brand">Management</span>
-              </h1>
-              
-            </div>
+    // FIX: Removed old bg wrapper, merged standard page padding/scroll into root to match other pages
+    <div className="h-full w-full flex flex-col gap-6 overflow-y-auto p-4 lg:p-6">
+      
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-bold text-[#333333]">
+              Product <span className="text-[#FF7A00]">Management</span>
+            </h1>
           </div>
+        </div>
 
-          <div className="flex flex-wrap gap-3">
-            {isAdmin ? (
-              <Button
+        <div className="flex flex-wrap gap-3">
+          {isAdmin ? (
+            <Button
+              type="button"
+              variant="success"
+              className={`inline-flex items-center gap-2 self-start px-5 py-3 ${PRODUCT_ACTION_BUTTON_CLASS}`}
+              onClick={openCreateModal}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+              </svg>
+              Add Product
+            </Button>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {isPageLoading ? (
+          <ProductStatsSkeleton />
+        ) : (
+          PRODUCT_STATS.map((card) => (
+            <Card key={card.key} className={`min-h-[112px] ${PRODUCT_CARD_HOVER_CLASS}`}>
+              <div className="flex items-center gap-4">
+                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass}`}>
+                  {card.icon}
+                </div>
+                <p className="text-base font-semibold text-[#9E9E9E]">{card.label}</p>
+                <p className="ml-auto text-4xl font-bold leading-none text-[#333333]">{productStats[card.key]}</p>
+              </div>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {isPageLoading ? (
+        <ProductFiltersSkeleton />
+      ) : (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
+          <div className="relative w-full md:col-span-7">
+            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9E9E9E]">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search by product, category or variant..."
+              className="w-full rounded-lg border border-orange-100 bg-white py-3 pl-11 pr-12 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30"
+            />
+            {searchTerm ? (
+              <button
                 type="button"
-                variant="success"
-                className={`inline-flex items-center gap-2 self-start px-5 py-3 ${PRODUCT_ACTION_BUTTON_CLASS}`}
-                onClick={openCreateModal}
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[#9E9E9E] transition-colors hover:bg-[#FFF5E9] hover:text-[#333333]"
+                aria-label="Clear search"
+                title="Clear search"
               >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                Add Product
-              </Button>
+              </button>
             ) : null}
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {isPageLoading ? (
-            <ProductStatsSkeleton />
-          ) : (
-            PRODUCT_STATS.map((card) => (
-              <Card key={card.key} className={`min-h-[112px] ${PRODUCT_CARD_HOVER_CLASS}`}>
-                <div className="flex items-center gap-4">
-                  <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass}`}>
-                    {card.icon}
-                  </div>
-                  <p className="text-base font-semibold text-text-secondary">{card.label}</p>
-                  <p className="ml-auto text-4xl font-bold leading-none text-text-primary">{productStats[card.key]}</p>
-                </div>
-              </Card>
-            ))
-          )}
-        </div>
-
-        {isPageLoading ? (
-          <ProductFiltersSkeleton />
-        ) : (
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-12">
-            <div className="relative w-full md:col-span-7">
-              <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </span>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search by product, category or variant..."
-                className="w-full rounded-lg border border-border-main bg-surface-white py-3 pl-11 pr-12 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30"
-              />
-              {searchTerm ? (
-                <button
-                  type="button"
-                  onClick={() => setSearchTerm("")}
-                  className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-surface-gray hover:text-text-primary"
-                  aria-label="Clear search"
-                  title="Clear search"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              ) : null}
-            </div>
-
-            <div className="md:col-span-3">
-              <FilterSelect
-                value={categoryFilter}
-                onChange={setCategoryFilter}
-                options={categoryFilterOptions}
-                placeholder="Select Category"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <Button
-                type="button"
-                variant="secondary"
-                className={`inline-flex w-full items-center justify-center gap-2 px-4 py-3 ${PRODUCT_ACTION_BUTTON_CLASS}`}
-                onClick={() => {
-                  setSearchTerm("");
-                  setCategoryFilter("");
-                }}
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
-                </svg>
-                Reset Filters
-              </Button>
-            </div>
+          <div className="md:col-span-3">
+            <FilterSelect
+              value={categoryFilter}
+              onChange={setCategoryFilter}
+              options={categoryFilterOptions}
+              placeholder="Select Category"
+            />
           </div>
-        )}
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-          {isPageLoading ? (
-            Array.from({ length: PRODUCT_SKELETON_COUNT }, (_, index) => (
-              <ProductCardSkeleton
-                key={`product-card-skeleton-${index}`}
-                showActions={isAdmin}
-              />
-            ))
-          ) : filteredProducts.length === 0 ? (
-            <div className="col-span-full flex flex-col items-center justify-center rounded-xl border border-border-main bg-surface-white py-16 text-text-secondary shadow-sm">
-              <p className="text-lg font-medium text-text-primary">No products found</p>
-              <p className="mt-1 text-sm">Try changing the search text or category filter.</p>
-            </div>
-          ) : (
-            filteredProducts.map((product) => {
-              const sortedVariants = [...product.variants].sort((first, second) => first.price - second.price);
+          <div className="md:col-span-2">
+            <Button
+              type="button"
+              variant="secondary"
+              className={`inline-flex w-full items-center justify-center gap-2 px-4 py-3 ${PRODUCT_ACTION_BUTTON_CLASS}`}
+              onClick={() => {
+                setSearchTerm("");
+                setCategoryFilter("");
+              }}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
+              </svg>
+              Reset Filters
+            </Button>
+          </div>
+        </div>
+      )}
 
-              return (
-                <Card key={product._id} className={PRODUCT_CARD_HOVER_CLASS}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-bold text-text-primary">{product.name}</h2>
-                        <span
-                          className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${
-                            product.isAvailable
-                              ? "bg-emerald-50 text-emerald-600"
-                              : "bg-red-50 text-red-600"
-                          }`}
-                        >
-                          {product.isAvailable ? "Available" : "Unavailable"}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        {isPageLoading ? (
+          Array.from({ length: PRODUCT_SKELETON_COUNT }, (_, index) => (
+            <ProductCardSkeleton
+              key={`product-card-skeleton-${index}`}
+              showActions={isAdmin}
+            />
+          ))
+        ) : filteredProducts.length === 0 ? (
+          <div className="col-span-full flex flex-col items-center justify-center rounded-xl border border-orange-100 bg-white py-16 text-[#9E9E9E] shadow-sm">
+            <p className="text-lg font-medium text-[#333333]">No products found</p>
+            <p className="mt-1 text-sm">Try changing the search text or category filter.</p>
+          </div>
+        ) : (
+          filteredProducts.map((product) => {
+            const sortedVariants = [...product.variants].sort((first, second) => first.price - second.price);
+
+            return (
+              <Card key={product._id} className={PRODUCT_CARD_HOVER_CLASS}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-bold text-[#333333]">{product.name}</h2>
+                      <span
+                        className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide ${
+                          product.isAvailable
+                            ? "bg-[#E0F2F1] text-[#2E7D32]"
+                            : "bg-red-50 text-red-500"
+                        }`}
+                      >
+                        {product.isAvailable ? "Available" : "Unavailable"}
+                      </span>
+                    </div>
+                    <div className="mt-2">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-[#9E9E9E]">
+                        <span className="inline-flex rounded-full bg-[#FFF5E9] px-2.5 py-1 text-[#333333]">
+                          {formatCategory(product.category)}
                         </span>
                       </div>
-                      <div className="mt-2">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
-                          <span className="inline-flex rounded-full bg-surface-gray px-2.5 py-1 text-text-primary">
-                            {formatCategory(product.category)}
-                          </span>
-                        </div>
-                      </div>
                     </div>
-
-                    {isAdmin ? (
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          className={`border-border-main text-text-secondary hover:bg-surface-gray hover:text-text-primary ${PRODUCT_ICON_BUTTON_CLASS}`}
-                          onClick={() => openEditModal(product)}
-                          title="Update product"
-                          aria-label="Update product"
-                        >
-                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-8.5a2.121 2.121 0 113 3L12 16l-4 1 1-4 8.5-8.5z" />
-                          </svg>
-                        </button>
-
-                        <button
-                          type="button"
-                          className={`${
-                            product.isAvailable
-                              ? "border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
-                              : "border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                          } ${PRODUCT_ICON_BUTTON_CLASS}`}
-                          onClick={() => openStatusModal(product)}
-                          title={product.isAvailable ? "Delete product" : "Restore product"}
-                          aria-label={product.isAvailable ? "Delete product" : "Restore product"}
-                        >
-                          {product.isAvailable ? (
-                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16" />
-                            </svg>
-                          ) : (
-                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
-                            </svg>
-                          )}
-                        </button>
-                      </div>
-                    ) : null}
                   </div>
 
-                  <div className="mt-5 grid gap-2">
-                    {sortedVariants.map((variant) => (
-                      <div
-                        key={`${product._id}-${variant.name}`}
-                        className="flex items-center justify-between rounded-xl border border-border-main bg-surface-gray px-4 py-3 transition-colors hover:border-brand/40 hover:bg-brand-pale/40"
+                  {isAdmin ? (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className={`border-orange-100 text-[#9E9E9E] hover:bg-[#FFF5E9] hover:text-[#333333] ${PRODUCT_ICON_BUTTON_CLASS}`}
+                        onClick={() => openEditModal(product)}
+                        title="Update product"
+                        aria-label="Update product"
                       >
-                        <div>
-                          <p className="text-sm font-semibold text-text-primary">{variant.name}</p>
-                          <p className="text-xs text-text-secondary">Variant option</p>
-                        </div>
-                        <span className="text-sm font-bold text-text-primary">{formatCurrency(variant.price)}</span>
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-8.5a2.121 2.121 0 113 3L12 16l-4 1 1-4 8.5-8.5z" />
+                        </svg>
+                      </button>
+
+                      <button
+                        type="button"
+                        className={`${
+                          product.isAvailable
+                            ? "border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
+                            : "border-[#E0F2F1] text-[#2E7D32] hover:bg-[#E0F2F1] hover:text-[#2E7D32]"
+                        } ${PRODUCT_ICON_BUTTON_CLASS}`}
+                        onClick={() => openStatusModal(product)}
+                        title={product.isAvailable ? "Delete product" : "Restore product"}
+                        aria-label={product.isAvailable ? "Delete product" : "Restore product"}
+                      >
+                        {product.isAvailable ? (
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16" />
+                          </svg>
+                        ) : (
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="mt-5 grid gap-2">
+                  {sortedVariants.map((variant) => (
+                    <div
+                      key={`${product._id}-${variant.name}`}
+                      className="flex items-center justify-between rounded-xl border border-orange-100 bg-[#FFF5E9] px-4 py-3 transition-colors hover:border-[#FF7A00]/40 hover:bg-[#FFF5E9]/80"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold text-[#333333]">{variant.name}</p>
+                        <p className="text-xs text-[#9E9E9E]">Variant option</p>
                       </div>
-                    ))}
-                  </div>
-                </Card>
-              );
-            })
-          )}
-        </div>
+                      <span className="text-sm font-bold text-[#333333]">{formatCurrency(variant.price)}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            );
+          })
+        )}
       </div>
 
       {isAdmin ? (

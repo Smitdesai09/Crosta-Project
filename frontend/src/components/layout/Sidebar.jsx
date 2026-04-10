@@ -1,7 +1,7 @@
 import React from 'react';
 import SidebarItem from './SidebarItem';
-import { usePermissions } from '../../hooks/usePermissions';
-import { useAuth } from '../../context/AuthContext';
+import { usePermissions } from '../../lib/usePermissions';
+import { useAuth } from '../../lib/AuthContext';
 import brandLogo from '../../assets/logo3.png';
 
 const Icons = {

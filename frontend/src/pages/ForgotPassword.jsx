@@ -7,7 +7,7 @@ import {
   IconEnvelope,
   IconKey,
 } from "../components/icons/AuthIcons";
-import { useToast } from "../context/ToastContext";
+import { useToast } from "../lib/ToastContext";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");

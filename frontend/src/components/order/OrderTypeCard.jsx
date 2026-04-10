@@ -6,7 +6,7 @@ const OrderTypeCard = ({ type, isActive, onClick }) => {
     <button
       onClick={onClick}
       className={`flex-1 py-2 rounded-lg border-2 text-xs font-semibold transition-all duration-200 ${
-        isActive ? 'bg-brand-pale border-brand text-brand' : 'bg-surface-white border-border-main text-text-secondary hover:border-gray-300'
+        isActive ? 'bg-[#FFF5E9] border-[#FF7A00] text-[#FF7A00]' : 'bg-white border-orange-100 text-[#9E9E9E] hover:border-orange-300'
       }`}
     >
       {type}

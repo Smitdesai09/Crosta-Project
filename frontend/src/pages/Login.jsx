@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext"; 
+import { useAuth } from "../lib/AuthContext";
+import { useToast } from "../lib/ToastContext"; 
 import brandLogo from "../assets/logo.png";
 import {
   IconEnvelope,

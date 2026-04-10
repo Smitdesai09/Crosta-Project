@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useMemo } from 'react';
 import analyticsService from '../services/analyticsService';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../lib/ToastContext';
 
 const PieChart = ({ data, colors, size = 'md' }) => {
   const total = data.reduce((sum, item) => sum + item.revenue, 0);
@@ -13,7 +13,7 @@ const PieChart = ({ data, colors, size = 'md' }) => {
 
   if (total === 0) {
     return (
-      <div className={`flex items-center justify-center ${dim} text-sm text-text-secondary`}>
+      <div className={`flex items-center justify-center ${dim} text-sm text-[#9E9E9E]`}>
         No data
       </div>
     );
@@ -52,14 +52,14 @@ const PieChart = ({ data, colors, size = 'md' }) => {
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`${textMain} font-bold text-text-primary`}>
+        <span className={`${textMain} font-bold text-[#333333]`}>
           {total >= 100000
             ? `₹${(total / 100000).toFixed(1)}L`
             : total >= 1000
               ? `₹${(total / 1000).toFixed(1)}k`
               : `₹${total.toFixed(0)}`}
         </span>
-        <span className={`${textSub} text-text-secondary uppercase`}>Total</span>
+        <span className={`${textSub} text-[#9E9E9E] uppercase`}>Total</span>
       </div>
     </div>
   );
@@ -69,9 +69,9 @@ const FilterSelect = ({ value, onChange, options }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="w-full px-3 py-2 text-sm border border-border-main rounded-lg bg-surface-white text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand appearance-none cursor-pointer"
+    className="w-full px-3 py-2 text-sm border border-orange-100 rounded-lg bg-white text-[#333333] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/20 focus:border-[#FF7A00] appearance-none cursor-pointer"
     style={{
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239E9E9E'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'right 0.5rem center',
       backgroundSize: '1.25rem 1.25rem',
@@ -205,18 +205,18 @@ const Analytics = () => {
   if (loading || !data) {
     return (
       <div className="flex items-center justify-center h-full">
-        <span className="animate-pulse text-text-secondary font-medium">Loading analytics...</span>
+        <span className="animate-pulse text-[#9E9E9E] font-medium">Loading analytics...</span>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full flex flex-col gap-6 overflow-y-auto pb-10 analytics-scroll">
-      <style>{`.analytics-scroll::-webkit-scrollbar{width:6px}.analytics-scroll::-webkit-scrollbar-track{background:transparent}.analytics-scroll::-webkit-scrollbar-thumb{background:transparent;border-radius:10px}.analytics-scroll:hover::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15)}`}</style>
+    <div className="h-full w-full flex flex-col gap-6 overflow-y-auto p-4 lg:p-6 pb-10 analytics-scroll">
+      <style>{`.analytics-scroll::-webkit-scrollbar{width:6px}.analytics-scroll::-webkit-scrollbar-track{background:transparent}.analytics-scroll::-webkit-scrollbar-thumb{background:transparent;border-radius:10px}.analytics-scroll:hover::-webkit-scrollbar-thumb{background:rgba(255, 122, 0, 0.2)}`}</style>
 
       {/* HEADER */}
       <div className="flex items-end justify-between flex-shrink-0">
-        <h1 className="text-3xl font-extrabold italic tracking-tight text-text-primary">
+        <h1 className="text-3xl font-extrabold italic tracking-tight text-[#333333]">
           Analytics
         </h1>
         <div className="flex items-center gap-3">
@@ -249,7 +249,7 @@ const Analytics = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             ),
-            color: 'text-emerald-600 bg-emerald-50'
+            color: 'text-[#FF7A00] bg-[#FFF5E9]'
           },
           {
             title: 'Total Orders',
@@ -260,7 +260,7 @@ const Analytics = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             ),
-            color: 'text-blue-600 bg-blue-50'
+            color: 'text-[#FF7A00] bg-[#FFF5E9]'
           },
           {
             title: 'Avg Order Size',
@@ -271,23 +271,23 @@ const Analytics = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
             ),
-            color: 'text-orange-600 bg-orange-50'
+            color: 'text-[#FF7A00] bg-[#FFF5E9]'
           }
         ].map((card, i) => (
-          <div key={i} className="relative bg-surface-white border border-border-main rounded-xl p-5 shadow-sm">
+          <div key={i} className="relative bg-white border border-orange-100 rounded-xl p-5 shadow-sm">
             <div className={`absolute top-4 right-4 p-2 rounded-lg ${card.color} opacity-80`}>
               {card.icon}
             </div>
-            <p className="text-xs font-semibold text-text-secondary uppercase">{card.title}</p>
-            <p className="text-3xl font-extrabold text-text-primary mt-2">{card.value}</p>
-            <p className="text-[11px] text-text-placeholder mt-1">{card.sub}</p>
+            <p className="text-xs font-semibold text-[#9E9E9E] uppercase">{card.title}</p>
+            <p className="text-3xl font-extrabold text-[#333333] mt-2">{card.value}</p>
+            <p className="text-[11px] text-[#9E9E9E] mt-1">{card.sub}</p>
           </div>
         ))}
       </div>
 
       {/* DAILY REVENUE CHART */}
-      <div className="bg-surface-white border border-border-main rounded-xl shadow-sm p-5 flex-shrink-0">
-        <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide mb-5">
+      <div className="bg-white border border-orange-100 rounded-xl shadow-sm p-5 flex-shrink-0">
+        <h2 className="text-sm font-bold text-[#333333] uppercase tracking-wide mb-5">
           Daily Revenue
         </h2>
         <div className="relative h-52">
@@ -300,12 +300,12 @@ const Analytics = () => {
               return (
                 <div key={day._id} className="flex-1 h-full relative">
                   <div
-                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${day.revenue === 0 ? 'bg-slate-100' : 'bg-brand'}`}
+                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${day.revenue === 0 ? 'bg-orange-50' : 'bg-[#FF7A00]'}`}
                     style={{ height: `${barPct}%` }}
                   />
                   {label && (
                     <span
-                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-semibold text-text-secondary whitespace-nowrap pointer-events-none"
+                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-semibold text-[#9E9E9E] whitespace-nowrap pointer-events-none"
                       style={{ bottom: `calc(${barPct}% + 3px)` }}
                     >
                       {label}
@@ -319,15 +319,15 @@ const Analytics = () => {
         <div className="flex gap-[2px] mt-1.5">
           {dailyData.map((day) => (
             <div key={day._id} className="flex-1 text-center">
-              <span className="text-[9px] text-text-secondary select-none">{day._id}</span>
+              <span className="text-[9px] text-[#9E9E9E] select-none">{day._id}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* HOURLY REVENUE CHART */}
-      <div className="bg-surface-white border border-border-main rounded-xl shadow-sm p-5 flex-shrink-0">
-        <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide mb-5">
+      <div className="bg-white border border-orange-100 rounded-xl shadow-sm p-5 flex-shrink-0">
+        <h2 className="text-sm font-bold text-[#333333] uppercase tracking-wide mb-5">
           Hourly Revenue
         </h2>
         <div className="relative h-52">
@@ -340,12 +340,12 @@ const Analytics = () => {
               return (
                 <div key={hour._id} className="flex-1 h-full relative">
                   <div
-                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${hour.revenue === 0 ? 'bg-slate-100' : 'bg-brand'}`}
+                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${hour.revenue === 0 ? 'bg-orange-50' : 'bg-[#FF7A00]'}`}
                     style={{ height: `${barPct}%` }}
                   />
                   {label && (
                     <span
-                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-semibold text-text-secondary whitespace-nowrap pointer-events-none"
+                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-semibold text-[#9E9E9E] whitespace-nowrap pointer-events-none"
                       style={{ bottom: `calc(${barPct}% + 3px)` }}
                     >
                       {label}
@@ -359,16 +359,16 @@ const Analytics = () => {
         <div className="flex gap-1 mt-1.5">
           {hourlyData.map((hour) => (
             <div key={hour._id} className="flex-1 text-center">
-              <span className="text-[9px] text-text-secondary select-none">{hour._id}</span>
+              <span className="text-[9px] text-[#9E9E9E] select-none">{hour._id}</span>
             </div>
           ))}
         </div>
         <div className="flex justify-between mt-1 px-0.5">
-          <span className="text-[9px] text-text-placeholder">12 AM</span>
-          <span className="text-[9px] text-text-placeholder">6 AM</span>
-          <span className="text-[9px] text-text-placeholder">12 PM</span>
-          <span className="text-[9px] text-text-placeholder">6 PM</span>
-          <span className="text-[9px] text-text-placeholder">11 PM</span>
+          <span className="text-[9px] text-[#9E9E9E]">12 AM</span>
+          <span className="text-[9px] text-[#9E9E9E]">6 AM</span>
+          <span className="text-[9px] text-[#9E9E9E]">12 PM</span>
+          <span className="text-[9px] text-[#9E9E9E]">6 PM</span>
+          <span className="text-[9px] text-[#9E9E9E]">11 PM</span>
         </div>
       </div>
 
@@ -376,9 +376,9 @@ const Analytics = () => {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-shrink-0">
         
         {/* Products Pie — LEFT (3/5 width) */}
-        <div className="lg:col-span-3 bg-surface-white border border-border-main rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="px-5 py-3 border-b border-border-main bg-surface-gray shrink-0">
-            <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">
+        <div className="lg:col-span-3 bg-white border border-orange-100 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="px-5 py-3 border-b border-orange-100 bg-[#FFF5E9] shrink-0">
+            <h2 className="text-sm font-bold text-[#333333] uppercase tracking-wide">
               Products by Revenue
             </h2>
           </div>
@@ -396,13 +396,13 @@ const Analytics = () => {
                         className="w-3 h-3 rounded-sm shrink-0"
                         style={{ backgroundColor: productPieColors[i] }}
                       />
-                      <span className="text-base text-text-primary truncate font-medium" style={{ maxWidth: '260px' }}>
+                      <span className="text-base text-[#333333] truncate font-medium" style={{ maxWidth: '260px' }}>
                         {prod._id}
                       </span>
-                      <span className="text-sm text-text-secondary shrink-0 tabular-nums">
+                      <span className="text-sm text-[#9E9E9E] shrink-0 tabular-nums">
                         {formatCurrency(prod.revenue)}
                       </span>
-                      <span className="text-sm font-bold text-text-primary shrink-0 tabular-nums pl-1">
+                      <span className="text-sm font-bold text-[#333333] shrink-0 tabular-nums pl-1">
                         {percent}%
                       </span>
                     </div>
@@ -417,9 +417,9 @@ const Analytics = () => {
         <div className="lg:col-span-2 flex flex-col gap-4">
           
           {/* Payment Distribution */}
-          <div className="bg-surface-white border border-border-main rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-border-main bg-surface-gray">
-              <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">
+          <div className="bg-white border border-orange-100 rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-orange-100 bg-[#FFF5E9]">
+              <h2 className="text-sm font-bold text-[#333333] uppercase tracking-wide">
                 Payments
               </h2>
             </div>
@@ -434,13 +434,13 @@ const Analytics = () => {
                     return (
                       <div key={p._id} className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                        <span className="text-xs text-text-primary capitalize truncate" style={{ maxWidth: '90px' }}>
+                        <span className="text-xs text-[#333333] capitalize truncate" style={{ maxWidth: '90px' }}>
                           {p._id}
                         </span>
-                        <span className="text-[11px] text-text-secondary shrink-0 tabular-nums">
+                        <span className="text-[11px] text-[#9E9E9E] shrink-0 tabular-nums">
                           {formatCurrency(p.revenue)}
                         </span>
-                        <span className="text-[11px] font-bold text-text-primary shrink-0 tabular-nums pl-1">
+                        <span className="text-[11px] font-bold text-[#333333] shrink-0 tabular-nums pl-1">
                           {percent}%
                         </span>
                       </div>
@@ -452,9 +452,9 @@ const Analytics = () => {
           </div>
 
           {/* Order Type Distribution */}
-          <div className="bg-surface-white border border-border-main rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-border-main bg-surface-gray">
-              <h2 className="text-sm font-bold text-text-primary uppercase tracking-wide">
+          <div className="bg-white border border-orange-100 rounded-xl shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-orange-100 bg-[#FFF5E9]">
+              <h2 className="text-sm font-bold text-[#333333] uppercase tracking-wide">
                 Order Types
               </h2>
             </div>
@@ -470,13 +470,13 @@ const Analytics = () => {
                     return (
                       <div key={o._id} className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                        <span className="text-xs text-text-primary capitalize truncate" style={{ maxWidth: '90px' }}>
+                        <span className="text-xs text-[#333333] capitalize truncate" style={{ maxWidth: '90px' }}>
                           {labels[o._id] || o._id}
                         </span>
-                        <span className="text-[11px] text-text-secondary shrink-0 tabular-nums">
+                        <span className="text-[11px] text-[#9E9E9E] shrink-0 tabular-nums">
                           {formatCurrency(o.revenue)}
                         </span>
-                        <span className="text-[11px] font-bold text-text-primary shrink-0 tabular-nums pl-1">
+                        <span className="text-[11px] font-bold text-[#333333] shrink-0 tabular-nums pl-1">
                           {percent}%
                         </span>
                       </div>

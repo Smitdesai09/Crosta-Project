@@ -1,12 +1,36 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import Button from "../components/ui/Button";
-import Card from "../components/ui/Card";
-import RegisterUserForm from "../components/user/RegisterUserForm";
-import { useAuth } from "../context/AuthContext";
-import { useToast } from "../context/ToastContext";
-import { useUsers } from "../hooks/useUsers";
+import Button from "../components/Button";
+import Card from "../components/Card";
+import RegisterUserForm from "./RegisterUserForm";
+import { useAuth } from "../lib/AuthContext";
+import { useToast } from "../lib/ToastContext";
+import { useUsers } from "../lib/useUsers";
 import userService from "../services/userService";
-import { createInitialRegisterForm, validateRegisterForm } from "../utils/registerUserForm";
+
+const createInitialRegisterForm = () => ({
+  name: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+});
+
+const validateRegisterForm = (form) => {
+  const errors = {};
+
+  if (!form.name.trim()) errors.name = "Name is required";
+  else if (form.name.trim().length < 2) errors.name = "Name must be at least 2 characters";
+
+  if (!form.email.trim()) errors.email = "Email is required";
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = "Invalid email format";
+
+  if (!form.password) errors.password = "Password is required";
+  else if (form.password.length < 6) errors.password = "Password must be at least 6 characters";
+
+  if (!form.confirmPassword) errors.confirmPassword = "Please confirm your password";
+  else if (form.password !== form.confirmPassword) errors.confirmPassword = "Passwords do not match";
+
+  return errors;
+};
 
 const ROLE_OPTIONS = [
   { value: "", label: "All Roles" },
@@ -20,7 +44,7 @@ const STAT_CARDS = [
   {
     key: "total",
     label: "Total Users",
-    iconClass: "bg-emerald-50 text-emerald-600",
+    iconClass: "bg-[#FFF5E9] text-[#FF7A00]",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5V9H2v11h5m10 0v-1a3 3 0 00-3-3H10a3 3 0 00-3 3v1m10 0H7m8-11a2 2 0 11-4 0 2 2 0 014 0zm-8 2a2 2 0 11-4 0 2 2 0 014 0zm12 0a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -30,7 +54,7 @@ const STAT_CARDS = [
   {
     key: "user",
     label: "Active Users",
-    iconClass: "bg-blue-50 text-blue-500",
+    iconClass: "bg-[#FFF5E9] text-[#FF7A00]",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A9 9 0 1118.88 17.8M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -40,7 +64,7 @@ const STAT_CARDS = [
   {
     key: "customer",
     label: "Customers",
-    iconClass: "bg-amber-50 text-amber-600",
+    iconClass: "bg-[#FFF5E9] text-[#FF7A00]",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l6-6m-5.5-.5h.01M18 11.5v5A2.5 2.5 0 0115.5 19h-8A2.5 2.5 0 015 16.5v-8A2.5 2.5 0 017.5 6h5" />
@@ -60,11 +84,11 @@ const getInitials = (name) => {
 
 const getAvatarClass = (index) => {
   const styles = [
-    "bg-cyan-500 text-surface-white",
-    "bg-teal-500 text-surface-white",
-    "bg-neutral-500 text-surface-white",
-    "bg-violet-500 text-surface-white",
-    "bg-emerald-500 text-surface-white",
+    "bg-[#FF7A00] text-white",
+    "bg-[#F59E0B] text-white",
+    "bg-[#333333] text-white",
+    "bg-[#EF4444] text-white",
+    "bg-[#3B82F6] text-white",
   ];
 
   return styles[index % styles.length];
@@ -102,11 +126,10 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
       <button
         type="button"
         onClick={() => setIsOpen((current) => !current)}
-        className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left text-sm transition-colors ${
-          isActive
-            ? "border-brand bg-brand-pale font-semibold text-brand"
-            : "border-border-main bg-surface-white text-text-primary hover:border-gray-400"
-        } focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand`}
+        className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left text-sm transition-colors ${isActive
+          ? "border-[#FF7A00] bg-[#FFF5E9] font-semibold text-[#FF7A00]"
+          : "border-orange-100 bg-white text-[#333333] hover:border-orange-300"
+          } focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00]`}
       >
         <span className="truncate">{selectedLabel}</span>
         <svg className="ml-2 h-4 w-4 flex-shrink-0 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +138,7 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
       </button>
 
       {isOpen ? (
-        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-border-main bg-surface-white shadow-xl">
+        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-orange-100 bg-white shadow-xl">
           <div className="max-h-60 overflow-y-auto py-1">
             {options.map((option) => (
               <button
@@ -125,11 +148,10 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
                   onChange(option.value);
                   setIsOpen(false);
                 }}
-                className={`w-full px-3 py-2 text-left text-sm transition-colors ${
-                  value === option.value
-                    ? "bg-brand-pale font-medium text-brand"
-                    : "text-text-primary hover:bg-surface-gray"
-                }`}
+                className={`w-full px-3 py-2 text-left text-sm transition-colors ${value === option.value
+                  ? "bg-[#FFF5E9] font-medium text-[#FF7A00]"
+                  : "text-[#333333] hover:bg-[#FFF5E9]"
+                  }`}
               >
                 {option.label}
               </button>
@@ -162,16 +184,15 @@ const UserEditModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      <div className="w-full max-w-xl rounded-xl border border-border-main bg-surface-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-border-main px-5 py-4">
+      <div className="w-full max-w-xl rounded-xl border border-orange-100 bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-orange-100 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-text-primary">Edit User</h2>
-           
+            <h2 className="text-lg font-bold text-[#333333]">Edit User</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className={`rounded-lg p-2 text-text-secondary transition-all duration-200 hover:bg-surface-gray hover:text-text-primary ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+            className={`rounded-lg p-2 text-[#9E9E9E] transition-all duration-200 hover:bg-[#FFF5E9] hover:text-[#333333] ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -182,35 +203,33 @@ const UserEditModal = ({
         <form onSubmit={onSubmit} className="p-5">
           <div className="grid gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-text-primary">Full Name</label>
+              <label className="mb-1.5 block text-sm font-medium text-[#333333]">Full Name</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(event) => onChange("name", event.target.value)}
-                className={`w-full rounded-lg border bg-surface-gray px-3 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30 ${
-                  errors.name ? "border-red-400" : "border-border-main"
-                }`}
+                className={`w-full rounded-lg border bg-[#FFF5E9] px-3 py-2.5 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30 ${errors.name ? "border-red-400" : "border-orange-100"
+                  }`}
                 placeholder="Enter full name"
               />
               {errors.name ? <p className="mt-1 text-xs text-red-600">{errors.name}</p> : null}
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-text-primary">Email Address</label>
+              <label className="mb-1.5 block text-sm font-medium text-[#333333]">Email Address</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(event) => onChange("email", event.target.value)}
-                className={`w-full rounded-lg border bg-surface-gray px-3 py-2.5 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30 ${
-                  errors.email ? "border-red-400" : "border-border-main"
-                }`}
+                className={`w-full rounded-lg border bg-[#FFF5E9] px-3 py-2.5 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30 ${errors.email ? "border-red-400" : "border-orange-100"
+                  }`}
                 placeholder="Enter email address"
               />
               {errors.email ? <p className="mt-1 text-xs text-red-600">{errors.email}</p> : null}
             </div>
           </div>
 
-          <div className="mt-5 flex justify-end gap-3 border-t border-border-main pt-4">
+          <div className="mt-5 flex justify-end gap-3 border-t border-orange-100 pt-4">
             <Button
               type="button"
               variant="secondary"
@@ -247,15 +266,15 @@ const RegisterUserModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      <div className="w-full max-w-xl rounded-xl border border-border-main bg-surface-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-border-main px-5 py-4">
+      <div className="w-full max-w-xl rounded-xl border border-orange-100 bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-orange-100 px-5 py-4">
           <div>
-            <h2 className="text-lg font-bold text-text-primary">Register User</h2>
+            <h2 className="text-lg font-bold text-[#333333]">Register User</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className={`rounded-lg p-2 text-text-secondary transition-all duration-200 hover:bg-surface-gray hover:text-text-primary ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+            className={`rounded-lg p-2 text-[#9E9E9E] transition-all duration-200 hover:bg-[#FFF5E9] hover:text-[#333333] ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -274,10 +293,10 @@ const RegisterUserModal = ({
             loadingLabel="Creating..."
             showPasswordHints={false}
             passwordGridClassName="md:grid-cols-2"
-            submitButtonClassName={`bg-emerald-500 hover:bg-emerald-600 ${PANEL_BUTTON_HOVER_CLASS}`}
+            submitButtonClassName={`bg-[#FF7A00] hover:bg-orange-600 ${PANEL_BUTTON_HOVER_CLASS}`}
           />
 
-          <div className="mt-5 flex justify-end gap-3 border-t border-border-main pt-4">
+          <div className="mt-5 flex justify-end gap-3 border-t border-orange-100 pt-4">
             <Button
               type="button"
               variant="secondary"
@@ -300,25 +319,24 @@ const DeleteConfirmModal = ({ isOpen, user, deleting, onClose, onConfirm }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      <div className="w-full max-w-md rounded-xl border border-border-main bg-surface-white shadow-xl">
-        <div className="border-b border-border-main px-5 py-4">
-          <h2 className="text-lg font-bold text-text-primary">
+      <div className="w-full max-w-md rounded-xl border border-orange-100 bg-white shadow-xl">
+        <div className="border-b border-orange-100 px-5 py-4">
+          <h2 className="text-lg font-bold text-[#333333]">
             {isDeletedUser ? "Restore User" : "Delete User"}
           </h2>
         </div>
 
         <div className="px-5 py-4">
           <div
-            className={`rounded-xl p-4 ${
-              isDeletedUser ? "border border-emerald-100 bg-emerald-50" : "border border-red-100 bg-red-50"
-            }`}
+            className={`rounded-xl p-4 ${isDeletedUser ? "border border-[#E0F2F1] bg-[#E0F2F1]" : "border border-red-100 bg-red-50"
+              }`}
           >
-            <p className="text-sm font-medium text-text-primary">{user.name}</p>
-            <p className="mt-1 text-sm text-text-secondary">{user.email}</p>
+            <p className="text-sm font-medium text-[#333333]">{user.name}</p>
+            <p className="mt-1 text-sm text-[#9E9E9E]">{user.email}</p>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-border-main px-5 py-4">
+        <div className="flex justify-end gap-3 border-t border-orange-100 px-5 py-4">
           <Button
             type="button"
             variant="secondary"
@@ -500,7 +518,7 @@ const AdminPanel = () => {
     } catch (error) {
       showToast(
         error.response?.data?.message ||
-          (targetUser.isDeleted ? "Failed to restore user" : "Failed to delete user"),
+        (targetUser.isDeleted ? "Failed to restore user" : "Failed to delete user"),
         "error"
       );
     } finally {
@@ -543,215 +561,212 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="h-full w-full bg-surface-gray">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">
-              User <span className="text-brand">Management</span>
-            </h1>
-          </div>
+    // FIX: Removed bg-surface-gray, added correct padding/scroll behavior to match layout
+    <div className="h-full w-full flex flex-col gap-6 overflow-y-auto p-4 lg:p-6">
 
-          <Button
-            variant="success"
-            className={`inline-flex items-center gap-2 self-start px-5 py-3 ${PANEL_BUTTON_HOVER_CLASS}`}
-            onClick={() => setIsRegisterModalOpen(true)}
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            Register User
-          </Button>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#333333]">
+            User <span className="text-[#FF7A00]">Management</span>
+          </h1>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {STAT_CARDS.map((card) => (
-            <Card key={card.key} className={`min-h-[112px] ${PANEL_CARD_HOVER_CLASS}`}>
-              <div className="flex items-center gap-4">
-                <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass}`}>
-                  {card.icon}
-                </div>
-                <p className="text-base font-semibold text-text-secondary">{card.label}</p>
-                <p className="ml-auto text-4xl font-bold leading-none text-text-primary">{stats[card.key]}</p>
+        <Button
+          variant="success"
+          className={`inline-flex items-center gap-2 self-start px-5 py-3 ${PANEL_BUTTON_HOVER_CLASS}`}
+          onClick={() => setIsRegisterModalOpen(true)}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Register User
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {STAT_CARDS.map((card) => (
+          <Card key={card.key} className={`min-h-[112px] ${PANEL_CARD_HOVER_CLASS}`}>
+            <div className="flex items-center gap-4">
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass}`}>
+                {card.icon}
               </div>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)]">
-          <div className="relative w-full">
-            <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </span>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Search by name or email..."
-              className="w-full rounded-lg border border-border-main bg-surface-white py-3 pl-11 pr-12 text-sm text-text-primary outline-none transition-colors placeholder:text-text-placeholder focus:border-brand focus:ring-2 focus:ring-brand/30"
-            />
-            {searchTerm ? (
-              <button
-                type="button"
-                onClick={() => setSearchTerm("")}
-                className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-text-secondary transition-colors hover:bg-surface-gray hover:text-text-primary"
-                aria-label="Clear search"
-                title="Clear search"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            ) : null}
-          </div>
-
-          <FilterSelect
-            value={roleFilter}
-            onChange={setRoleFilter}
-            options={ROLE_OPTIONS}
-            placeholder="Select Role"
-          />
-        </div>
-
-        <div className="overflow-hidden rounded-xl border border-border-main bg-surface-white shadow-sm">
-          <div className="grid grid-cols-12 gap-2 border-b border-border-main bg-surface-gray px-6 py-4 text-xs font-semibold uppercase tracking-wider text-text-secondary">
-            <div className="col-span-5">User</div>
-            <div className="col-span-2 text-center">Role</div>
-            <div className="col-span-2 text-center">Status</div>
-            <div className="col-span-3 text-right">Actions</div>
-          </div>
-
-          <div className="divide-y divide-border-main">
-            {loading ? (
-              <div className="flex items-center justify-center py-10">
-                <span className="animate-pulse text-text-secondary">Loading...</span>
-              </div>
-            ) : filteredUsers.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 text-text-secondary">
-                <p className="text-lg font-medium">No users found</p>
-                <p className="mt-1 text-sm">Try changing the search or role filter.</p>
-              </div>
-            ) : (
-              paginatedUsers.map((item, index) => {
-                const isCurrentUser = currentUser?.email === item.email;
-                const avatarIndex = (currentPage - 1) * USERS_PER_PAGE + index;
-                const isInactive = item.isDeleted;
-
-                return (
-                  <div key={item._id} className="grid grid-cols-12 gap-2 px-6 py-4">
-                    <div className="col-span-5 flex min-w-0 items-center gap-4">
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${getAvatarClass(avatarIndex)}`}>
-                        {getInitials(item.name)}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-text-primary">{item.name}</p>
-                        <p className="truncate text-sm text-text-secondary">{item.email}</p>
-                      </div>
-                    </div>
-
-                    <div className="col-span-2 flex items-center justify-center">
-                      <span
-                        className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${
-                          item.role === "admin"
-                            ? "bg-violet-50 text-violet-700"
-                            : "bg-sky-50 text-sky-700"
-                        }`}
-                      >
-                        {item.role}
-                      </span>
-                    </div>
-
-                    <div className="col-span-2 flex items-center justify-center">
-                      <span
-                        className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${
-                          isInactive
-                            ? "bg-red-50 text-red-600"
-                            : "bg-emerald-50 text-emerald-600"
-                        }`}
-                      >
-                        {isInactive ? "Inactive" : "Active"}
-                      </span>
-                    </div>
-
-                    <div className="col-span-3 flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => openEditModal(item)}
-                        className={`rounded-lg border border-border-main p-2 text-text-secondary transition-all duration-200 hover:bg-surface-gray hover:text-text-primary ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
-                        title="Edit user"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-8.5a2.121 2.121 0 113 3L12 16l-4 1 1-4 8.5-8.5z" />
-                        </svg>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => setDeleteUserTarget(item)}
-                        disabled={isCurrentUser && !isInactive}
-                        className={`rounded-lg border p-2 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${
-                          isInactive
-                            ? "border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700"
-                            : "border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
-                        } ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
-                        title={
-                          isCurrentUser && !isInactive
-                            ? "You cannot delete your current account here"
-                            : isInactive
-                              ? "Restore user"
-                              : "Delete user"
-                        }
-                      >
-                        {isInactive ? (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
-                          </svg>
-                        ) : (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          {filteredUsers.length > 0 ? (
-            <div className="flex items-center justify-between border-t border-border-main bg-surface-gray px-4 py-3">
-              <p className="text-xs text-text-secondary">
-                Page <span className="font-medium text-text-primary">{currentPage}</span> out of{" "}
-                <span className="font-medium text-text-primary">{totalPages}</span>
-              </p>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={`flex items-center gap-1 rounded-lg border border-border-main px-3 py-1.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-white disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Prev
-                </button>
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={`flex items-center gap-1 rounded-lg border border-border-main px-3 py-1.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-white disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
-                >
-                  Next
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
+              <p className="text-base font-semibold text-[#9E9E9E]">{card.label}</p>
+              <p className="ml-auto text-4xl font-bold leading-none text-[#333333]">{stats[card.key]}</p>
             </div>
+          </Card>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)]">
+        <div className="relative w-full">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#9E9E9E]">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search by name or email..."
+            className="w-full rounded-lg border border-orange-100 bg-white py-3 pl-11 pr-12 text-sm text-[#333333] outline-none transition-colors placeholder:text-[#9E9E9E] focus:border-[#FF7A00] focus:ring-2 focus:ring-[#FF7A00]/30"
+          />
+          {searchTerm ? (
+            <button
+              type="button"
+              onClick={() => setSearchTerm("")}
+              className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-[#9E9E9E] transition-colors hover:bg-[#FFF5E9] hover:text-[#333333]"
+              aria-label="Clear search"
+              title="Clear search"
+            >
+              <svg className="w-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           ) : null}
         </div>
+
+        <FilterSelect
+          value={roleFilter}
+          onChange={setRoleFilter}
+          options={ROLE_OPTIONS}
+          placeholder="Select Role"
+        />
+      </div>
+
+      <div className="flex-shrink-0 overflow-hidden rounded-xl border border-orange-100 bg-white shadow-sm">
+        <div className="grid grid-cols-12 gap-2 border-b border-orange-100 bg-[#FFF5E9] px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#9E9E9E]">
+          <div className="col-span-5">User</div>
+          <div className="col-span-2 text-center">Role</div>
+          <div className="col-span-2 text-center">Status</div>
+          <div className="col-span-3 text-right">Actions</div>
+        </div>
+
+        <div className="divide-y divide-orange-50">
+          {loading ? (
+            <div className="flex items-center justify-center py-10">
+              <span className="animate-pulse text-[#9E9E9E]">Loading...</span>
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-[#9E9E9E]">
+              <p className="text-lg font-medium text-[#333333]">No users found</p>
+              <p className="mt-1 text-sm">Try changing the search or role filter.</p>
+            </div>
+          ) : (
+            paginatedUsers.map((item, index) => {
+              const isCurrentUser = currentUser?.email === item.email;
+              const avatarIndex = (currentPage - 1) * USERS_PER_PAGE + index;
+              const isInactive = item.isDeleted;
+
+              return (
+                <div key={item._id} className="grid grid-cols-12 gap-2 px-6 py-4 hover:bg-[#FFF5E9]/50 transition-colors">
+                  <div className="col-span-5 flex min-w-0 items-center gap-4">
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${getAvatarClass(avatarIndex)}`}>
+                      {getInitials(item.name)}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-[#333333]">{item.name}</p>
+                      <p className="truncate text-sm text-[#9E9E9E]">{item.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="col-span-2 flex items-center justify-center">
+                    <span
+                      className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${item.role === "admin"
+                        ? "bg-[#FFF5E9] text-[#FF7A00]"
+                        : "bg-orange-50 text-orange-700"
+                        }`}
+                    >
+                      {item.role}
+                    </span>
+                  </div>
+
+                  <div className="col-span-2 flex items-center justify-center">
+                    <span
+                      className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${isInactive
+                        ? "bg-red-50 text-red-600"
+                        : "bg-[#E0F2F1] text-[#2E7D32]"
+                        }`}
+                    >
+                      {isInactive ? "Inactive" : "Active"}
+                    </span>
+                  </div>
+
+                  <div className="col-span-3 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(item)}
+                      className={`rounded-lg border border-orange-100 p-2 text-[#9E9E9E] transition-all duration-200 hover:bg-[#FFF5E9] hover:text-[#333333] ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+                      title="Edit user"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.5-8.5a2.121 2.121 0 113 3L12 16l-4 1 1-4 8.5-8.5z" />
+                      </svg>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setDeleteUserTarget(item)}
+                      disabled={isCurrentUser && !isInactive}
+                      className={`rounded-lg border p-2 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${isInactive
+                        ? "border-[#E0F2F1] text-[#2E7D32] hover:bg-[#E0F2F1] hover:text-[#2E7D32]"
+                        : "border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
+                        } ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+                      title={
+                        isCurrentUser && !isInactive
+                          ? "You cannot delete your current account here"
+                          : isInactive
+                            ? "Restore user"
+                            : "Delete user"
+                      }
+                    >
+                      {isInactive ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m14.836 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-14.837-2m14.837 2H15" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {filteredUsers.length > 0 ? (
+          <div className="flex items-center justify-between border-t border-orange-100 bg-[#FFF5E9]/50 px-4 py-3">
+            <p className="text-xs text-[#9E9E9E]">
+              Page <span className="font-medium text-[#333333]">{currentPage}</span> out of{" "}
+              <span className="font-medium text-[#333333]">{totalPages}</span>
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className={`flex items-center gap-1 rounded-lg border border-orange-200 px-3 py-1.5 text-sm font-medium text-[#333333] transition-all duration-200 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Prev
+              </button>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className={`flex items-center gap-1 rounded-lg border border-orange-200 px-3 py-1.5 text-sm font-medium text-[#333333] transition-all duration-200 hover:bg-white disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
+              >
+                Next
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <RegisterUserModal

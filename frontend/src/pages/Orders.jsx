@@ -6,7 +6,7 @@ import OrderTypeCard from '../components/order/OrderTypeCard';
 import BillModal from '../components/order/BillModal';
 import orderService from '../services/orderService';
 import billService from '../services/billService';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '../lib/ToastContext';
 
 const Orders = () => {
   const { showToast } = useToast();
@@ -431,19 +431,20 @@ const Orders = () => {
 
   if (isLoading && view === 'tables') {
     return (
-      <div className="h-full w-full bg-surface-gray flex items-center justify-center">
-        <span className="animate-pulse text-text-secondary font-medium">Loading tables...</span>
+      <div className="h-full w-full flex items-center justify-center">
+        <span className="animate-pulse text-[#9E9E9E] font-medium">Loading tables...</span>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full bg-surface-gray flex flex-col gap-4 overflow-hidden">
+    // FIX: Removed bg-surface-gray to let the Layout.tsx beige background (#F5E6D3) show through seamlessly
+    <div className="h-full w-full flex flex-col gap-4 overflow-hidden">
 
       {/* TOP TITLE: Only shows when in Cart View */}
       {view !== 'tables' && (
-        <div className="flex items-end justify-between flex-shrink-0">
-          <h1 className="text-3xl font-extrabold italic tracking-tight text-text-primary">Orders</h1>
+        <div className="flex items-end justify-between flex-shrink-0 px-4 lg:px-6">
+          <h1 className="text-3xl font-extrabold italic tracking-tight text-[#333333]">Orders</h1>
         </div>
       )}
 
@@ -451,15 +452,15 @@ const Orders = () => {
         <div className="p-6">
 
           {/* TABLES VIEW HEADER: Contains Title, Status, and Clock */}
-          <div className="bg-surface-white border border-border-main rounded-xl px-5 py-4 mb-6 flex items-center justify-between shadow-sm">
+          <div className="bg-white border border-orange-100 rounded-xl px-5 py-4 mb-6 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-4">
-              <h1 className="text-3xl font-extrabold italic tracking-tight text-text-primary">Orders</h1>
-              <div className="h-6 w-px bg-border-main"></div>
-              <span className="text-sm font-medium text-text-secondary">
+              <h1 className="text-3xl font-extrabold italic tracking-tight text-[#333333]">Orders</h1>
+              <div className="h-6 w-px bg-orange-100"></div>
+              <span className="text-sm font-medium text-[#9E9E9E]">
                 {tables.filter(t => t.status === 'Occupied').length}/6 Tables Active
               </span>
             </div>
-            <div className="text-xs font-mono text-text-secondary bg-surface-gray px-3 py-1.5 rounded-md border border-border-main">
+            <div className="text-xs font-mono text-[#9E9E9E] bg-[#FFF5E9] px-3 py-1.5 rounded-md border border-orange-100">
               {currentTimeState}
             </div>
           </div>
@@ -469,20 +470,20 @@ const Orders = () => {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex gap-2 px-2 pb-0.5 pt-0 min-h-0 min-w-0">
+        <div className="flex-1 flex gap-2 px-2 pb-2 pt-0 min-h-0 min-w-0">
 
           {/* LEFT: Products Panel */}
-          <div className="flex-1 flex flex-col bg-surface-white rounded-xl border border-border-main shadow-sm min-h-0 min-w-0 overflow-hidden">
-            <div className="px-3 pt-3 pb-2 border-b border-border-main flex-shrink-0">
+          <div className="flex-1 flex flex-col bg-white rounded-xl border border-orange-100 shadow-sm min-h-0 min-w-0 overflow-hidden">
+            <div className="px-3 pt-3 pb-2 border-b border-orange-100 flex-shrink-0">
               <div className="flex items-center gap-2 mb-2">
-                <button onClick={resetToTables} className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-gray border border-border-main text-text-secondary hover:bg-gray-100 hover:border-gray-400 hover:text-text-primary transition-all text-sm font-medium">
+                <button onClick={resetToTables} className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#FFF5E9] border border-orange-200 text-[#9E9E9E] hover:bg-orange-100 hover:border-orange-300 hover:text-[#333333] transition-all text-sm font-medium">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                   Back
                 </button>
                 <div className="flex-1 min-w-0 relative">
-                  <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 pr-9 bg-surface-gray border border-border-main rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand" />
+                  <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 pr-9 bg-[#FFF5E9] border border-orange-100 rounded-lg text-sm text-[#333333] placeholder:text-[#9E9E9E] focus:outline-none focus:ring-2 focus:ring-[#FF7A00]/30 focus:border-[#FF7A00]" />
                   {searchTerm && (
-                    <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                    <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9E9E9E] hover:text-[#333333] transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   )}
@@ -490,17 +491,17 @@ const Orders = () => {
               </div>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${activeCategory === cat ? 'bg-brand-pale border-brand text-brand' : 'bg-surface-white border-border-main text-text-secondary hover:bg-gray-100'}`}>{cat}</button>
+                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${activeCategory === cat ? 'bg-[#FFF5E9] border-[#FF7A00] text-[#FF7A00]' : 'bg-white border-orange-100 text-[#9E9E9E] hover:bg-[#FFF5E9]'}`}>{cat}</button>
                 ))}
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto p-3 min-h-0 bg-surface-white">
+            <div className="flex-1 overflow-y-auto p-3 min-h-0 bg-white">
               <div className="grid grid-cols-2 gap-2.5">
                 {filteredProducts.length > 0 ? filteredProducts.map(product => (
                   <ProductCard key={product._id} product={product} onAdd={handleAddToCart} />
                 )) : (
-                  <div className="col-span-full flex flex-col items-center justify-center py-10 text-text-secondary">
-                    <p className="text-lg font-medium">No products found</p>
+                  <div className="col-span-full flex flex-col items-center justify-center py-10 text-[#9E9E9E]">
+                    <p className="text-lg font-medium text-[#333333]">No products found</p>
                   </div>
                 )}
               </div>
@@ -508,10 +509,10 @@ const Orders = () => {
           </div>
 
           {/* RIGHT: Cart Panel */}
-          <div className="w-96 flex-shrink-0 bg-surface-white rounded-xl border border-border-main flex flex-col shadow-sm min-h-0">
-            <div className="px-3 pt-3 pb-2 border-b border-border-main flex-shrink-0">
+          <div className="w-96 flex-shrink-0 bg-white rounded-xl border border-orange-100 flex flex-col shadow-sm min-h-0">
+            <div className="px-3 pt-3 pb-2 border-b border-orange-100 flex-shrink-0">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-bold text-text-primary">Table {selectedTable}</h2>
+                <h2 className="text-lg font-bold text-[#333333]">Table {selectedTable}</h2>
                 <button onClick={handleCancelOrder} className="text-xs font-semibold text-red-500 hover:text-red-700">{orderId ? 'Cancel Order' : 'Clear Order'}</button>
               </div>
               <div className="flex gap-2">
@@ -520,33 +521,33 @@ const Orders = () => {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto min-h-0 max-h-[28.5rem] px-3 py-1.5 divide-y divide-border-main">
+            <div className="flex-1 overflow-y-auto min-h-0 max-h-[28.5rem] px-3 py-1.5 divide-y divide-orange-50">
               {cart.length > 0 ? cart.map(item => (
                 <CartItem key={item.cartId} item={item} onUpdate={handleUpdateQuantity} onRemove={handleRemoveItem} />
               )) : (
-                <div className="flex flex-col items-center justify-center py-4 text-text-secondary text-sm">
+                <div className="flex flex-col items-center justify-center py-4 text-[#9E9E9E] text-sm">
                   <p>Cart is empty</p>
                   <p className="text-xs mt-1">Click a variant to add</p>
                 </div>
               )}
             </div>
 
-            <div className="px-3 pt-3 pb-0.5 border-t border-border-main flex-shrink-0">
+            <div className="px-3 pt-3 pb-0.5 border-t border-orange-100 flex-shrink-0">
               <div className="flex justify-between items-center mb-8">
-                <span className="text-sm font-medium text-text-secondary">Subtotal</span>
-                <span className="text-xl font-bold text-text-primary">₹{subtotal.toFixed(2)}</span>
+                <span className="text-sm font-medium text-[#9E9E9E]">Subtotal</span>
+                <span className="text-xl font-bold text-[#333333]">₹{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex flex-col gap-1.5">
                 <div className="flex gap-2">
-                  <button disabled={isCartEmpty} onClick={() => handleSaveKOT(false)} className="flex-1 py-1.5 border border-border-main text-text-secondary hover:bg-surface-gray disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save KOT</button>
-                  <button disabled={isCartEmpty} onClick={() => handleSaveKOT(true)} className="flex-1 py-1.5 border border-border-main text-text-primary hover:bg-surface-gray disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save & Print KOT</button>
+                  <button disabled={isCartEmpty} onClick={() => handleSaveKOT(false)} className="flex-1 py-1.5 border border-orange-200 text-[#333333] hover:bg-[#FFF5E9] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save KOT</button>
+                  <button disabled={isCartEmpty} onClick={() => handleSaveKOT(true)} className="flex-1 py-1.5 border border-orange-200 text-[#333333] hover:bg-[#FFF5E9] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save & Print KOT</button>
                 </div>
 
                 {/* Proceed to bill - Auto-saves KOT if dirty or new */}
                 <button
                   onClick={handleOpenBillModal}
                   disabled={isCartEmpty || isSavingForBill}
-                  className="w-full py-2.5 bg-brand hover:bg-brand-hover disabled:bg-gray-300 text-surface-white rounded-lg text-sm font-bold shadow-sm transition-colors disabled:cursor-not-allowed"
+                  className="w-full py-2.5 bg-[#FF7A00] hover:bg-orange-600 disabled:bg-orange-200 text-white rounded-lg text-sm font-bold shadow-sm transition-colors disabled:cursor-not-allowed"
                 >
                   {isSavingForBill ? 'Saving...' : 'Proceed to Bill'}
                 </button>
