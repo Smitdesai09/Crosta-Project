@@ -6,9 +6,21 @@ exports.getMonthlyAnalytics = async (req, res) => {
         const month = parseInt(req.query.month) || (now.getMonth() + 1);
         const year = parseInt(req.query.year) || now.getFullYear();
 
-        const start = new Date(year, month - 1, 1, 0, 0, 0, 0);
-        const end = new Date(year, month, 1, 0, 0, 0, 0);
+        // ✅ FIX: Use explicit IST timezone for date boundaries
+        // Change +05:30 if your business is in a different timezone
+        const TIMEZONE = "+05:30"; // IST
+        
+        const start = new Date(
+            `${year}-${String(month).padStart(2, '0')}-01T00:00:00${TIMEZONE}`
+        );
+        
+        const endMonth = month === 12 ? 1 : month + 1;
+        const endYear = month === 12 ? year + 1 : year;
+        const end = new Date(
+            `${endYear}-${String(endMonth).padStart(2, '0')}-01T00:00:00${TIMEZONE}`
+        );
 
+        // ✅ FIX: Also specify timezone in $dayOfMonth and $hour
         const analytics = await Bill.aggregate([
             { $match: { createdAt: { $gte: start, $lt: end } } },
             {
@@ -18,8 +30,16 @@ exports.getMonthlyAnalytics = async (req, res) => {
                             $group: {
                                 _id: null,
                                 totalRevenue: { $sum: "$totalAmount" },
-                                totalOrders: { $sum: 1 }, // Keep here for stat cards
-                                totalItems: { $sum: { $sum: "$items.quantity" } }
+                                totalOrders: { $sum: 1 },
+                                totalItems: { 
+                                    $sum: { 
+                                        $reduce: {
+                                            input: "$items",
+                                            initialValue: 0,
+                                            in: { $add: ["$$value", "$$this.quantity"] }
+                                        }
+                                    }
+                                }
                             }
                         }
                     ],
@@ -27,19 +47,29 @@ exports.getMonthlyAnalytics = async (req, res) => {
                     dailySales: [
                         {
                             $group: {
-                                _id: { $dayOfMonth: "$createdAt" },
-                                revenue: { $sum: "$totalAmount" } // REMOVED orders
+                                _id: { 
+                                    $dayOfMonth: { 
+                                        date: "$createdAt", 
+                                        timezone: TIMEZONE 
+                                    } 
+                                },
+                                revenue: { $sum: "$totalAmount" }
                             }
                         },
                         { $sort: { _id: 1 } }
                     ],
 
                     hourlySales: [
-                        { $project: { hour: { $hour: "$createdAt" }, totalAmount: 1 } },
+                        { 
+                            $project: { 
+                                hour: { $hour: { date: "$createdAt", timezone: TIMEZONE } }, 
+                                totalAmount: 1 
+                            } 
+                        },
                         {
                             $group: {
                                 _id: "$hour",
-                                revenue: { $sum: "$totalAmount" } // REMOVED orders
+                                revenue: { $sum: "$totalAmount" }
                             }
                         },
                         { $sort: { _id: 1 } }
@@ -49,7 +79,7 @@ exports.getMonthlyAnalytics = async (req, res) => {
                         {
                             $group: {
                                 _id: "$paymentType",
-                                revenue: { $sum: "$totalAmount" } // REMOVED orders
+                                revenue: { $sum: "$totalAmount" }
                             }
                         }
                     ],
@@ -58,7 +88,7 @@ exports.getMonthlyAnalytics = async (req, res) => {
                         {
                             $group: {
                                 _id: "$orderType",
-                                revenue: { $sum: "$totalAmount" } // REMOVED orders
+                                revenue: { $sum: "$totalAmount" }
                             }
                         }
                     ],
@@ -68,7 +98,7 @@ exports.getMonthlyAnalytics = async (req, res) => {
                         {
                             $group: {
                                 _id: "$items.name",
-                                revenue: { $sum: "$items.subtotal" } // Keep revenue
+                                revenue: { $sum: "$items.subtotal" }
                             }
                         },
                         { $sort: { revenue: -1 } },
@@ -94,6 +124,7 @@ exports.getMonthlyAnalytics = async (req, res) => {
         });
 
     } catch (error) {
+        console.error('Analytics error:', error);
         res.status(500).json({ message: "Failed to fetch analytics", error: error.message });
     }
 };

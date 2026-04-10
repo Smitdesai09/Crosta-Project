@@ -234,12 +234,6 @@ const Analytics = () => {
               options={yearOptions}
             />
           </div>
-          <button className="text-xs font-semibold text-text-secondary px-3 py-2 border border-border-main rounded-lg hover:bg-surface-gray transition-colors flex items-center gap-1.5">
-            <svg className="w-4 h-4 text-text-placeholder" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V9a3 3 0 00-3-3H6a3 3 0 00-3 3v8m3-8l3 3" />
-            </svg>
-            Download PDF
-          </button>
         </div>
       </div>
 
