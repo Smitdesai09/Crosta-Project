@@ -296,7 +296,7 @@ const RegisterUserModal = ({
             submitButtonClassName={`bg-[#FF7A00] hover:bg-orange-600 ${PANEL_BUTTON_HOVER_CLASS}`}
           />
 
-          <div className="mt-5 flex justify-end gap-3 border-t border-orange-100 pt-4">
+          {/* <div className="mt-5 flex justify-end gap-3 border-t border-orange-100 pt-4">
             <Button
               type="button"
               variant="secondary"
@@ -305,7 +305,7 @@ const RegisterUserModal = ({
             >
               Cancel
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
@@ -561,8 +561,7 @@ const AdminPanel = () => {
   };
 
   return (
-    // FIX: Removed bg-surface-gray, added correct padding/scroll behavior to match layout
-    <div className="h-full w-full flex flex-col gap-6 overflow-y-auto p-4 lg:p-6">
+    <div className="flex h-full min-h-0 w-full flex-col gap-6 p-4 lg:p-6">
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
@@ -634,15 +633,15 @@ const AdminPanel = () => {
         />
       </div>
 
-      <div className="flex-shrink-0 overflow-hidden rounded-xl border border-orange-100 bg-white shadow-sm">
-        <div className="grid grid-cols-12 gap-2 border-b border-orange-100 bg-[#FFF5E9] px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#9E9E9E]">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-orange-100 bg-white shadow-sm">
+        <div className="grid flex-shrink-0 grid-cols-12 gap-2 border-b border-orange-100 bg-[#FFF5E9] px-6 py-4 text-xs font-semibold uppercase tracking-wider text-[#9E9E9E]">
           <div className="col-span-5">User</div>
           <div className="col-span-2 text-center">Role</div>
           <div className="col-span-2 text-center">Status</div>
           <div className="col-span-3 text-right">Actions</div>
         </div>
 
-        <div className="divide-y divide-orange-50">
+        <div className="flex-1 overflow-y-auto divide-y divide-orange-50">
           {loading ? (
             <div className="flex items-center justify-center py-10">
               <span className="animate-pulse text-[#9E9E9E]">Loading...</span>
@@ -738,7 +737,7 @@ const AdminPanel = () => {
         </div>
 
         {filteredUsers.length > 0 ? (
-          <div className="flex items-center justify-between border-t border-orange-100 bg-[#FFF5E9]/50 px-4 py-3">
+          <div className="flex flex-shrink-0 items-center justify-between border-t border-orange-100 bg-[#FFF5E9]/50 px-4 py-3">
             <p className="text-xs text-[#9E9E9E]">
               Page <span className="font-medium text-[#333333]">{currentPage}</span> out of{" "}
               <span className="font-medium text-[#333333]">{totalPages}</span>
