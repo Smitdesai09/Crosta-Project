@@ -16,9 +16,9 @@ const BillModal = ({ isOpen, onClose, cart, onGenerateBill, isBillingLoading, ta
   const finalTotal = updatedSubtotal + gstAmount;
 
   const handleSave = (shouldPrint = false) => {
-    // Pass phone if valid, otherwise null. Ignore the toggle state for the backend.
-    const phone = isEBillValid ? eBillNumber : null;
-    onGenerateBill(discountAmount, paymentType, phone, shouldPrint);
+    const phone = isEBillValid ? eBillNumber : null;       // always save if valid
+    const sendEBill = isEBillEnabled && isEBillValid;       // toggle decides WhatsApp
+    onGenerateBill(discountAmount, paymentType, phone, shouldPrint, sendEBill);
   };
   if (!isOpen) return null;
 

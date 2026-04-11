@@ -4,7 +4,8 @@ const router = express.Router();
 const {
   createBill,
   getAllBills,
-  getBillById
+  getBillById,
+  generatePdf
 } = require("../controllers/billController");
 
 const { isAuthenticated } = require("../middlewares/authMiddleware");
@@ -15,5 +16,7 @@ router.post("/", isAuthenticated, createBill);
 router.get("/", isAuthenticated, getAllBills);
 // Get single bill
 router.get("/:id", isAuthenticated, getBillById);
+// Generate PDF for a bill
+router.get("/pdf/download/:id", generatePdf);
 
 module.exports = router;

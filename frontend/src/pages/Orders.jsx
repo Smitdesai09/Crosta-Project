@@ -7,6 +7,7 @@ import BillModal from '../components/order/BillModal';
 import orderService from '../services/orderService';
 import billService from '../services/billService';
 import { useToast } from '../lib/ToastContext';
+const API_BASE = import.meta.env.VITE_API_URL;
 
 const Orders = () => {
   const { showToast } = useToast();
@@ -314,9 +315,22 @@ const Orders = () => {
     setIsBillModalOpen(true);
   };
 
-  const handleGenerateBill = async (discount, paymentType, customerPhone, shouldPrint = false) => {
-    if (isBillingLoading) return;
+  // ─────────────────────────────────────────────
+  // E-BILL HELPERS
+  // ─────────────────────────────────────────────
 
+  const openWhatsAppEBill = (customerPhone, message) => {
+    const encodedMessage = encodeURIComponent(message);
+    const url = `https://web.whatsapp.com/send?phone=91${customerPhone}&text=${encodedMessage}`;
+    window.open(url, '_blank');
+  };
+
+  // ─────────────────────────────────────────────
+  // BILL GENERATION (updated for e-bill)
+  // ─────────────────────────────────────────────
+
+  const handleGenerateBill = async (discount, paymentType, customerPhone, shouldPrint = false, sendEBill = false) => {
+    if (isBillingLoading) return;
     setIsBillingLoading(true);
 
     if (!orderId) {
@@ -333,16 +347,36 @@ const Orders = () => {
         customerPhone: customerPhone || null
       });
 
-      showToast("Bill generated successfully!", "success");
+      const billData = res.data.data;
       setIsBillModalOpen(false);
 
-      if (shouldPrint) {
-        generateReceipt(res.data.data, true);
+      if (shouldPrint && sendEBill) {
+        const pdfLink = `${API_BASE}/api/bills/pdf/download/${billData._id} `;
+        const message = `Hello! Your bill is ready.\n\nYou can download PDF from below link:\n${pdfLink}\n\nThank you, visit again!`;
+        const encodedMessage = encodeURIComponent(message);
+        const waUrl = `https://web.whatsapp.com/send?phone=91${customerPhone}&text=${encodedMessage}`;
+
+        showToast("Printing receipt...", "success");
+
+        // 2. Pass waUrl into the single print window
+        generateReceipt(billData, true, waUrl);
+
         setTimeout(() => {
           fetchInitialData();
           resetToTables();
         }, 500);
+
+      } else if (!shouldPrint && sendEBill) {
+
+        const pdfLink = `${API_BASE}/api/bills/pdf/download/${billData._id} `;
+        const message = `Hello! Your bill is ready.\n\nYou can download PDF from below link:\n${pdfLink}\n\nThank you, visit again!`;
+
+        showToast("Bill saved! Opening WhatsApp...", "success");
+        openWhatsAppEBill(customerPhone, message); // Pass message string directly now
+        fetchInitialData();
+        resetToTables();
       } else {
+        showToast("Bill generated successfully!", "success");
         fetchInitialData();
         resetToTables();
       }
@@ -355,8 +389,14 @@ const Orders = () => {
     }
   };
 
-  const generateReceipt = (billData, shouldPrint) => {
+  const generateReceipt = (billData, shouldPrint, waUrl = null) => {
     if (!shouldPrint) return;
+
+    // Format date minimally: "11/4/26 1:25 PM"
+    const dateObj = new Date(billData.createdAt);
+    const minimalDate = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric', year: '2-digit' });
+    const minimalTime = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    const dateTimeStr = `${minimalDate} ${minimalTime}`;
 
     const itemsHtml = billData.items.map(item => `
       <tr>
@@ -368,24 +408,65 @@ const Orders = () => {
     const fullReceiptHtml = `
       <html>
         <head>
-          <title>Bill - Table ${billData.tableNumber}</title>
+          <title>Bill</title>
           <style>
-            body { font-family: 'Courier New', Courier, monospace; width: 300px; margin: 0 auto; padding: 20px; color: #000; }
-            h2 { text-align: center; margin-bottom: 0; font-size: 20px; text-transform: uppercase; }
-            .sub { text-align: center; font-size: 12px; color: #555; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            body { 
+              font-family: 'Courier New', Courier, monospace; 
+              width: 300px; 
+              margin: 0 auto; 
+              padding: 20px; 
+              color: #000; 
+            }
+            h2 { 
+              text-align: center; 
+              margin: 0 0 2px 0; 
+              font-size: 20px; 
+              text-transform: uppercase; 
+            }
+            .gstin { 
+              text-align: center; 
+              font-size: 10px; 
+              color: #555; 
+              margin-bottom: 15px; 
+            }
+            .meta { 
+              text-align: center; 
+              font-size: 11px; 
+              color: #000; 
+              margin-bottom: 20px; 
+            }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
             th { text-align: left; font-size: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }
-            .totals { width: 100%; font-size: 12px; } .totals tr td:last-child { text-align: right; }
-            .final-total { font-size: 16px; font-weight: bold; border-top: 2px solid #000; margin-top: 10px; } .final-total td { padding-top: 8px !important; }
-            .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #555; }
+            .totals { width: 100%; font-size: 12px; } 
+            .totals tr td:last-child { text-align: right; }
+            .final-total { 
+              font-size: 16px; 
+              font-weight: bold; 
+              border-top: 2px solid #000; 
+            } 
+            // .final-total td { padding-top: 8px !important; }
+            .footer { margin-top: 25px; }
+            .payment { 
+              font-size: 11px; 
+              color: #000; 
+              margin-bottom: 15px; 
+            }
+            .thanks { 
+              text-align: center; 
+              font-size: 12px; 
+              color: #555; 
+            }
           </style>
         </head>
         <body>
-          <h2>CROSTA PIZZA</h2>
-          <div class="sub">Table ${billData.tableNumber} | ${billData.orderType.toUpperCase()}</div>
+          <h2>Crosta by PD²</h2>
+          <div class="gstin">GSTIN: 24CPUPD4122D1Z8</div>
+          <div class="meta">${dateTimeStr} | ${billData.orderType.toUpperCase()}</div>
           
-          <table><thead><tr><th>Item</th><th style="text-align:right;">Amount</th></tr></thead>
-          <tbody>${itemsHtml}</tbody></table>
+          <table>
+            <thead><tr><th>Item</th><th style="text-align:right;">Amount</th></tr></thead>
+            <tbody>${itemsHtml}</tbody>
+          </table>
 
           <table class="totals">
             <tr><td>Subtotal</td><td>₹${billData.subtotal.toFixed(2)}</td></tr>
@@ -395,24 +476,39 @@ const Orders = () => {
           </table>
 
           <div class="footer">
-            Operator: ${billData.operatorName}<br>
-            Payment: ${billData.paymentType.toUpperCase()}<br>
-            Billed: ${new Date(billData.createdAt).toLocaleString()}
+            <div class="payment">Payment: ${billData.paymentType.toUpperCase()}</div>
+            <div class="thanks">Thank You, Visit Again</div>
           </div>
         </body>
       </html>
     `;
 
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
+    const actionWindow = window.open('', '_blank');
+    if (!actionWindow) {
       showToast("Please allow popups to print", "error");
       return;
     }
-    printWindow.document.write(fullReceiptHtml);
-    printWindow.document.close();
-    printWindow.onload = () => {
-      printWindow.print();
-      printWindow.close();
+
+    actionWindow.document.write(fullReceiptHtml);
+    actionWindow.document.close();
+
+    actionWindow.onload = () => {
+      let handled = false;
+
+      const cleanup = () => {
+        if (handled) return;
+        handled = true;
+
+        if (waUrl) {
+          actionWindow.location.href = waUrl;
+        } else {
+          actionWindow.close();
+        }
+      };
+
+      actionWindow.onafterprint = cleanup;
+      window.setTimeout(cleanup, 15000);
+      actionWindow.print();
     };
   };
 
@@ -474,14 +570,12 @@ const Orders = () => {
                 </div>
               </div>
 
-              {/* Category filters — orange on active + hover */}
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {categories.map(cat => (
                   <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${activeCategory === cat ? 'bg-[#FFF5E9] border-[#FF7A00] text-[#FF7A00]' : 'bg-white border-gray-200 text-gray-400 hover:bg-[#FFF5E9] hover:border-[#FF7A00] hover:text-[#FF7A00]'}`}>{cat}</button>
                 ))}
               </div>
             </div>
-            {/* Back to white — same as cart panel */}
             <div className="flex-1 overflow-y-auto p-3 min-h-0 bg-white">
               <div className="grid grid-cols-2 gap-2.5">
                 {filteredProducts.length > 0 ? filteredProducts.map(product => (
@@ -530,7 +624,6 @@ const Orders = () => {
                   <button disabled={isCartEmpty} onClick={() => handleSaveKOT(true)} className="flex-1 py-1.5 border border-gray-200 text-[#333333] hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save & Print KOT</button>
                 </div>
 
-                {/* Only CTA button keeps orange */}
                 <button
                   onClick={handleOpenBillModal}
                   disabled={isCartEmpty || isSavingForBill}
