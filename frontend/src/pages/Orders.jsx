@@ -1,3 +1,649 @@
+// import React, { useState, useMemo, useEffect } from 'react';
+// import TableCard from '../components/order/TableCard';
+// import ProductCard from '../components/order/ProductCard';
+// import CartItem from '../components/order/CartItem';
+// import OrderTypeCard from '../components/order/OrderTypeCard';
+// import BillModal from '../components/order/BillModal';
+// import orderService from '../services/orderService';
+// import billService from '../services/billService';
+// import { useToast } from '../lib/ToastContext';
+
+// const API_BASE = import.meta.env.VITE_API_URL;
+
+// const Orders = () => {
+//   const { showToast } = useToast();
+
+//   const [view, setView] = useState('tables');
+//   const [selectedTable, setSelectedTable] = useState(null);
+//   const [orderId, setOrderId] = useState(null);
+//   const [orderType, setOrderType] = useState('Dine-in');
+//   const [cart, setCart] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [activeCategory, setActiveCategory] = useState('All');
+//   const [isBillModalOpen, setIsBillModalOpen] = useState(false);
+
+//   const [tables, setTables] = useState([]);
+//   const [products, setProducts] = useState([]);
+//   const [isLoading, setIsLoading] = useState(true);
+
+//   const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+//   const [currentTimeState, setCurrentTimeState] = useState(currentTime);
+//   const [isCartDirty, setIsCartDirty] = useState(false);
+//   const [isBillingLoading, setIsBillingLoading] = useState(false);
+//   const [isSavingForBill, setIsSavingForBill] = useState(false);
+
+//   const fetchInitialData = async () => {
+//     setIsLoading(true);
+//     try {
+//       const [ordersRes, productsRes] = await Promise.all([
+//         orderService.getActiveOrders(),
+//         orderService.getProducts()
+//       ]);
+
+//       const activeOrders = ordersRes.data.data;
+//       const activeProducts = productsRes.data.data;
+
+//       const activeMap = {};
+//       activeOrders.forEach(order => {
+//         activeMap[order.tableNumber] = order;
+//       });
+
+//       const mappedTables = Array.from({ length: 6 }, (_, i) => {
+//         const tableNum = i + 1;
+//         const activeOrder = activeMap[tableNum];
+//         if (activeOrder) {
+//           return {
+//             id: tableNum,
+//             status: 'Occupied',
+//             orderId: activeOrder._id,
+//             subtotal: activeOrder.subtotal,
+//             orderType: activeOrder.orderType
+//           };
+//         }
+//         return { id: tableNum, status: 'Available' };
+//       });
+
+//       setTables(mappedTables);
+//       setProducts(activeProducts);
+//     } catch (error) {
+//       showToast("Failed to load initial data", error);
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   const fetchTables = async () => {
+//     try {
+//       const ordersRes = await orderService.getActiveOrders();
+//       const activeOrders = ordersRes.data.data;
+
+//       const activeMap = {};
+//       activeOrders.forEach(order => {
+//         activeMap[order.tableNumber] = order;
+//       });
+
+//       const mappedTables = Array.from({ length: 6 }, (_, i) => {
+//         const tableNum = i + 1;
+//         const activeOrder = activeMap[tableNum];
+//         if (activeOrder) {
+//           return {
+//             id: tableNum,
+//             status: 'Occupied',
+//             orderId: activeOrder._id,
+//             subtotal: activeOrder.subtotal,
+//             orderType: activeOrder.orderType
+//           };
+//         }
+//         return { id: tableNum, status: 'Available' };
+//       });
+
+//       setTables(mappedTables);
+//     } catch (error) {
+//       showToast("Failed to refresh tables", error);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchInitialData();
+//   }, []);
+
+//   useEffect(() => {
+//     const timer = setInterval(() => {
+//       setCurrentTimeState(new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }));
+//     }, 1000);
+//     return () => clearInterval(timer);
+//   }, []);
+
+//   const categories = useMemo(() => {
+//     const cats = [...new Set(products.map(p => p.category))];
+//     return ['All', ...cats];
+//   }, [products]);
+
+//   const filteredProducts = useMemo(() => {
+//     return products.filter(p => {
+//       const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+//       const matchesCategory = activeCategory === 'All' || p.category === activeCategory;
+//       return matchesSearch && matchesCategory && p.isAvailable;
+//     });
+//   }, [searchTerm, activeCategory, products]);
+
+//   const handleAddToCart = (product, variantName, variantPrice) => {
+//     setIsCartDirty(true);
+//     setCart(prev => {
+//       const existingIndex = prev.findIndex(item => item._id === product._id && item.variant === variantName);
+//       if (existingIndex !== -1) {
+//         return prev.map((item, index) => index === existingIndex ? { ...item, quantity: item.quantity + 1 } : item);
+//       }
+//       return [...prev, { cartId: Date.now() + Math.random(), _id: product._id, name: product.name, variant: variantName, price: variantPrice, quantity: 1 }];
+//     });
+//   };
+
+//   const handleUpdateQuantity = (cartId, newQty) => {
+//     setIsCartDirty(true);
+//     setCart(prev => prev.map(item => item.cartId === cartId ? { ...item, quantity: newQty } : item));
+//   };
+
+//   const handleRemoveItem = (cartId) => {
+//     setIsCartDirty(true);
+//     setCart(prev => prev.filter(item => item.cartId !== cartId));
+//   };
+
+//   const subtotal = useMemo(() => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0), [cart]);
+//   const isCartEmpty = cart.length === 0;
+
+//   const handleSelectTable = async (tableId) => {
+//     setSelectedTable(tableId);
+//     setView('cart');
+//     const table = tables.find(t => t.id === tableId);
+
+//     if (table.status === 'Occupied') {
+//       try {
+//         const res = await orderService.getOrderById(table.orderId);
+//         const orderData = res.data.data;
+//         setOrderId(orderData._id);
+//         setOrderType(orderData.orderType === 'dine-in' ? 'Dine-in' : 'Takeaway');
+//         const mappedCart = orderData.items.map(item => ({ cartId: Date.now() + Math.random(), _id: item.productId, name: item.name, variant: item.variant, price: item.price, quantity: item.quantity }));
+//         setCart(mappedCart);
+//         setIsCartDirty(false);
+//       } catch (error) {
+//         showToast(error.response?.data?.message || "Failed to fetch order", "error");
+//         resetToTables();
+//       }
+//     } else {
+//       setOrderId(null);
+//       setCart([]);
+//       setOrderType('Dine-in');
+//       setIsCartDirty(false);
+//     }
+//   };
+
+//   const resetToTables = () => {
+//     setView('tables');
+//     setSelectedTable(null);
+//     setCart([]);
+//     setOrderId(null);
+//   };
+
+//   const printKOT = () => {
+//     const printWindow = window.open('', '_blank');
+//     if (!printWindow) {
+//       showToast("Please allow popups to print", "error");
+//       return;
+//     }
+
+//     const itemsHtml = cart.map(item => `
+//       <tr>
+//         <td style="border-bottom: 1px dashed #ccc; padding: 6px 0;">${item.quantity}x</td>
+//         <td style="border-bottom: 1px dashed #ccc; padding: 6px 10px; font-weight: 500;">${item.name}</td>
+//         <td style="border-bottom: 1px dashed #ccc; padding: 6px 0; text-align: right; color: #555;">${item.variant}</td>
+//       </tr>
+//     `).join('');
+
+//     printWindow.document.write(`
+//       <html>
+//         <head>
+//           <title>KOT - Table ${selectedTable}</title>
+//           <style>
+//             body { font-family: 'Courier New', Courier, monospace; width: 300px; margin: 0 auto; padding: 20px; color: #000; }
+//             h2 { text-align: center; margin-bottom: 5px; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
+//             .meta { text-align: center; font-size: 12px; margin-bottom: 20px; color: #333; }
+//             table { width: 100%; border-collapse: collapse; font-size: 14px; }
+//             .timestamp { text-align: center; margin-top: 30px; font-size: 12px; color: #555; }
+//           </style>
+//         </head>
+//         <body>
+//           <h2>Kitchen Order Ticket</h2>
+//           <div class="meta">
+//             <strong>Table ${selectedTable}</strong> | ${orderType}<br>
+//             ${orderId ? `ID: ORD_${orderId.slice(-5)}` : 'NEW ORDER'}
+//           </div>
+//           <table>
+//             <tbody>${itemsHtml}</tbody>
+//           </table>
+//           <div class="timestamp">Printed: ${new Date().toLocaleString()}</div>
+//         </body>
+//       </html>
+//     `);
+//     printWindow.document.close();
+
+//     printWindow.onload = () => {
+//       printWindow.print();
+//       setTimeout(() => {
+//         printWindow.close();
+//       }, 100);
+//     };
+//   };
+
+//   const handleSaveKOT = async (shouldPrint = false) => {
+//     if (isCartEmpty) return;
+
+//     const payload = {
+//       tableNumber: selectedTable,
+//       orderType: orderType === 'Dine-in' ? 'dine-in' : 'takeaway',
+//       items: cart.map(item => ({ productId: item._id, variant: item.variant, quantity: item.quantity }))
+//     };
+
+//     try {
+//       let res;
+//       if (orderId) {
+//         res = await orderService.updateOrder(orderId, payload);
+//       } else {
+//         res = await orderService.createOrder(payload);
+//         setOrderId(res.data.data._id);
+//       }
+
+//       setIsCartDirty(false);
+
+//       if (shouldPrint) {
+//         printKOT();
+//         setTimeout(() => {
+//           fetchInitialData();
+//           resetToTables();
+//         }, 500);
+//       } else {
+//         showToast("KOT Saved successfully!", "success");
+//         fetchInitialData();
+//         resetToTables();
+//       }
+//     } catch (error) {
+//       showToast(error.response?.data?.message || "Failed to save KOT", "error");
+//     }
+//   };
+
+//   const handleCancelOrder = async () => {
+//     if (orderId) {
+//       try {
+//         await orderService.cancelOrder(orderId);
+//         showToast("Order cancelled", "success");
+//       } catch (error) {
+//         showToast(error.response?.data?.message || "Failed to cancel order", "error");
+//         return;
+//       }
+//     }
+//     fetchInitialData();
+//     resetToTables();
+//   };
+
+//   const handleOpenBillModal = async () => {
+//     if (isCartEmpty || isSavingForBill) return;
+
+//     if (isCartDirty || !orderId) {
+//       setIsSavingForBill(true);
+//       try {
+//         const payload = {
+//           tableNumber: selectedTable,
+//           orderType: orderType === 'Dine-in' ? 'dine-in' : 'takeaway',
+//           items: cart.map(item => ({ productId: item._id, variant: item.variant, quantity: item.quantity }))
+//         };
+
+//         if (orderId) {
+//           await orderService.updateOrder(orderId, payload);
+//         } else {
+//           const res = await orderService.createOrder(payload);
+//           setOrderId(res.data.data._id);
+//         }
+
+//         setIsCartDirty(false);
+//         fetchTables();
+//         showToast("KOT Saved!", "success");
+
+//       } catch (error) {
+//         showToast(error.response?.data?.message || "Failed to save KOT before billing", "error");
+//         return;
+//       } finally {
+//         setIsSavingForBill(false);
+//       }
+//     }
+
+//     setIsBillModalOpen(true);
+//   };
+
+//   // ─────────────────────────────────────────────
+//   // E-BILL HELPER
+//   // ─────────────────────────────────────────────
+
+//   const triggerDesktopApp = (phone, billId) => {
+//     const pdfLink = `${API_BASE}/api/bills/pdf/download/${billId}`;
+//     const message = `Hello! Your bill is ready.\n\nDownload your PDF invoice:\n${pdfLink}\n\nThank you, visit again!`;
+//     const encodedMessage = encodeURIComponent(message);
+//     const waUrl = `whatsapp://send?phone=91${phone}&text=${encodedMessage}`;
+
+//     const link = document.createElement('a');
+//     link.href = waUrl;
+//     link.style.display = 'none';
+//     document.body.appendChild(link);
+//     link.click();
+//     document.body.removeChild(link);
+//   };
+
+//   // ─────────────────────────────────────────────
+//   // BILL GENERATION
+//   // ─────────────────────────────────────────────
+
+//   const handleGenerateBill = async (discount, paymentType, customerPhone, shouldPrint = false, sendEBill = false) => {
+//     if (isBillingLoading) return;
+//     setIsBillingLoading(true);
+
+//     if (!orderId) {
+//       showToast("Please save the KOT before billing", "error");
+//       setIsBillingLoading(false);
+//       return;
+//     }
+
+//     try {
+//       // 1. PRIORITY: Save Bill to DB
+//       const res = await billService.createBill({
+//         orderId,
+//         discount: Number(discount),
+//         paymentType: paymentType.toLowerCase(),
+//         customerPhone: customerPhone || null
+//       });
+
+//       const billData = res.data.data;
+      
+//       // 2. Close modal immediately
+//       setIsBillModalOpen(false);
+
+//       // 3. Print if requested (non-blocking)
+//       if (shouldPrint) {
+//         generateReceipt(billData);
+//       }
+
+//       // 4. Wait 2 seconds if printing to allow print dialog to settle
+//       if (shouldPrint) {
+//         await new Promise(resolve => setTimeout(resolve, 2000));
+//       }
+
+//       // 5. Open WhatsApp desktop app if requested
+//       if (sendEBill) {
+//         triggerDesktopApp(customerPhone, billData._id);
+//       }
+
+//       // 6. Show appropriate toast message
+//       const toastMsg = sendEBill ? "Bill Generated, WhatsApp opened" : "Bill Generated";
+//       showToast(toastMsg, "success");
+
+//       // 7. Reset and refresh
+//       fetchInitialData();
+//       resetToTables();
+
+//     } catch (error) {
+//       console.error("Bill Error:", error?.response?.data?.message);
+//       showToast(error?.response?.data?.message || "Failed to generate bill", "error");
+//     } finally {
+//       setIsBillingLoading(false);
+//     }
+//   };
+
+//   const generateReceipt = (billData) => {
+//     const dateObj = new Date(billData.createdAt);
+//     const minimalDate = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric', year: '2-digit' });
+//     const minimalTime = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+//     const dateTimeStr = `${minimalDate} ${minimalTime}`;
+
+//     const itemsHtml = billData.items.map(item => `
+//       <tr>
+//         <td style="padding: 4px 0; font-size: 12px;">${item.quantity}x ${item.name} (${item.variant})</td>
+//         <td style="padding: 4px 0; text-align: right; font-size: 12px;">₹${item.subtotal.toFixed(2)}</td>
+//       </tr>
+//     `).join('');
+
+//     const fullReceiptHtml = `
+//       <html>
+//         <head>
+//           <title>Bill</title>
+//           <style>
+//             body { 
+//               font-family: 'Courier New', Courier, monospace; 
+//               width: 300px; 
+//               margin: 0 auto; 
+//               padding: 20px; 
+//               color: #000; 
+//             }
+//             h2 { 
+//               text-align: center; 
+//               margin: 0 0 2px 0; 
+//               font-size: 20px; 
+//               text-transform: uppercase; 
+//             }
+//             .gstin { 
+//               text-align: center; 
+//               font-size: 10px; 
+//               color: #555; 
+//               margin-bottom: 15px; 
+//             }
+//             .meta { 
+//               text-align: center; 
+//               font-size: 11px; 
+//               color: #000; 
+//               margin-bottom: 20px; 
+//             }
+//             table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+//             th { text-align: left; font-size: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }
+//             .totals { width: 100%; font-size: 12px; } 
+//             .totals tr td:last-child { text-align: right; }
+//             .final-total { 
+//               font-size: 16px; 
+//               font-weight: bold; 
+//               border-top: 2px solid #000; 
+//             } 
+//             .footer { margin-top: 25px; }
+//             .payment { 
+//               font-size: 11px; 
+//               color: #000; 
+//               margin-bottom: 15px; 
+//             }
+//             .thanks { 
+//               text-align: center; 
+//               font-size: 12px; 
+//               color: #555; 
+//             }
+//           </style>
+//         </head>
+//         <body>
+//           <h2>Crosta by PD²</h2>
+//           <div class="gstin">GSTIN: 24CPUPD4122D1Z8</div>
+//           <div class="meta">${dateTimeStr} | ${billData.orderType.toUpperCase()}</div>
+          
+//           <table>
+//             <thead><tr><th>Item</th><th style="text-align:right;">Amount</th></tr></thead>
+//             <tbody>${itemsHtml}</tbody>
+//           </table>
+
+//           <table class="totals">
+//             <tr><td>Subtotal</td><td>₹${billData.subtotal.toFixed(2)}</td></tr>
+//             ${billData.discount > 0 ? `<tr><td>Discount</td><td>- ₹${billData.discount.toFixed(2)}</td></tr>` : ''}
+//             <tr><td>GST</td><td>+ ₹${billData.gst.toFixed(2)}</td></tr>
+//             <tr class="final-total"><td>TOTAL</td><td>₹${billData.totalAmount.toFixed(2)}</td></tr>
+//           </table>
+
+//           <div class="footer">
+//             <div class="payment">Payment: ${billData.paymentType.toUpperCase()}</div>
+//             <div class="thanks">Thank You, Visit Again</div>
+//           </div>
+//         </body>
+//       </html>
+//     `;
+
+//     const printWindow = window.open('', '_blank');
+//     if (!printWindow) {
+//       showToast("Please allow popups to print", "error");
+//       return;
+//     }
+
+//     printWindow.document.write(fullReceiptHtml);
+//     printWindow.document.close();
+    
+//     printWindow.onload = () => {
+//       printWindow.print();
+//       // Close window after a brief delay to allow printing
+//       setTimeout(() => {
+//         printWindow.close();
+//       }, 100);
+//     };
+//   };
+
+//   if (isLoading && view === 'tables') {
+//     return (
+//       <div className="h-full w-full flex items-center justify-center">
+//         <span className="animate-pulse text-gray-400 font-medium">Loading tables...</span>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="h-full w-full flex flex-col gap-4 overflow-hidden">
+
+//       {view !== 'tables' && (
+//         <div className="flex items-end justify-between flex-shrink-0 px-4 lg:px-6">
+//           <h1 className="text-3xl font-extrabold italic tracking-tight text-[#333333]">Orders</h1>
+//         </div>
+//       )}
+
+//       {view === 'tables' ? (
+//         <div className="p-6">
+
+//           <div className="bg-white border border-gray-200 rounded-xl px-5 py-4 mb-6 flex items-center justify-between shadow-sm">
+//             <div className="flex items-center gap-4">
+//               <h1 className="text-3xl font-extrabold italic tracking-tight text-[#333333]">Orders</h1>
+//               <div className="h-6 w-px bg-gray-200"></div>
+//               <span className="text-sm font-medium text-gray-400">
+//                 {tables.filter(t => t.status === 'Occupied').length}/6 Tables Active
+//               </span>
+//             </div>
+//             <div className="text-xs font-mono text-gray-400 bg-gray-100 px-3 py-1.5 rounded-md border border-gray-200">
+//               {currentTimeState}
+//             </div>
+//           </div>
+
+//           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl">
+//             {tables.map(table => <TableCard key={table.id} table={table} onClick={handleSelectTable} />)}
+//           </div>
+//         </div>
+//       ) : (
+//         <div className="flex-1 flex gap-2 px-2 pb-2 pt-0 min-h-0 min-w-0">
+
+//           {/* LEFT: Products Panel */}
+//           <div className="flex-1 flex flex-col bg-white rounded-xl border border-black/20 shadow-sm min-h-0 min-w-0 overflow-hidden">
+//             <div className="px-3 pt-3 pb-2 border-b border-black/10 flex-shrink-0">
+//               <div className="flex items-center gap-2 mb-2">
+//                 <button onClick={resetToTables} className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-black/20 text-black hover:bg-[#FFF5E9] hover:border-[#FF7A00] hover:text-[#FF7A00] transition-all text-sm font-medium">
+//                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+//                   Back
+//                 </button>
+//                 <div className="flex-1 min-w-0 relative">
+//                   <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 pr-9 bg-white border border-black/20 rounded-lg text-sm text-black placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30" />
+//                   {searchTerm && (
+//                     <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-black hover:text-black transition-colors">
+//                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+//                     </button>
+//                   )}
+//                 </div>
+//               </div>
+
+//               <div className="flex gap-2 overflow-x-auto pb-1">
+//                 {categories.map(cat => (
+//                   <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${activeCategory === cat ? 'bg-[#FFF5E9] border-[#FF7A00] text-[#FF7A00]' : 'bg-white border-gray-400 text-black/60 hover:bg-[#FFF5E9] hover:border-[#FF7A00] hover:text-[#FF7A00]'}`}>{cat}</button>
+//                 ))}
+//               </div>
+//             </div>
+//             <div className="flex-1 overflow-y-auto p-3 min-h-0 bg-white">
+//               <div className="grid grid-cols-2 gap-2.5">
+//                 {filteredProducts.length > 0 ? filteredProducts.map(product => (
+//                   <ProductCard key={product._id} product={product} onAdd={handleAddToCart} />
+//                 )) : (
+//                   <div className="col-span-full flex flex-col items-center justify-center py-10 text-black/40">
+//                     <p className="text-lg font-medium text-black">No products found</p>
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+
+//           {/* RIGHT: Cart Panel */}
+//           <div className="w-96 flex-shrink-0 bg-white rounded-xl border border-gray-200 flex flex-col shadow-sm min-h-0">
+//             <div className="px-3 pt-3 pb-2 border-b border-gray-200 flex-shrink-0">
+//               <div className="flex items-center justify-between mb-2">
+//                 <h2 className="text-lg font-bold text-[#333333]">Table {selectedTable}</h2>
+//                 <button onClick={handleCancelOrder} className="text-xs font-semibold text-red-500 hover:text-red-700">{orderId ? 'Cancel Order' : 'Clear Order'}</button>
+//               </div>
+//               <div className="flex gap-2">
+//                 <OrderTypeCard type="Dine-in" isActive={orderType === 'Dine-in'} onClick={() => setOrderType('Dine-in')} />
+//                 <OrderTypeCard type="Takeaway" isActive={orderType === 'Takeaway'} onClick={() => setOrderType('Takeaway')} />
+//               </div>
+//             </div>
+
+//             <div className="flex-1 overflow-y-auto min-h-0 max-h-[28.5rem] px-3 py-1.5 divide-y divide-gray-100">
+//               {cart.length > 0 ? cart.map(item => (
+//                 <CartItem key={item.cartId} item={item} onUpdate={handleUpdateQuantity} onRemove={handleRemoveItem} />
+//               )) : (
+//                 <div className="flex flex-col items-center justify-center py-4 text-gray-400 text-sm">
+//                   <p>Cart is empty</p>
+//                   <p className="text-xs mt-1">Click a variant to add</p>
+//                 </div>
+//               )}
+//             </div>
+
+//             <div className="px-3 pt-3 pb-0.5 border-t border-gray-200 flex-shrink-0">
+//               <div className="flex justify-between items-center mb-8">
+//                 <span className="text-sm font-medium text-gray-400">Subtotal</span>
+//                 <span className="text-xl font-bold text-[#333333]">₹{subtotal.toFixed(2)}</span>
+//               </div>
+//               <div className="flex flex-col gap-1.5">
+//                 <div className="flex gap-2">
+//                   <button disabled={isCartEmpty} onClick={() => handleSaveKOT(false)} className="flex-1 py-1.5 border border-gray-200 text-[#333333] hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save KOT</button>
+//                   <button disabled={isCartEmpty} onClick={() => handleSaveKOT(true)} className="flex-1 py-1.5 border border-gray-200 text-[#333333] hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors">Save & Print KOT</button>
+//                 </div>
+
+//                 <button
+//                   onClick={handleOpenBillModal}
+//                   disabled={isCartEmpty || isSavingForBill}
+//                   className="w-full py-2.5 bg-[#FF7A00] hover:bg-orange-600 disabled:bg-orange-200 text-white rounded-lg text-sm font-bold shadow-sm transition-colors disabled:cursor-not-allowed"
+//                 >
+//                   {isSavingForBill ? 'Saving...' : 'Proceed to Bill'}
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+
+//           <BillModal
+//             isOpen={isBillModalOpen}
+//             onClose={() => setIsBillModalOpen(false)}
+//             cart={cart}
+//             onGenerateBill={handleGenerateBill}
+//             isBillingLoading={isBillingLoading}
+//             tableNumber={selectedTable}
+//             orderType={orderType}
+//           />
+//         </div>
+//       )}
+//     </div>
+//   );
+// };
+
+// export default Orders;
+
+
 import React, { useState, useMemo, useEffect } from 'react';
 import TableCard from '../components/order/TableCard';
 import ProductCard from '../components/order/ProductCard';
@@ -7,6 +653,7 @@ import BillModal from '../components/order/BillModal';
 import orderService from '../services/orderService';
 import billService from '../services/billService';
 import { useToast } from '../lib/ToastContext';
+
 const API_BASE = import.meta.env.VITE_API_URL;
 
 const Orders = () => {
@@ -227,7 +874,9 @@ const Orders = () => {
 
     printWindow.onload = () => {
       printWindow.print();
-      printWindow.close();
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
     };
   };
 
@@ -316,17 +965,32 @@ const Orders = () => {
   };
 
   // ─────────────────────────────────────────────
-  // E-BILL HELPERS
+  // E-BILL HELPER - Triggers WhatsApp without losing focus
   // ─────────────────────────────────────────────
 
-  const openWhatsAppEBill = (customerPhone, message) => {
+  const triggerDesktopApp = (phone, billId) => {
+    const pdfLink = `${API_BASE}/api/bills/pdf/download/${billId}`;
+    const message = `Hello! Your bill is ready.\n\nDownload your PDF invoice:\n${pdfLink}\n\nThank you, visit again!`;
     const encodedMessage = encodeURIComponent(message);
-    const url = `https://web.whatsapp.com/send?phone=91${customerPhone}&text=${encodedMessage}`;
-    window.open(url, '_blank');
+    const waUrl = `whatsapp://send?phone=91${phone}&text=${encodedMessage}`;
+
+    // Create and trigger link
+    const link = document.createElement('a');
+    link.href = waUrl;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Immediately return focus to POS window
+    // This prevents WhatsApp from stealing focus permanently
+    setTimeout(() => {
+      window.focus();
+    }, 100);
   };
 
   // ─────────────────────────────────────────────
-  // BILL GENERATION (updated for e-bill)
+  // BILL GENERATION
   // ─────────────────────────────────────────────
 
   const handleGenerateBill = async (discount, paymentType, customerPhone, shouldPrint = false, sendEBill = false) => {
@@ -340,6 +1004,7 @@ const Orders = () => {
     }
 
     try {
+      // 1. PRIORITY: Save Bill to DB
       const res = await billService.createBill({
         orderId,
         discount: Number(discount),
@@ -348,51 +1013,47 @@ const Orders = () => {
       });
 
       const billData = res.data.data;
+      
+      // 2. Close modal immediately
       setIsBillModalOpen(false);
 
-      if (shouldPrint && sendEBill) {
-        const pdfLink = `${API_BASE}/api/bills/pdf/download/${billData._id} `;
-        const message = `Hello! Your bill is ready.\n\nYou can download PDF from below link:\n${pdfLink}\n\nThank you, visit again!`;
-        const encodedMessage = encodeURIComponent(message);
-        const waUrl = `https://web.whatsapp.com/send?phone=91${customerPhone}&text=${encodedMessage}`;
-
-        showToast("Printing receipt...", "success");
-
-        // 2. Pass waUrl into the single print window
-        generateReceipt(billData, true, waUrl);
-
-        setTimeout(() => {
-          fetchInitialData();
-          resetToTables();
-        }, 500);
-
-      } else if (!shouldPrint && sendEBill) {
-
-        const pdfLink = `${API_BASE}/api/bills/pdf/download/${billData._id} `;
-        const message = `Hello! Your bill is ready.\n\nYou can download PDF from below link:\n${pdfLink}\n\nThank you, visit again!`;
-
-        showToast("Bill saved! Opening WhatsApp...", "success");
-        openWhatsAppEBill(customerPhone, message); // Pass message string directly now
-        fetchInitialData();
-        resetToTables();
-      } else {
-        showToast("Bill generated successfully!", "success");
-        fetchInitialData();
-        resetToTables();
+      // 3. Print if requested (triggers print dialog/queue)
+      if (shouldPrint) {
+        generateReceipt(billData);
       }
 
+      // 4. Wait 2.5 seconds to allow:
+      //    - Print dialog to open
+      //    - User to click "Print" 
+      //    - Print job to be queued by browser/OS
+      //    This ensures print job is sent before WhatsApp opens
+      if (shouldPrint) {
+        await new Promise(resolve => setTimeout(resolve, 2500));
+      }
+
+      // 5. Open WhatsApp desktop app if requested
+      //    Focus will automatically return to POS (handled in triggerDesktopApp)
+      if (sendEBill) {
+        triggerDesktopApp(customerPhone, billData._id);
+      }
+
+      // 6. Show appropriate toast message
+      const toastMsg = sendEBill ? "Bill Generated, WhatsApp opened" : "Bill Generated";
+      showToast(toastMsg, "success");
+
+      // 7. Reset and refresh
+      fetchInitialData();
+      resetToTables();
+
     } catch (error) {
-      console.log("Bill Error:", error?.response?.data?.message);
+      console.error("Bill Error:", error?.response?.data?.message);
       showToast(error?.response?.data?.message || "Failed to generate bill", "error");
     } finally {
       setIsBillingLoading(false);
     }
   };
 
-  const generateReceipt = (billData, shouldPrint, waUrl = null) => {
-    if (!shouldPrint) return;
-
-    // Format date minimally: "11/4/26 1:25 PM"
+  const generateReceipt = (billData) => {
     const dateObj = new Date(billData.createdAt);
     const minimalDate = dateObj.toLocaleDateString('en-IN', { day: 'numeric', month: 'numeric', year: '2-digit' });
     const minimalTime = dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -444,7 +1105,6 @@ const Orders = () => {
               font-weight: bold; 
               border-top: 2px solid #000; 
             } 
-            // .final-total td { padding-top: 8px !important; }
             .footer { margin-top: 25px; }
             .payment { 
               font-size: 11px; 
@@ -483,32 +1143,21 @@ const Orders = () => {
       </html>
     `;
 
-    const actionWindow = window.open('', '_blank');
-    if (!actionWindow) {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
       showToast("Please allow popups to print", "error");
       return;
     }
 
-    actionWindow.document.write(fullReceiptHtml);
-    actionWindow.document.close();
-
-    actionWindow.onload = () => {
-      let handled = false;
-
-      const cleanup = () => {
-        if (handled) return;
-        handled = true;
-
-        if (waUrl) {
-          actionWindow.location.href = waUrl;
-        } else {
-          actionWindow.close();
-        }
-      };
-
-      actionWindow.onafterprint = cleanup;
-      window.setTimeout(cleanup, 15000);
-      actionWindow.print();
+    printWindow.document.write(fullReceiptHtml);
+    printWindow.document.close();
+    
+    printWindow.onload = () => {
+      printWindow.print();
+      // Close window after a brief delay to allow printing
+      setTimeout(() => {
+        printWindow.close();
+      }, 100);
     };
   };
 
