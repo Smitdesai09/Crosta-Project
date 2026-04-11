@@ -63,6 +63,8 @@ const createInitialProductErrors = (variantCount = 1) => ({
   variants: Array.from({ length: variantCount }, () => ({ name: "", price: "" })),
 });
 
+const normalizeVariantName = (value = "") => value.trim().toLowerCase();
+
 const formatCategory = (value = "") => {
   return value
     .split(/[\s-]+/)
@@ -532,6 +534,7 @@ const ProductManagement = () => {
 
   const validateProductForm = () => {
     const nextErrors = createInitialProductErrors(productForm.variants.length);
+    const variantNameIndexes = new Map();
 
     if (!productForm.name.trim()) {
       nextErrors.name = "Product name is required";
@@ -544,11 +547,23 @@ const ProductManagement = () => {
     productForm.variants.forEach((variant, index) => {
       if (!variant.name.trim()) {
         nextErrors.variants[index].name = "Variant name is required";
+      } else {
+        const normalizedVariantName = normalizeVariantName(variant.name);
+        const existingIndexes = variantNameIndexes.get(normalizedVariantName) || [];
+        variantNameIndexes.set(normalizedVariantName, [...existingIndexes, index]);
       }
 
       if (variant.price === "" || Number.isNaN(Number(variant.price)) || Number(variant.price) < 0) {
         nextErrors.variants[index].price = "Enter a valid price";
       }
+    });
+
+    variantNameIndexes.forEach((indexes) => {
+      if (indexes.length < 2) return;
+
+      indexes.forEach((index) => {
+        nextErrors.variants[index].name = "Duplicate variant names are not allowed";
+      });
     });
 
     setFormErrors(nextErrors);

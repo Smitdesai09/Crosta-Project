@@ -2,14 +2,38 @@ const Product = require("../models/products");
 const mongoose = require("mongoose");
 
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
+const normalizeVariantName = (name = "") => name.trim().toLowerCase();
 
 const validateVariants = (variants) => {
     if (!Array.isArray(variants) || variants.length === 0) return false;
     return variants.every(v => 
         v.name && typeof v.name === 'string' && v.name.trim() &&
-        v.price !== undefined && (typeof v.price === 'number' || !isNaN(v.price))
+        v.price !== undefined && !Number.isNaN(Number(v.price)) && Number(v.price) >= 0
     );
 };
+
+const hasDuplicateVariantNames = (variants) => {
+    const seen = new Set();
+
+    for (const variant of variants) {
+        const normalizedName = normalizeVariantName(variant.name);
+
+        if (seen.has(normalizedName)) {
+            return true;
+        }
+
+        seen.add(normalizedName);
+    }
+
+    return false;
+};
+
+const sanitizeVariants = (variants) =>
+    variants.map((variant) => ({
+        ...variant,
+        name: variant.name.trim(),
+        price: Number(variant.price),
+    }));
 
 exports.getAllProductsAdmin = async (req, res) => {
     try {
@@ -87,13 +111,21 @@ exports.createProduct = async (req, res) => {
             });
         }
 
+        if (hasDuplicateVariantNames(variants)) {
+            return res.status(400).json({
+                success: false,
+                message: "Duplicate variant names are not allowed for the same product!",
+            });
+        }
+
         // Only normalize to UPPERCASE
         const normalizedCategory = category.toUpperCase().trim();
+        const sanitizedVariants = sanitizeVariants(variants);
 
         const product = await Product.create({ 
-            name, 
+            name: name.trim(), 
             category: normalizedCategory, 
-            variants, 
+            variants: sanitizedVariants, 
             isAvailable 
         });
 
@@ -136,15 +168,23 @@ exports.updateProduct = async (req, res) => {
             });
         }
 
+        if (hasDuplicateVariantNames(variants)) {
+            return res.status(400).json({
+                success: false,
+                message: "Duplicate variant names are not allowed for the same product!",
+            });
+        }
+
         // Only normalize to UPPERCASE
         const normalizedCategory = category.toUpperCase().trim();
+        const sanitizedVariants = sanitizeVariants(variants);
 
         const updatedProduct = await Product.findByIdAndUpdate(
             id,
             { 
-                name, 
+                name: name.trim(), 
                 category: normalizedCategory, 
-                variants, 
+                variants: sanitizedVariants, 
                 isAvailable 
             },
             { new: true }
