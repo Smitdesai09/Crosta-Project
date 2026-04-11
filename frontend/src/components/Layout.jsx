@@ -17,8 +17,10 @@ const Layout = () => {
         setIsMobileOpen={setIsMobileOpen}
       />
 
+      {/* #faaa66
+      #fbb980 */}
       {/* MAIN AREA */}
-      <main className="flex-1 overflow-y-scroll bg-[#F5E6D3]">
+      <main className="flex-1 overflow-y-scroll bg-[#fbb980]">
         <Outlet />
       </main>
 

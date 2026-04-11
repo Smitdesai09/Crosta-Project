@@ -553,17 +553,17 @@ const Orders = () => {
         <div className="flex-1 flex gap-2 px-2 pb-2 pt-0 min-h-0 min-w-0">
 
           {/* LEFT: Products Panel */}
-          <div className="flex-1 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm min-h-0 min-w-0 overflow-hidden">
-            <div className="px-3 pt-3 pb-2 border-b border-gray-200 flex-shrink-0">
+          <div className="flex-1 flex flex-col bg-white rounded-xl border border-black/20 shadow-sm min-h-0 min-w-0 overflow-hidden">
+            <div className="px-3 pt-3 pb-2 border-b border-black/10 flex-shrink-0">
               <div className="flex items-center gap-2 mb-2">
-                <button onClick={resetToTables} className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 text-[#333333] hover:bg-[#FFF5E9] hover:border-[#FF7A00] hover:text-[#FF7A00] transition-all text-sm font-medium">
+                <button onClick={resetToTables} className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-black/20 text-black hover:bg-[#FFF5E9] hover:border-[#FF7A00] hover:text-[#FF7A00] transition-all text-sm font-medium">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                   Back
                 </button>
                 <div className="flex-1 min-w-0 relative">
-                  <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 pr-9 bg-white border border-gray-200 rounded-lg text-sm text-[#333333] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:border-gray-400" />
+                  <input type="text" placeholder="Search products..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full px-3 py-2 pr-9 bg-white border border-black/20 rounded-lg text-sm text-black placeholder:text-black/40 focus:outline-none focus:ring-2 focus:ring-black/10 focus:border-black/30" />
                   {searchTerm && (
-                    <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#333333] hover:text-[#333333] transition-colors">
+                    <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-black hover:text-black transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                   )}
@@ -572,7 +572,7 @@ const Orders = () => {
 
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {categories.map(cat => (
-                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${activeCategory === cat ? 'bg-[#FFF5E9] border-[#FF7A00] text-[#FF7A00]' : 'bg-white border-gray-200 text-gray-400 hover:bg-[#FFF5E9] hover:border-[#FF7A00] hover:text-[#FF7A00]'}`}>{cat}</button>
+                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-3 py-1 rounded-full text-[11px] font-semibold transition-colors border flex-shrink-0 ${activeCategory === cat ? 'bg-[#FFF5E9] border-[#FF7A00] text-[#FF7A00]' : 'bg-white border-gray-400 text-black/60 hover:bg-[#FFF5E9] hover:border-[#FF7A00] hover:text-[#FF7A00]'}`}>{cat}</button>
                 ))}
               </div>
             </div>
@@ -581,8 +581,8 @@ const Orders = () => {
                 {filteredProducts.length > 0 ? filteredProducts.map(product => (
                   <ProductCard key={product._id} product={product} onAdd={handleAddToCart} />
                 )) : (
-                  <div className="col-span-full flex flex-col items-center justify-center py-10 text-gray-400">
-                    <p className="text-lg font-medium text-[#333333]">No products found</p>
+                  <div className="col-span-full flex flex-col items-center justify-center py-10 text-black/40">
+                    <p className="text-lg font-medium text-black">No products found</p>
                   </div>
                 )}
               </div>
