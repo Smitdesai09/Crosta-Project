@@ -179,10 +179,11 @@ const Dashboard = () => {
             {/* Reserved dark orange ONLY for core navigational actions */}
             <button onClick={() => navigate('/bill-history')} className="text-xs font-semibold text-[#ff6d33] hover:underline">View more &gt;</button>
           </div>
-          
-          <div className="grid grid-cols-4 gap-4 px-5 py-2 border-b border-neutral-200 bg-neutral-50 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
+
+          <div className="grid grid-cols-5 gap-4 px-5 py-2 border-b border-neutral-200 bg-neutral-50 text-[11px] font-bold text-neutral-500 uppercase tracking-wider">
             <div>Date</div>
             <div>Operator</div>
+            <div>Type</div>
             <div className="text-right">Amount</div>
             <div className="text-right">Payment</div>
           </div>
@@ -191,10 +192,16 @@ const Dashboard = () => {
             <p className="p-5 text-sm text-neutral-400 text-center">No bills today yet.</p>
           ) : (
             <div className="divide-y divide-neutral-100">
+              {console.log("Raw Bills Data:", data.recentBills)}
               {data.recentBills.map(bill => (
-                <div key={bill._id} className="grid grid-cols-4 gap-4 px-5 py-3 items-center hover:bg-neutral-50 transition-colors">
+                <div key={bill._id} className="grid grid-cols-5 gap-4 px-5 py-3 items-center hover:bg-neutral-50 transition-colors">
                   <div className="text-xs text-neutral-500 truncate">{formatDateTime(bill.createdAt)}</div>
                   <div className="text-xs text-neutral-900 truncate">{bill.operatorName || 'Unknown'}</div>
+                  <div className="flex justify-start">
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-neutral-100 text-neutral-600 w-20 text-center">
+                      {bill.orderType ? bill.orderType.replace(/-/g, ' ') : '—'}
+                    </span>
+                  </div>
                   <div className="text-sm font-bold text-neutral-900 text-right">₹{bill.totalAmount.toFixed(2)}</div>
                   <div className="flex justify-end">
                     <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-neutral-100 text-neutral-600 w-16 text-center">{bill.paymentType}</span>
@@ -207,7 +214,7 @@ const Dashboard = () => {
 
         {/* NEW ANALYTICS-STYLE TRIO ROW: Products (Left 3/5) + Payments & Order Types (Right Stacked 2/5) */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-shrink-0">
-          
+
           {/* Products Pie — LEFT (3/5 width) */}
           <div className="lg:col-span-3 bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
             <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50 shrink-0">
@@ -231,8 +238,7 @@ const Dashboard = () => {
                             className="w-2.5 h-2.5 rounded-sm shrink-0"
                             style={{ backgroundColor: productPieColors[i] }}
                           />
-                          <span className="text-sm text-neutral-900 truncate font-medium" style={{ maxWidth: '180px' }}>
-                            {prod._id}
+                          <span className="text-sm text-neutral-900 truncate font-medium flex-1 min-w-0">{prod._id}
                           </span>
                           <span className="text-xs text-neutral-500 shrink-0 tabular-nums">
                             {prod.value} qty
@@ -251,7 +257,7 @@ const Dashboard = () => {
 
           {/* Right Container (2/5 width) */}
           <div className="lg:col-span-2 flex flex-col gap-4">
-            
+
             {/* Payment Distribution */}
             <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
               <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50">
@@ -270,8 +276,7 @@ const Dashboard = () => {
                       return (
                         <div key={p._id} className="flex items-center gap-2">
                           <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                          <span className="text-xs text-neutral-900 capitalize truncate" style={{ maxWidth: '90px' }}>
-                            {p._id}
+                          <span className="text-xs text-neutral-900 capitalize truncate flex-1 min-w-0">{p._id}
                           </span>
                           <span className="text-[11px] text-neutral-500 shrink-0 tabular-nums">
                             {p.value}
@@ -306,8 +311,7 @@ const Dashboard = () => {
                       return (
                         <div key={o._id} className="flex items-center gap-2">
                           <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                          <span className="text-xs text-neutral-900 capitalize truncate" style={{ maxWidth: '90px' }}>
-                            {labels[o._id] || o._id}
+                          <span className="text-xs text-neutral-900 capitalize truncate flex-1 min-w-0">{labels[o._id] || o._id}
                           </span>
                           <span className="text-[11px] text-neutral-500 shrink-0 tabular-nums">
                             {o.value}

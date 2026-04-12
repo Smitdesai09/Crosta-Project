@@ -54,7 +54,7 @@ const STAT_CARDS = [
   },
   {
     key: "user",
-    label: "Active Users",
+    label: "Active Operators",
     iconClass: "bg-neutral-100 text-neutral-600",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,7 +64,7 @@ const STAT_CARDS = [
   },
   {
     key: "customer",
-    label: "Customers",
+    label: "Active Customers",
     iconClass: "bg-neutral-100 text-neutral-600",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

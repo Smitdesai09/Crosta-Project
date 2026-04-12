@@ -5,7 +5,7 @@ import { useToast } from '../lib/ToastContext';
 
 const PieChart = ({ data, colors, size = 'md' }) => {
   const total = data.reduce((sum, item) => sum + item.revenue, 0);
-  
+
   const dim = size === 'sm' ? 'w-28 h-28' : size === 'lg' ? 'w-48 h-48' : 'w-36 h-36';
   const textMain = size === 'sm' ? 'text-sm' : size === 'lg' ? 'text-xl' : 'text-base';
   const textSub = size === 'sm' ? 'text-[8px]' : size === 'lg' ? 'text-[10px]' : 'text-[9px]';
@@ -53,9 +53,9 @@ const PieChart = ({ data, colors, size = 'md' }) => {
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className={`${textMain} font-bold text-neutral-900`}>
           {total >= 100000
-            ? `₹${(total / 100000).toFixed(1)}L`
+            ? `₹${(total / 100000).toFixed(2)}L`
             : total >= 1000
-              ? `₹${(total / 1000).toFixed(1)}k`
+              ? `₹${(total / 1000).toFixed(2)}k`
               : `₹${total.toFixed(0)}`}
         </span>
         <span className={`${textSub} text-neutral-500 uppercase`}>Total</span>
@@ -189,15 +189,15 @@ const Analytics = () => {
 
   const formatCurrency = (num) =>
     num >= 100000
-      ? `₹${(num / 100000).toFixed(1)}L`
+      ? `₹${(num / 100000).toFixed(2)}L`
       : num >= 1000
-        ? `₹${(num / 1000).toFixed(1)}k`
+        ? `₹${(num / 1000).toFixed(2)}k`
         : `₹${num.toFixed(0)}`;
 
   const compactVal = (num) => {
     if (num === 0) return '';
-    if (num >= 100000) return `${(num / 100000).toFixed(1)}L`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}k`;
+    if (num >= 100000) return `${(num / 100000).toFixed(2)}L`;
+    if (num >= 1000) return `${(num / 1000).toFixed(2)}k`;
     return num < 10 ? num.toFixed(1) : num.toFixed(0);
   };
 
@@ -374,7 +374,7 @@ const Analytics = () => {
 
       {/* BOTTOM ROW: Products (Left 3/5) + Payments & Order Types (Right Stacked 2/5) */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-shrink-0">
-        
+
         {/* Products Pie — LEFT (3/5 width) */}
         <div className="lg:col-span-3 bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
           <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50 shrink-0">
@@ -395,8 +395,7 @@ const Analytics = () => {
                         className="w-3 h-3 rounded-sm shrink-0"
                         style={{ backgroundColor: productPieColors[i] }}
                       />
-                      <span className="text-base text-neutral-900 truncate font-medium" style={{ maxWidth: '260px' }}>
-                        {prod._id}
+                      <span className="text-base text-neutral-900 truncate font-medium flex-1 min-w-0">{prod._id}
                       </span>
                       <span className="text-sm text-neutral-500 shrink-0 tabular-nums">
                         {formatCurrency(prod.revenue)}
@@ -414,7 +413,7 @@ const Analytics = () => {
 
         {/* Right Container (2/5 width) */}
         <div className="lg:col-span-2 flex flex-col gap-4">
-          
+
           {/* Payment Distribution */}
           <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
             <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50">
@@ -433,8 +432,7 @@ const Analytics = () => {
                     return (
                       <div key={p._id} className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                        <span className="text-xs text-neutral-900 capitalize truncate" style={{ maxWidth: '90px' }}>
-                          {p._id}
+                        <span className="text-xs text-neutral-900 capitalize truncate flex-1 min-w-0">{p._id}
                         </span>
                         <span className="text-[11px] text-neutral-500 shrink-0 tabular-nums">
                           {formatCurrency(p.revenue)}
@@ -469,8 +467,7 @@ const Analytics = () => {
                     return (
                       <div key={o._id} className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                        <span className="text-xs text-neutral-900 capitalize truncate" style={{ maxWidth: '90px' }}>
-                          {labels[o._id] || o._id}
+                        <span className="text-xs text-neutral-900 capitalize truncate flex-1 min-w-0">{labels[o._id] || o._id}
                         </span>
                         <span className="text-[11px] text-neutral-500 shrink-0 tabular-nums">
                           {formatCurrency(o.revenue)}

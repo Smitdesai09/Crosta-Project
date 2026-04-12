@@ -31,7 +31,7 @@ exports.getSummary = async (req, res) => {
     const recentBills = await Bill.find({ createdAt: { $gte: start, $lt: end } })
       .sort({ createdAt: -1 })
       .limit(5)
-      .select("_id totalAmount paymentType createdAt operatorName")
+      .select("_id totalAmount paymentType createdAt operatorName orderType")
       .lean();
 
     // 4️. Top products today
