@@ -16,8 +16,8 @@ const BillModal = ({ isOpen, onClose, cart, onGenerateBill, isBillingLoading, ta
   const finalTotal = updatedSubtotal + gstAmount;
 
   const handleSave = (shouldPrint = false) => {
-    const phone = isEBillValid ? eBillNumber : null;       // always save if valid
-    const sendEBill = isEBillEnabled && isEBillValid;       // toggle decides WhatsApp
+    const phone = isEBillValid ? eBillNumber : null;
+    const sendEBill = isEBillEnabled && isEBillValid;
     onGenerateBill(discountAmount, paymentType, phone, shouldPrint, sendEBill);
   };
   if (!isOpen) return null;
@@ -37,11 +37,31 @@ const BillModal = ({ isOpen, onClose, cart, onGenerateBill, isBillingLoading, ta
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[11px] font-semibold text-text-secondary mb-1">DISCOUNT (₹)</label>
-              <input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="0" className="w-full px-3 py-2 bg-surface-gray border border-border-main rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand" />
+              <input type="number" value={discount} onChange={(e) => {
+                let val = e.target.value;
+                if (val === '') {
+                  setDiscount(0);
+                  return;
+                }
+                val = val.replace(/^0+/, '') || '0';
+                setDiscount(val);
+              }} placeholder="0" className="w-full px-3 py-2 bg-surface-gray border border-border-main rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand" />
             </div>
             <div>
               <label className="block text-[11px] font-semibold text-text-secondary mb-1">GST (%)</label>
               <input type="text" value={`${gstPercent}%`} disabled className="w-full px-3 py-2 bg-surface-gray border border-border-main rounded-lg text-sm text-text-secondary cursor-not-allowed" />
+            </div>
+          </div>
+
+          <div className="bg-neutral-deep rounded-lg p-4 text-white space-y-2 text-xs">
+            <div className="flex justify-between"><span className="text-gray-400">Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Discount</span><span className="text-red-400">- ₹{discountAmount.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">Updated Subtotal</span><span>₹{updatedSubtotal.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-400">GST (5%)</span><span>+ ₹{gstAmount.toFixed(2)}</span></div>
+
+            <div className="border-t border-white/20 pt-3 mt-3 flex justify-between items-end">
+              <span className="text-sm font-bold text-gray-300">Final Total</span>
+              <span className="text-2xl font-extrabold text-brand">₹{finalTotal.toFixed(2)}</span>
             </div>
           </div>
 
@@ -61,18 +81,6 @@ const BillModal = ({ isOpen, onClose, cart, onGenerateBill, isBillingLoading, ta
             </div>
           </div>
 
-          <div className="bg-neutral-deep rounded-lg p-4 text-white space-y-2 text-xs">
-            <div className="flex justify-between"><span className="text-gray-400">Subtotal</span><span>₹{subtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Discount</span><span className="text-red-400">- ₹{discountAmount.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Updated Subtotal</span><span>₹{updatedSubtotal.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">GST (5%)</span><span>+ ₹{gstAmount.toFixed(2)}</span></div>
-
-            <div className="border-t border-white/20 pt-3 mt-3 flex justify-between items-end">
-              <span className="text-sm font-bold text-gray-300">Final Total</span>
-              <span className="text-2xl font-extrabold text-brand">₹{finalTotal.toFixed(2)}</span>
-            </div>
-          </div>
-
           <div className="bg-surface-gray p-3 rounded-lg border border-border-main">
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-semibold text-text-primary">E-Bill (WhatsApp)</label>
@@ -87,8 +95,11 @@ const BillModal = ({ isOpen, onClose, cart, onGenerateBill, isBillingLoading, ta
               type="text"
               value={eBillNumber}
               onChange={(e) => {
-                setEBillNumber(e.target.value.replace(/\D/g, '').slice(0, 10));
-                if (isEBillEnabled) setIsEBillEnabled(false);
+                const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                setEBillNumber(val);
+                if (val.length === 10) {
+                  setIsEBillEnabled(true);
+                }
               }}
               placeholder="Enter 10-digit number"
               className={`w-full px-3 py-2 bg-surface-white border rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-brand/30 ${eBillNumber.length > 0 && !isEBillValid ? 'border-red-400 focus:ring-red-200' : 'border-border-main focus:border-brand'
