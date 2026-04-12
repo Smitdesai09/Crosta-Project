@@ -354,7 +354,8 @@ const DeleteConfirmModal = ({ isOpen, user, deleting, onClose, onConfirm }) => {
 };
 
 const AdminPanel = () => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, checkAuth } = useAuth();
+  const currentUserId = currentUser?._id || currentUser?.id;
   const { showToast } = useToast();
   const { users, setUsers, loading, error, refreshUsers } = useUsers();
 
@@ -473,10 +474,16 @@ const AdminPanel = () => {
     setIsSaving(true);
 
     try {
+      const isEditingCurrentUser = editingUser._id === currentUserId;
+
       await userService.updateUser(editingUser._id, {
         name: editForm.name.trim(),
         email: editForm.email.trim(),
       });
+
+      if (isEditingCurrentUser) {
+        await checkAuth();
+      }
 
       showToast("User updated successfully", "success");
       closeEditModal();
@@ -648,7 +655,7 @@ const AdminPanel = () => {
             </div>
           ) : (
             paginatedUsers.map((item, index) => {
-              const isCurrentUser = currentUser?.email === item.email;
+              const isCurrentUser = currentUserId === item._id;
               const avatarIndex = (currentPage - 1) * USERS_PER_PAGE + index;
               const isInactive = item.isDeleted;
 

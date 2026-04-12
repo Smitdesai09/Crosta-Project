@@ -2,9 +2,30 @@ const User = require("../models/users");
 const validator = require("validator");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 // ID Validation Helper Function
 const isValidId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+const setAuthCookie = (res, user) => {
+  const token = jwt.sign(
+    {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "30d" }
+  );
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Strict",
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+  });
+};
 
 exports.getMe = async (req, res) => {
   try {
@@ -15,13 +36,23 @@ exports.getMe = async (req, res) => {
       });
     }
 
+    const currentUser = await User.findOne({
+      _id: req.user._id,
+      isDeleted: false,
+    })
+      .select("_id name email role")
+      .lean();
+
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
     res.status(200).json({
       success: true,
-      data: {
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role
-      },
+      data: currentUser,
     });
   } catch (error) {
     res.status(500).json({
@@ -168,12 +199,18 @@ exports.updateUser = async (req, res) => {
 
     await user.save();
 
+    if (req.user?._id?.toString() === userId) {
+      setAuthCookie(res, user);
+    }
+
     res.status(200).json({
       success: true,
       message: "User updated successfully",
       data: {
+        _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -192,6 +229,13 @@ exports.deleteUser = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Invalid user ID",
+      });
+    }
+
+    if (req.user?._id?.toString() === userId) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin can't delete their own account",
       });
     }
 

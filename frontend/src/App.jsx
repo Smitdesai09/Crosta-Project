@@ -146,13 +146,14 @@ function App() {
                   </React.Suspense>
                 }
               />
-
               <Route
                 path="admin-panel"
                 element={
-                  <React.Suspense fallback={<SuspenseFallback />}>
-                    <AdminPanel />
-                  </React.Suspense>
+                  <ProtectedRoute allowedRoles={["admin"]}>
+                    <React.Suspense fallback={<SuspenseFallback />}>
+                      <AdminPanel />
+                    </React.Suspense>
+                  </ProtectedRoute>
                 }
               />
             </Route>
