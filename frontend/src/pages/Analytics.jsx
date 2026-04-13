@@ -12,7 +12,7 @@ const PieChart = ({ data, colors, size = 'md' }) => {
 
   if (total === 0) {
     return (
-      <div className={`flex items-center justify-center ${dim} text-sm text-neutral-400`}>
+      <div className={`flex items-center justify-center ${dim} text-sm text-gray-400`}>
         No data
       </div>
     );
@@ -51,14 +51,14 @@ const PieChart = ({ data, colors, size = 'md' }) => {
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`${textMain} font-bold text-neutral-900`}>
+        <span className={`${textMain} font-bold text-gray-900`}>
           {total >= 100000
             ? `₹${(total / 100000).toFixed(2)}L`
             : total >= 1000
               ? `₹${(total / 1000).toFixed(2)}k`
               : `₹${total.toFixed(0)}`}
         </span>
-        <span className={`${textSub} text-neutral-500 uppercase`}>Total</span>
+        <span className={`${textSub} text-gray-500 uppercase`}>Total</span>
       </div>
     </div>
   );
@@ -68,7 +68,7 @@ const FilterSelect = ({ value, onChange, options }) => (
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="w-full px-3 py-2 text-sm border border-neutral-200 rounded-lg bg-white text-neutral-800 focus:outline-none focus:ring-2 focus:ring-[#ff6d33]/20 focus:border-[#ff6d33] appearance-none cursor-pointer"
+    className="w-full px-3 py-3 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 appearance-none cursor-pointer"
     style={{
       backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239E9E9E'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
       backgroundRepeat: 'no-repeat',
@@ -113,7 +113,8 @@ const Analytics = () => {
     if (!month || !year) return;
     setLoading(true);
     try {
-      const res = await analyticsService.getAnalytics({ month, year });
+      // ✅ FIX: Added _t: Date.now() to prevent browser from returning cached response
+      const res = await analyticsService.getAnalytics({ month, year, _t: Date.now() });
       setData(res.data);
     } catch (error) {
       showToast('Failed to load analytics', error);
@@ -124,7 +125,7 @@ const Analytics = () => {
 
   useEffect(() => {
     fetchAnalytics();
-  }, [month, year, showToast]);
+  }, [month, year]);
 
   const daysInMonth = useMemo(() => new Date(year, month, 0).getDate(), [year, month]);
 
@@ -161,9 +162,8 @@ const Analytics = () => {
   const avgOrderSize = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   const productPieColors = [
-    '#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444',
-    '#f59e0b', '#06b6d4', '#ec4899', '#14b8a6', '#a855f7',
-    '#6b7280'
+    '#EF4444', '#F97316', '#F59E0B', '#10B981', '#3B82F6',
+    '#8B5CF6', '#EC4899', '#14B8A6', '#F43F5E', '#84CC16', '#6B7280'
   ];
 
   const productPieData = useMemo(() => {
@@ -203,19 +203,19 @@ const Analytics = () => {
 
   if (loading || !data) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <span className="animate-pulse text-neutral-400 font-medium">Loading analytics...</span>
+      <div className="flex items-center justify-center h-full bg-gray-100">
+        <span className="animate-pulse text-gray-400 font-medium">Loading analytics...</span>
       </div>
     );
   }
 
   return (
-    <div className="h-full w-full flex flex-col gap-6 overflow-y-auto p-4 lg:p-6 pb-10 analytics-scroll">
+    <div className="h-full w-full flex flex-col gap-6 overflow-y-auto p-4 lg:p-6 pb-10 analytics-scroll bg-gray-100">
       <style>{`.analytics-scroll::-webkit-scrollbar{width:6px}.analytics-scroll::-webkit-scrollbar-track{background:transparent}.analytics-scroll::-webkit-scrollbar-thumb{background:transparent;border-radius:10px}.analytics-scroll:hover::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15)}`}</style>
 
       {/* HEADER */}
       <div className="flex items-end justify-between flex-shrink-0">
-        <h1 className="text-3xl font-extrabold italic tracking-tight text-neutral-900">
+        <h1 className="text-3xl font-extrabold italic tracking-tight text-gray-900">
           Analytics
         </h1>
         <div className="flex items-center gap-3">
@@ -245,10 +245,9 @@ const Analytics = () => {
             sub: 'this month',
             icon: (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-            ),
-            color: 'bg-neutral-100 text-neutral-600'
+            )
           },
           {
             title: 'Total Orders',
@@ -258,8 +257,7 @@ const Analytics = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-            ),
-            color: 'bg-neutral-100 text-neutral-600'
+            )
           },
           {
             title: 'Avg Order Size',
@@ -269,24 +267,27 @@ const Analytics = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
               </svg>
-            ),
-            color: 'bg-neutral-100 text-neutral-600'
+            )
           }
         ].map((card, i) => (
-          <div key={i} className="relative bg-white border border-neutral-200 rounded-xl p-5 shadow-sm">
-            <div className={`absolute top-4 right-4 p-2 rounded-lg ${card.color}`}>
-              {card.icon}
+          <div key={i} className="bg-white rounded-xl shadow-sm p-5">
+            <div className="flex items-center gap-4">
+              <div className="p-2.5 rounded-lg bg-red-50 text-red-500">
+                {card.icon}
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase">{card.title}</p>
+                <p className="text-3xl font-extrabold text-gray-900 mt-1">{card.value}</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">{card.sub}</p>
+              </div>
             </div>
-            <p className="text-xs font-semibold text-neutral-400 uppercase">{card.title}</p>
-            <p className="text-3xl font-extrabold text-neutral-900 mt-2">{card.value}</p>
-            <p className="text-[11px] text-neutral-400 mt-1">{card.sub}</p>
           </div>
         ))}
       </div>
 
       {/* DAILY REVENUE CHART */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 flex-shrink-0">
-        <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-5">
+      <div className="bg-white rounded-xl shadow-sm p-5 flex-shrink-0">
+        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-5">
           Daily Revenue
         </h2>
         <div className="relative h-52">
@@ -298,14 +299,13 @@ const Analytics = () => {
                 : 0.5;
               return (
                 <div key={day._id} className="flex-1 h-full relative">
-                  {/* RESERVED DARK ORANGE FOR DATA VIZ ONLY */}
                   <div
-                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${day.revenue === 0 ? 'bg-neutral-100' : 'bg-[#ff6d33]'}`}
+                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${day.revenue === 0 ? 'bg-gray-100' : 'bg-red-500'}`}
                     style={{ height: `${barPct}%` }}
                   />
                   {label && (
                     <span
-                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-semibold text-neutral-500 whitespace-nowrap pointer-events-none"
+                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-semibold text-gray-500 whitespace-nowrap pointer-events-none"
                       style={{ bottom: `calc(${barPct}% + 3px)` }}
                     >
                       {label}
@@ -319,15 +319,15 @@ const Analytics = () => {
         <div className="flex gap-[2px] mt-1.5">
           {dailyData.map((day) => (
             <div key={day._id} className="flex-1 text-center">
-              <span className="text-[9px] text-neutral-400 select-none">{day._id}</span>
+              <span className="text-[9px] text-gray-400 select-none">{day._id}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* HOURLY REVENUE CHART */}
-      <div className="bg-white border border-neutral-200 rounded-xl shadow-sm p-5 flex-shrink-0">
-        <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wide mb-5">
+      <div className="bg-white rounded-xl shadow-sm p-5 flex-shrink-0">
+        <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wide mb-5">
           Hourly Revenue
         </h2>
         <div className="relative h-52">
@@ -340,12 +340,12 @@ const Analytics = () => {
               return (
                 <div key={hour._id} className="flex-1 h-full relative">
                   <div
-                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${hour.revenue === 0 ? 'bg-neutral-100' : 'bg-[#ff6d33]'}`}
+                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${hour.revenue === 0 ? 'bg-gray-100' : 'bg-red-500'}`}
                     style={{ height: `${barPct}%` }}
                   />
                   {label && (
                     <span
-                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-semibold text-neutral-500 whitespace-nowrap pointer-events-none"
+                      className="absolute left-1/2 -translate-x-1/2 text-[8px] font-semibold text-gray-500 whitespace-nowrap pointer-events-none"
                       style={{ bottom: `calc(${barPct}% + 3px)` }}
                     >
                       {label}
@@ -359,48 +359,47 @@ const Analytics = () => {
         <div className="flex gap-1 mt-1.5">
           {hourlyData.map((hour) => (
             <div key={hour._id} className="flex-1 text-center">
-              <span className="text-[9px] text-neutral-400 select-none">{hour._id}</span>
+              <span className="text-[9px] text-gray-400 select-none">{hour._id}</span>
             </div>
           ))}
         </div>
         <div className="flex justify-between mt-1 px-0.5">
-          <span className="text-[9px] text-neutral-400">12 AM</span>
-          <span className="text-[9px] text-neutral-400">6 AM</span>
-          <span className="text-[9px] text-neutral-400">12 PM</span>
-          <span className="text-[9px] text-neutral-400">6 PM</span>
-          <span className="text-[9px] text-neutral-400">11 PM</span>
+          <span className="text-[9px] text-gray-400">12 AM</span>
+          <span className="text-[9px] text-gray-400">6 AM</span>
+          <span className="text-[9px] text-gray-400">12 PM</span>
+          <span className="text-[9px] text-gray-400">6 PM</span>
+          <span className="text-[9px] text-gray-400">11 PM</span>
         </div>
       </div>
 
-      {/* BOTTOM ROW: Products (Left 3/5) + Payments & Order Types (Right Stacked 2/5) */}
+      {/* BOTTOM ROW */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-shrink-0">
 
-        {/* Products Pie — LEFT (3/5 width) */}
-        <div className="lg:col-span-3 bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50 shrink-0">
-            <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
+        {/* Products Pie — LEFT */}
+        <div className="lg:col-span-3 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="px-5 py-3.5 bg-red-50 text-red-500 shrink-0">
+            <h2 className="text-sm font-bold uppercase tracking-wide">
               Products by Revenue
             </h2>
           </div>
-          <div className="p-8 flex-1 flex items-center">
-            <div className="flex items-center gap-14 w-full">
+          <div className="p-6 flex-1 flex items-center">
+            <div className="flex items-center gap-10 w-full">
               <PieChart data={productPieData} colors={productPieColors} size="lg" />
-              <div className="flex flex-col gap-3.5 min-w-0">
+              <div className="flex flex-col gap-3.5 min-w-0 flex-1">
                 {productPieData.map((prod, i) => {
                   const percent =
                     totalRevenue > 0 ? ((prod.revenue / totalRevenue) * 100).toFixed(1) : '0';
                   return (
-                    <div key={prod._id} className="flex items-center gap-3">
+                    <div key={prod._id} className="flex items-center gap-3 hover:bg-gray-50 rounded-md px-1.5 py-1 -mx-1.5 transition-colors">
                       <div
                         className="w-3 h-3 rounded-sm shrink-0"
                         style={{ backgroundColor: productPieColors[i] }}
                       />
-                      <span className="text-base text-neutral-900 truncate font-medium flex-1 min-w-0">{prod._id}
-                      </span>
-                      <span className="text-sm text-neutral-500 shrink-0 tabular-nums">
+                      <span className="text-base text-gray-900 truncate font-medium flex-1 min-w-0">{prod._id}</span>
+                      <span className="text-sm text-gray-500 shrink-0 tabular-nums">
                         {formatCurrency(prod.revenue)}
                       </span>
-                      <span className="text-sm font-bold text-neutral-900 shrink-0 tabular-nums pl-1">
+                      <span className="text-sm font-bold text-gray-900 shrink-0 tabular-nums pl-1">
                         {percent}%
                       </span>
                     </div>
@@ -411,33 +410,32 @@ const Analytics = () => {
           </div>
         </div>
 
-        {/* Right Container (2/5 width) */}
+        {/* Right Container */}
         <div className="lg:col-span-2 flex flex-col gap-4">
 
           {/* Payment Distribution */}
-          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50">
-              <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
+            <div className="px-5 py-3.5 bg-red-50 text-red-500">
+              <h2 className="text-sm font-bold uppercase tracking-wide">
                 Payments
               </h2>
             </div>
-            <div className="p-5">
-              <div className="flex items-center gap-5">
-                <PieChart data={paymentSorted} colors={['#64748b', '#94a3b8', '#cbd5e1']} size="sm" />
-                <div className="flex flex-col gap-2.5 min-w-0">
+            <div className="p-5 flex-1 flex items-center">
+              <div className="flex items-center gap-5 w-full">
+                <PieChart data={paymentSorted} colors={['#6B7280', '#9CA3AF', '#D1D5DB']} size="sm" />
+                <div className="flex flex-col gap-2.5 min-w-0 flex-1">
                   {paymentSorted.map((p, i) => {
                     const total = paymentSorted.reduce((s, item) => s + item.revenue, 0);
                     const percent = total > 0 ? ((p.revenue / total) * 100).toFixed(1) : '0';
-                    const bgColors = ['bg-slate-500', 'bg-slate-400', 'bg-slate-300'];
+                    const bgColors = ['bg-gray-600', 'bg-gray-400', 'bg-gray-300'];
                     return (
                       <div key={p._id} className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                        <span className="text-xs text-neutral-900 capitalize truncate flex-1 min-w-0">{p._id}
-                        </span>
-                        <span className="text-[11px] text-neutral-500 shrink-0 tabular-nums">
+                        <span className="text-xs text-gray-900 capitalize truncate flex-1 min-w-0">{p._id}</span>
+                        <span className="text-[11px] text-gray-500 shrink-0 tabular-nums">
                           {formatCurrency(p.revenue)}
                         </span>
-                        <span className="text-[11px] font-bold text-neutral-900 shrink-0 tabular-nums pl-1">
+                        <span className="text-[11px] font-bold text-gray-900 shrink-0 tabular-nums pl-1">
                           {percent}%
                         </span>
                       </div>
@@ -449,30 +447,29 @@ const Analytics = () => {
           </div>
 
           {/* Order Type Distribution */}
-          <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b border-neutral-200 bg-neutral-50">
-              <h2 className="text-sm font-bold text-neutral-900 uppercase tracking-wide">
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
+            <div className="px-5 py-3.5 bg-red-50 text-red-500">
+              <h2 className="text-sm font-bold uppercase tracking-wide">
                 Order Types
               </h2>
             </div>
-            <div className="p-5">
-              <div className="flex items-center gap-5">
-                <PieChart data={orderTypeSorted} colors={['#d97757', '#9ca3af', '#fbbf24']} size="sm" />
-                <div className="flex flex-col gap-2.5 min-w-0">
+            <div className="p-5 flex-1 flex items-center">
+              <div className="flex items-center gap-5 w-full">
+                <PieChart data={orderTypeSorted} colors={['#EF4444', '#F97316', '#FCA5A5']} size="sm" />
+                <div className="flex flex-col gap-2.5 min-w-0 flex-1">
                   {orderTypeSorted.map((o, i) => {
                     const total = orderTypeSorted.reduce((s, item) => s + item.revenue, 0);
                     const percent = total > 0 ? ((o.revenue / total) * 100).toFixed(1) : '0';
-                    const bgColors = ['bg-orange-400', 'bg-gray-400', 'bg-amber-400'];
+                    const bgColors = ['bg-red-500', 'bg-orange-500', 'bg-red-300'];
                     const labels = { 'dine-in': 'Dine-in', takeaway: 'Takeaway' };
                     return (
                       <div key={o._id} className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                        <span className="text-xs text-neutral-900 capitalize truncate flex-1 min-w-0">{labels[o._id] || o._id}
-                        </span>
-                        <span className="text-[11px] text-neutral-500 shrink-0 tabular-nums">
+                        <span className="text-xs text-gray-900 capitalize truncate flex-1 min-w-0">{labels[o._id] || o._id}</span>
+                        <span className="text-[11px] text-gray-500 shrink-0 tabular-nums">
                           {formatCurrency(o.revenue)}
                         </span>
-                        <span className="text-[11px] font-bold text-neutral-900 shrink-0 tabular-nums pl-1">
+                        <span className="text-[11px] font-bold text-gray-900 shrink-0 tabular-nums pl-1">
                           {percent}%
                         </span>
                       </div>

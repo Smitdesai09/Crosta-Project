@@ -41,12 +41,12 @@ const Login = () => {
 
     try {
       await login(form.email.trim().toLowerCase(), form.password.trim());
-      showToast("Login successful!", "success"); // <-- TOAST
+      showToast("Login successful!", "success");
       navigate("/", { replace: true });
     } catch (err) {
       const msg =
         err.response?.data?.message || "Something went wrong. Try again.";
-      showToast(msg, "error"); // <-- TOAST
+      showToast(msg, "error");
     } finally {
       setIsLoading(false);
     }
@@ -58,7 +58,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-surface-gray flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="flex justify-center mb-8">
           <img
@@ -68,23 +68,23 @@ const Login = () => {
           />
         </div>
 
-        <div className="bg-surface-white border border-border-main rounded-xl shadow-sm p-6">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
           <div className="mb-6">
-            <h1 className="text-2xl font-bold text-text-primary">
+            <h1 className="text-2xl font-bold text-gray-900">
               Welcome Back
             </h1>
-            <p className="text-sm text-text-secondary mt-1">
+            <p className="text-sm text-gray-500 mt-1">
               Sign in to your account to continue
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
+              <label className="block text-sm font-medium text-gray-900 mb-1.5">
                 Email Address
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-placeholder">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   <IconEnvelope />
                 </span>
                 <input
@@ -92,8 +92,8 @@ const Login = () => {
                   value={form.email}
                   onChange={update("email")}
                   placeholder="you@example.com"
-                  className={`w-full pl-10 pr-4 py-2.5 bg-surface-gray border rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors ${
-                    errors.email ? "border-red-400" : "border-border-main"
+                  className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-colors ${
+                    errors.email ? "border-red-400" : "border-gray-300"
                   }`}
                 />
               </div>
@@ -103,11 +103,11 @@ const Login = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-1.5">
+              <label className="block text-sm font-medium text-gray-900 mb-1.5">
                 Password
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-placeholder">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                   <IconLock />
                 </span>
                 <input
@@ -115,14 +115,14 @@ const Login = () => {
                   value={form.password}
                   onChange={update("password")}
                   placeholder="Enter your password"
-                  className={`w-full pl-10 pr-10 py-2.5 bg-surface-gray border rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors ${
-                    errors.password ? "border-red-400" : "border-border-main"
+                  className={`w-full pl-10 pr-10 py-2.5 bg-gray-50 border rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-colors ${
+                    errors.password ? "border-red-400" : "border-gray-300"
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-text-placeholder hover:text-text-secondary transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500 transition-colors"
                 >
                   {showPassword ? <IconEyeSlash /> : <IconEye />}
                 </button>
@@ -135,7 +135,7 @@ const Login = () => {
             <div className="flex justify-end">
               <Link
                 to="/forgot-password"
-                className="text-sm text-brand hover:text-brand-hover transition-colors"
+                className="text-sm text-red-500 hover:text-red-600 transition-colors"
               >
                 Forgot Password?
               </Link>
@@ -144,7 +144,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-2.5 bg-brand hover:bg-brand-hover text-surface-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isLoading ? "Signing In..." : "Sign In"}
             </button>

@@ -43,25 +43,21 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen, setIsSidebarColla
   };
 
   const sidebarContent = (
-    // Clean standard wrapper. No inner w-64 clipping trick needed anymore!
-    <div className="flex flex-col h-full bg-neutral-deep">
+    <div className="flex flex-col h-full bg-gray-900">
 
-      {/* Top: Logo & Hamburger */}
-      <div className={`flex items-center h-16 shrink-0 px-3 border-b border-white/10 transition-all ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+      <div className={`flex items-center h-16 shrink-0 px-3 border-b border-gray-800 transition-all ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
 
         <div className="grid transition-[grid-template-columns] duration-300" style={{ gridTemplateColumns: isCollapsed ? '0fr' : '1fr' }}>
           <div className="overflow-hidden min-w-0">
-            {/* Changed h-10 to h-12 */}
             <img src={brandLogo} alt="Crosta Logo" className="h-12 object-contain" />
           </div>
         </div>
 
-        <button onClick={toggleCollapse} className="shrink-0 flex items-center justify-center w-10 h-10 rounded-lg text-white/70 hover:bg-white/10 hover:text-white transition-colors cursor-pointer">
+        <button onClick={toggleCollapse} className="shrink-0 flex items-center justify-center w-10 h-10 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors cursor-pointer">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
         {menuItems.map((item) => (
           <SidebarItem
@@ -75,29 +71,26 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen, setIsSidebarColla
         ))}
       </nav>
 
-      {/* User Info & Logout */}
-      <div className="border-t border-white/10 p-4 shrink-0">
+      <div className="border-t border-gray-800 p-4 shrink-0">
 
-        {/* FIX: Applied the exact same centering logic as the logout button */}
         <div className={`flex items-center mb-3 ${isCollapsed ? 'w-10 h-10 mx-auto justify-center' : 'px-1'}`}>
-          <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-surface-white text-sm font-bold shrink-0">
+          <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white text-sm font-bold shrink-0">
             {user?.name?.charAt(0)?.toUpperCase() || "U"}
           </div>
 
-          {/* FIX: Removed gap-3, added ml-3 only when expanded */}
           <div className={`grid transition-[grid-template-columns] duration-300 ${isCollapsed ? '' : 'ml-3'}`} style={{ gridTemplateColumns: isCollapsed ? '0fr' : '1fr' }}>
             <div className="overflow-hidden">
               <p className="text-sm font-medium text-white truncate">{user?.name || "User"}</p>
-              <p className="text-xs text-white/50 truncate">{user?.email || ""}</p>
+              <p className="text-xs text-gray-400 truncate">{user?.email || ""}</p>
             </div>
           </div>
         </div>
 
-        {/* Logout button (unchanged from last step) */}
         <button
           onClick={handleLogout}
-          className={`flex items-center rounded-lg text-white/70 hover:bg-red-500/10 hover:text-red-500 transition-colors text-sm cursor-pointer ${isCollapsed ? 'w-10 h-10 mx-auto justify-center' : 'w-full px-3 py-2.5'
-            }`}
+          className={`flex items-center rounded-lg text-gray-400 hover:bg-red-500/10 hover:text-red-500 transition-colors text-sm cursor-pointer ${
+            isCollapsed ? 'w-10 h-10 mx-auto justify-center' : 'w-full px-3 py-2.5'
+          }`}
         >
           {Icons.logout}
           <div className={`grid transition-[grid-template-columns] duration-300 ${isCollapsed ? '' : 'ml-3'}`} style={{ gridTemplateColumns: isCollapsed ? '0fr' : '1fr' }}>
@@ -110,12 +103,10 @@ const Sidebar = ({ isCollapsed, isMobileOpen, setIsMobileOpen, setIsSidebarColla
 
   return (
     <>
-      {/* Desktop Sidebar - Clean outer container */}
       <aside className={`hidden lg:block h-screen sticky top-0 flex-shrink-0 transition-all duration-300 ${isCollapsed ? 'w-20' : 'w-64'}`}>
         {sidebarContent}
       </aside>
 
-      {/* Mobile Sidebar */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsMobileOpen(false)} />

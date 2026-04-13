@@ -1,3 +1,4 @@
+// Layout.jsx
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './layout/Sidebar';
@@ -9,7 +10,6 @@ const Layout = () => {
   return (
     <div className="flex h-screen overflow-hidden">
       
-      {/* SIDEBAR */}
       <Sidebar 
         isCollapsed={isSidebarCollapsed} 
         setIsSidebarCollapsed={setIsSidebarCollapsed}
@@ -17,10 +17,7 @@ const Layout = () => {
         setIsMobileOpen={setIsMobileOpen}
       />
 
-      {/* #faaa66
-      #fbb980 */}
-      {/* MAIN AREA */}
-      <main className="flex-1 overflow-y-scroll bg-[#fbb980]">
+      <main className="flex-1 overflow-y-scroll bg-gray-100">
         <Outlet />
       </main>
 

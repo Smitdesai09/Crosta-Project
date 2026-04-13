@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import Button from "../components/Button";
-import Card from "../components/Card";
 import RegisterUserForm from "./RegisterUserForm";
 import { useAuth } from "../lib/AuthContext";
 import { useToast } from "../lib/ToastContext";
@@ -44,31 +42,27 @@ const STAT_CARDS = [
   {
     key: "total",
     label: "Total Users",
-    // FIX: Neutral icons instead of orange
-    iconClass: "bg-neutral-100 text-neutral-600",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5V9H2v11h5m10 0v-1a3 3 0 00-3-3H10a3 3 0 00-3 3v1m10 0H7m8-11a2 2 0 11-4 0 2 2 0 014 0zm-8 2a2 2 0 11-4 0 2 2 0 014 0zm12 0a2 2 0 11-4 0 2 2 0 014 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
       </svg>
     ),
   },
   {
     key: "user",
     label: "Active Operators",
-    iconClass: "bg-neutral-100 text-neutral-600",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A9 9 0 1118.88 17.8M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
       </svg>
     ),
   },
   {
     key: "customer",
     label: "Active Customers",
-    iconClass: "bg-neutral-100 text-neutral-600",
     icon: (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 14l6-6m-5.5-.5h.01M18 11.5v5A2.5 2.5 0 0115.5 19h-8A2.5 2.5 0 015 16.5v-8A2.5 2.5 0 017.5 6h5" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z" />
       </svg>
     ),
   },
@@ -83,28 +77,22 @@ const getInitials = (name) => {
     .join("") || "U";
 };
 
-const getAvatarClass = (index) => {
-  const styles = [
-    "bg-[#ff6d33] text-white",
-    "bg-[#F59E0B] text-white",
-    "bg-[#333333] text-white",
-    "bg-[#EF4444] text-white",
-    "bg-[#3B82F6] text-white",
-  ];
+const AVATAR_COLORS = [
+  "bg-rose-100 text-rose-600",
+  "bg-sky-100 text-sky-600",
+  "bg-amber-100 text-amber-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-violet-100 text-violet-600",
+  "bg-orange-100 text-orange-700",
+  "bg-teal-100 text-teal-700",
+  "bg-pink-100 text-pink-700",
+];
 
-  return styles[index % styles.length];
+const getAvatarClass = (name) => {
+  const index = name.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % AVATAR_COLORS.length;
+  return AVATAR_COLORS[index];
 };
 
-const PANEL_BUTTON_HOVER_CLASS =
-  "cursor-pointer hover:-translate-y-0.5 hover:shadow-md disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none";
-
-const PANEL_ICON_BUTTON_HOVER_CLASS =
-  "cursor-pointer hover:-translate-y-0.5 hover:shadow-sm disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none";
-
-const PANEL_CARD_HOVER_CLASS =
-  "transition-all duration-200 hover:-translate-y-1 hover:shadow-lg";
-
-// FIX: Clean neutral dropdown matching Bills page
 const FilterSelect = ({ value, onChange, options, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
@@ -115,7 +103,6 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
         setIsOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
@@ -129,9 +116,9 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
         type="button"
         onClick={() => setIsOpen((current) => !current)}
         className={`flex w-full items-center justify-between rounded-lg border px-3 py-3 text-left text-sm transition-colors ${isActive
-          ? "border-[#ff6d33]/30 bg-[#fff5f1] font-semibold text-[#ff6d33]"
-          : "border-neutral-200 bg-white text-neutral-500 hover:border-neutral-400"
-          } focus:outline-none focus:ring-2 focus:ring-[#ff6d33]/20 focus:border-[#ff6d33]`}
+          ? "border-red-500/30 bg-red-50 font-medium text-red-500"
+          : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
+          } focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500`}
       >
         <span className="truncate">{selectedLabel}</span>
         <svg className="ml-2 h-4 w-4 flex-shrink-0 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +127,7 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
       </button>
 
       {isOpen ? (
-        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xl">
+        <div className="absolute z-20 mt-1 w-full overflow-hidden rounded-xl bg-white shadow-xl">
           <div className="max-h-60 overflow-y-auto py-1">
             {options.map((option) => (
               <button
@@ -151,8 +138,8 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
                   setIsOpen(false);
                 }}
                 className={`w-full px-3 py-2 text-left text-sm transition-colors ${value === option.value
-                  ? "bg-[#fff5f1] font-medium text-[#ff6d33]"
-                  : "text-neutral-800 hover:bg-neutral-50"
+                  ? "bg-red-50 font-medium text-red-500"
+                  : "text-gray-900 hover:bg-gray-50"
                   }`}
               >
                 {option.label}
@@ -166,36 +153,23 @@ const FilterSelect = ({ value, onChange, options, placeholder }) => {
 };
 
 const updateUserStatusInList = (users, userId, isDeleted) => {
-  return users.map((item) => (
-    item._id === userId
-      ? { ...item, isDeleted }
-      : item
-  ));
+  return users.map((item) =>
+    item._id === userId ? { ...item, isDeleted } : item
+  );
 };
 
-const UserEditModal = ({
-  isOpen,
-  form,
-  errors,
-  saving,
-  onClose,
-  onChange,
-  onSubmit,
-}) => {
+const UserEditModal = ({ isOpen, form, errors, saving, onClose, onChange, onSubmit }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      {/* FIX: Neutral borders */}
-      <div className="w-full max-w-xl rounded-xl border border-neutral-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
-          <div>
-            <h2 className="text-lg font-bold text-neutral-900">Edit User</h2>
-          </div>
+      <div className="w-full max-w-xl rounded-2xl bg-white shadow-xl flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Edit User</h2>
           <button
             type="button"
             onClick={onClose}
-            className={`rounded-lg p-2 text-neutral-400 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-900 ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -203,53 +177,48 @@ const UserEditModal = ({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="p-5">
+        <form onSubmit={onSubmit} className="p-5 flex-1">
           <div className="grid gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-neutral-900">Full Name</label>
-              {/* FIX: Neutral input bg/border, orange ONLY on focus */}
+              <label className="mb-1.5 block text-sm font-medium text-gray-900">Full Name</label>
               <input
                 type="text"
                 value={form.name}
                 onChange={(event) => onChange("name", event.target.value)}
-                className={`w-full rounded-lg border bg-neutral-50 px-3 py-2.5 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-[#ff6d33] focus:ring-2 focus:ring-[#ff6d33]/30 ${errors.name ? "border-red-400" : "border-neutral-200"
-                  }`}
+                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 ${errors.name ? "border-red-400" : "border-gray-300"}`}
                 placeholder="Enter full name"
               />
               {errors.name ? <p className="mt-1 text-xs text-red-600">{errors.name}</p> : null}
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-neutral-900">Email Address</label>
+              <label className="mb-1.5 block text-sm font-medium text-gray-900">Email Address</label>
               <input
                 type="email"
                 value={form.email}
                 onChange={(event) => onChange("email", event.target.value)}
-                className={`w-full rounded-lg border bg-neutral-50 px-3 py-2.5 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-[#ff6d33] focus:ring-2 focus:ring-[#ff6d33]/30 ${errors.email ? "border-red-400" : "border-neutral-200"
-                  }`}
+                className={`w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 ${errors.email ? "border-red-400" : "border-gray-300"}`}
                 placeholder="Enter email address"
               />
               {errors.email ? <p className="mt-1 text-xs text-red-600">{errors.email}</p> : null}
             </div>
           </div>
 
-          <div className="mt-5 flex justify-end gap-3 border-t border-neutral-200 pt-4">
-            <Button
+          <div className="mt-5 flex justify-end gap-3 border-t border-gray-100 pt-4">
+            <button
               type="button"
-              variant="secondary"
               onClick={onClose}
-              className={PANEL_BUTTON_HOVER_CLASS}
+              className="px-4 py-2 rounded-lg font-medium text-sm transition-colors bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
-              variant="primary"
               disabled={saving}
-              className={PANEL_BUTTON_HOVER_CLASS}
+              className="px-4 py-2 rounded-lg font-medium text-sm transition-colors bg-red-500 text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? "Saving..." : "Save Changes"}
-            </Button>
+            </button>
           </div>
         </form>
       </div>
@@ -257,28 +226,18 @@ const UserEditModal = ({
   );
 };
 
-const RegisterUserModal = ({
-  isOpen,
-  form,
-  errors,
-  saving,
-  onClose,
-  onChange,
-  onSubmit,
-}) => {
+const RegisterUserModal = ({ isOpen, form, errors, saving, onClose, onChange, onSubmit }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      <div className="w-full max-w-xl rounded-xl border border-neutral-200 bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-4">
-          <div>
-            <h2 className="text-lg font-bold text-neutral-900">Register User</h2>
-          </div>
+      <div className="w-full max-w-xl rounded-2xl bg-white shadow-xl flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Register User</h2>
           <button
             type="button"
             onClick={onClose}
-            className={`rounded-lg p-2 text-neutral-400 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-900 ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -286,7 +245,7 @@ const RegisterUserModal = ({
           </button>
         </div>
 
-        <div className="p-5">
+        <div className="p-5 flex-1">
           <RegisterUserForm
             form={form}
             errors={errors}
@@ -297,7 +256,7 @@ const RegisterUserModal = ({
             loadingLabel="Creating..."
             showPasswordHints={false}
             passwordGridClassName="md:grid-cols-2"
-            submitButtonClassName={`bg-[#ff6d33] hover:bg-orange-700 ${PANEL_BUTTON_HOVER_CLASS}`}
+            submitButtonClassName="bg-red-500 hover:bg-red-600"
           />
         </div>
       </div>
@@ -312,41 +271,49 @@ const DeleteConfirmModal = ({ isOpen, user, deleting, onClose, onConfirm }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-      <div className="w-full max-w-md rounded-xl border border-neutral-200 bg-white shadow-xl">
-        <div className="border-b border-neutral-200 px-5 py-4">
-          <h2 className="text-lg font-bold text-neutral-900">
+      <div className="w-full max-w-md rounded-2xl bg-white shadow-xl flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">
             {isDeletedUser ? "Restore User" : "Delete User"}
           </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
 
         <div className="px-5 py-4">
-          <div
-            className={`rounded-xl p-4 ${isDeletedUser ? "border border-[#E0F2F1] bg-[#E0F2F1]" : "border border-red-100 bg-red-50"
-              }`}
-          >
-            <p className="text-sm font-medium text-neutral-900">{user.name}</p>
-            <p className="mt-1 text-sm text-neutral-500">{user.email}</p>
+          <div className="rounded-xl p-4 border border-gray-100">
+            <p className="text-sm font-medium text-gray-900">{user.name}</p>
+            <p className="mt-1 text-sm text-gray-500">{user.email}</p>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-neutral-200 px-5 py-4">
-          <Button
+        <div className="flex justify-end gap-3 border-t border-gray-100 px-5 py-4">
+          <button
             type="button"
-            variant="secondary"
             onClick={onClose}
-            className={PANEL_BUTTON_HOVER_CLASS}
+            className="px-4 py-2 rounded-lg font-medium text-sm transition-colors bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
-            variant={isDeletedUser ? "success" : "danger"}
             onClick={onConfirm}
             disabled={deleting}
-            className={PANEL_BUTTON_HOVER_CLASS}
+            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+              isDeletedUser
+                ? "bg-red-600 hover:bg-red-700 focus:ring-red-500/50"
+                : "bg-red-600 hover:bg-red-700 focus:ring-red-500"
+            }`}
           >
             {deleting ? (isDeletedUser ? "Restoring..." : "Deleting...") : isDeletedUser ? "Restore User" : "Delete User"}
-          </Button>
+          </button>
         </div>
       </div>
     </div>
@@ -382,25 +349,17 @@ const AdminPanel = () => {
   const stats = useMemo(() => {
     const total = users.length;
     const userCount = users.filter((item) => item.role === "user" && !item.isDeleted).length;
-
-    return {
-      total,
-      user: userCount,
-      customer: 0,
-    };
+    return { total, user: userCount, customer: 0 };
   }, [users]);
 
   const filteredUsers = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
-
     return users.filter((item) => {
       const matchesSearch =
         !normalizedSearch ||
         item.name.toLowerCase().includes(normalizedSearch) ||
         item.email.toLowerCase().includes(normalizedSearch);
-
       const matchesRole = !roleFilter || item.role === roleFilter;
-
       return matchesSearch && matchesRole;
     });
   }, [roleFilter, searchTerm, users]);
@@ -412,29 +371,18 @@ const AdminPanel = () => {
     return filteredUsers.slice(startIndex, startIndex + USERS_PER_PAGE);
   }, [currentPage, filteredUsers]);
 
+  useEffect(() => { setCurrentPage(1); }, [searchTerm, roleFilter]);
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, roleFilter]);
-
-  useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
+    if (totalPages > 0 && currentPage > totalPages) setCurrentPage(totalPages);
   }, [currentPage, totalPages]);
 
   const openEditModal = (selectedUser) => {
     setEditingUser(selectedUser);
-    setEditForm({
-      name: selectedUser.name,
-      email: selectedUser.email,
-    });
+    setEditForm({ name: selectedUser.name, email: selectedUser.email });
     setFormErrors({});
   };
 
-  const closeEditModal = () => {
-    setEditingUser(null);
-    setFormErrors({});
-  };
+  const closeEditModal = () => { setEditingUser(null); setFormErrors({}); };
 
   const closeRegisterModal = () => {
     setIsRegisterModalOpen(false);
@@ -444,47 +392,27 @@ const AdminPanel = () => {
 
   const validateForm = () => {
     const errors = {};
-
-    if (!editForm.name.trim()) {
-      errors.name = "Name is required";
-    } else if (editForm.name.trim().length < 2) {
-      errors.name = "Name must be at least 2 characters";
-    }
-
-    if (!editForm.email.trim()) {
-      errors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email)) {
-      errors.email = "Invalid email format";
-    }
-
+    if (!editForm.name.trim()) errors.name = "Name is required";
+    else if (editForm.name.trim().length < 2) errors.name = "Name must be at least 2 characters";
+    if (!editForm.email.trim()) errors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email)) errors.email = "Invalid email format";
     return errors;
   };
 
   const handleEditSubmit = async (event) => {
     event.preventDefault();
-
     if (!editingUser) return;
-
     const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
+    if (Object.keys(errors).length > 0) { setFormErrors(errors); return; }
 
     setIsSaving(true);
-
     try {
       const isEditingCurrentUser = editingUser._id === currentUserId;
-
       await userService.updateUser(editingUser._id, {
         name: editForm.name.trim(),
         email: editForm.email.trim(),
       });
-
-      if (isEditingCurrentUser) {
-        await checkAuth();
-      }
-
+      if (isEditingCurrentUser) await checkAuth();
       showToast("User updated successfully", "success");
       closeEditModal();
       await refreshUsers();
@@ -497,10 +425,8 @@ const AdminPanel = () => {
 
   const handleDeleteUser = async () => {
     if (!deleteUserTarget) return;
-
     const targetUser = deleteUserTarget;
     setIsDeleting(true);
-
     try {
       if (targetUser.isDeleted) {
         await userService.restoreUser(targetUser._id);
@@ -509,16 +435,12 @@ const AdminPanel = () => {
         await userService.deleteUser(targetUser._id);
         showToast("User deleted successfully", "success");
       }
-
-      setUsers((currentUsers) =>
-        updateUserStatusInList(currentUsers, targetUser._id, !targetUser.isDeleted)
-      );
+      setUsers((currentUsers) => updateUserStatusInList(currentUsers, targetUser._id, !targetUser.isDeleted));
       setDeleteUserTarget(null);
       await refreshUsers({ showLoader: false });
     } catch (error) {
       showToast(
-        error.response?.data?.message ||
-        (targetUser.isDeleted ? "Failed to restore user" : "Failed to delete user"),
+        error.response?.data?.message || (targetUser.isDeleted ? "Failed to restore user" : "Failed to delete user"),
         "error"
       );
     } finally {
@@ -528,22 +450,16 @@ const AdminPanel = () => {
 
   const handleRegisterSubmit = async (event) => {
     event.preventDefault();
-
     const errors = validateRegisterForm(registerForm);
-    if (Object.keys(errors).length > 0) {
-      setRegisterErrors(errors);
-      return;
-    }
+    if (Object.keys(errors).length > 0) { setRegisterErrors(errors); return; }
 
     setIsCreating(true);
-
     try {
       await userService.createUser({
         name: registerForm.name.trim(),
         email: registerForm.email.trim(),
         password: registerForm.password,
       });
-
       showToast("New user registered successfully!", "success");
       closeRegisterModal();
       await refreshUsers();
@@ -555,51 +471,44 @@ const AdminPanel = () => {
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
+    if (newPage >= 1 && newPage <= totalPages) setCurrentPage(newPage);
   };
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col gap-6 p-4 lg:p-6">
+    <div className="flex h-full min-h-0 w-full flex-col gap-6 p-4 lg:p-6 overflow-hidden">
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold italic tracking-tight text-neutral-900">
-            User Management
-          </h1>
-        </div>
-
-        {/* Reserve dark orange EXCLUSIVELY for the primary CTA */}
-        <Button
-          variant="success"
-          className={`inline-flex items-center gap-2 self-start px-5 py-3 bg-[#ff6d33] hover:bg-orange-700 focus:ring-[#ff6d33]/50 ${PANEL_BUTTON_HOVER_CLASS}`}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between flex-shrink-0">
+        <h1 className="text-3xl font-extrabold italic tracking-tight text-gray-900">
+          User Management
+        </h1>
+        <button
           onClick={() => setIsRegisterModalOpen(true)}
+          className="inline-flex items-center gap-2 self-start px-5 py-3 rounded-lg font-medium text-sm transition-colors bg-red-500 text-white shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:ring-offset-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
           </svg>
           Register User
-        </Button>
+        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 flex-shrink-0">
         {STAT_CARDS.map((card) => (
-          <Card key={card.key} className={`min-h-[112px] ${PANEL_CARD_HOVER_CLASS}`}>
+          <div key={card.key} className="bg-white rounded-xl shadow-sm p-5 min-h-[112px]">
             <div className="flex items-center gap-4">
-              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${card.iconClass}`}>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
                 {card.icon}
               </div>
-              <p className="text-base font-semibold text-neutral-500">{card.label}</p>
-              <p className="ml-auto text-4xl font-bold leading-none text-neutral-900">{stats[card.key]}</p>
+              <p className="text-base font-semibold text-gray-500">{card.label}</p>
+              <p className="ml-auto text-4xl font-bold leading-none text-gray-900">{stats[card.key]}</p>
             </div>
-          </Card>
+          </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)]">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-[minmax(0,2fr)_minmax(220px,1fr)] flex-shrink-0">
         <div className="relative w-full">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -609,13 +518,13 @@ const AdminPanel = () => {
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
             placeholder="Search by name or email..."
-            className="w-full rounded-lg border border-neutral-200 bg-white py-3 pl-11 pr-12 text-sm text-neutral-900 outline-none transition-colors placeholder:text-neutral-400 focus:border-[#ff6d33] focus:ring-2 focus:ring-[#ff6d33]/30"
+            className={`w-full rounded-lg border bg-white py-3 pl-11 pr-12 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 ${searchTerm ? 'border-red-500/30 bg-red-50 font-medium' : 'border-gray-300'}`}
           />
           {searchTerm ? (
             <button
               type="button"
               onClick={() => setSearchTerm("")}
-              className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900"
+              className="absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
               aria-label="Clear search"
               title="Clear search"
             >
@@ -634,62 +543,49 @@ const AdminPanel = () => {
         />
       </div>
 
-      {/* FIX: Clean neutral table container */}
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-        <div className="grid flex-shrink-0 grid-cols-12 gap-2 border-b border-neutral-200 bg-neutral-50 px-6 py-4 text-xs font-semibold uppercase tracking-wider text-neutral-500">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-white shadow-sm">
+        <div className="grid flex-shrink-0 grid-cols-12 gap-2 bg-red-500 px-6 py-4 text-xs font-bold uppercase tracking-wider text-white">
           <div className="col-span-5">User</div>
           <div className="col-span-2 text-center">Role</div>
           <div className="col-span-2 text-center">Status</div>
           <div className="col-span-3 text-right">Actions</div>
         </div>
 
-        <div className="flex-1 overflow-y-auto divide-y divide-neutral-100">
+        <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
           {loading ? (
             <div className="flex items-center justify-center py-10">
-              <span className="animate-pulse text-neutral-400">Loading...</span>
+              <span className="animate-pulse text-gray-400">Loading...</span>
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-10 text-neutral-400">
-              <p className="text-lg font-medium text-neutral-900">No users found</p>
+            <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+              <p className="text-lg font-medium text-gray-900">No users found</p>
               <p className="mt-1 text-sm">Try changing the search or role filter.</p>
             </div>
           ) : (
-            paginatedUsers.map((item, index) => {
+            paginatedUsers.map((item) => {
               const isCurrentUser = currentUserId === item._id;
-              const avatarIndex = (currentPage - 1) * USERS_PER_PAGE + index;
               const isInactive = item.isDeleted;
 
               return (
-                <div key={item._id} className="grid grid-cols-12 gap-2 px-6 py-4 hover:bg-neutral-50 transition-colors">
+                <div key={item._id} className="grid grid-cols-12 gap-2 px-6 py-4 hover:bg-gray-50 transition-colors">
                   <div className="col-span-5 flex min-w-0 items-center gap-4">
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${getAvatarClass(avatarIndex)}`}>
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${getAvatarClass(item.name)}`}>
                       {getInitials(item.name)}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-neutral-900">{item.name}</p>
-                      <p className="truncate text-sm text-neutral-500">{item.email}</p>
+                      <p className="truncate text-sm font-semibold text-gray-900">{item.name}</p>
+                      <p className="truncate text-sm text-gray-500">{item.email}</p>
                     </div>
                   </div>
 
-                  {/* FIX: Neutral badges instead of orange */}
                   <div className="col-span-2 flex items-center justify-center">
-                    <span
-                      className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${item.role === "admin"
-                        ? "bg-neutral-100 text-neutral-700"
-                        : "bg-neutral-50 text-neutral-500"
-                        }`}
-                    >
+                    <span className="rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide bg-gray-100 text-gray-700">
                       {item.role}
                     </span>
                   </div>
 
                   <div className="col-span-2 flex items-center justify-center">
-                    <span
-                      className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${isInactive
-                        ? "bg-red-50 text-red-600"
-                        : "bg-[#E0F2F1] text-[#2E7D32]"
-                        }`}
-                    >
+                    <span className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${isInactive ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>
                       {isInactive ? "Inactive" : "Active"}
                     </span>
                   </div>
@@ -698,7 +594,7 @@ const AdminPanel = () => {
                     <button
                       type="button"
                       onClick={() => openEditModal(item)}
-                      className={`rounded-lg border border-neutral-200 p-2 text-neutral-500 transition-all duration-200 hover:bg-neutral-100 hover:text-neutral-900 ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
+                      className="rounded-lg border border-gray-200 p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
                       title="Edit user"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -710,17 +606,11 @@ const AdminPanel = () => {
                       type="button"
                       onClick={() => setDeleteUserTarget(item)}
                       disabled={isCurrentUser && !isInactive}
-                      className={`rounded-lg border p-2 transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-40 ${isInactive
-                        ? "border-[#E0F2F1] text-[#2E7D32] hover:bg-[#E0F2F1] hover:text-[#2E7D32]"
-                        : "border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
-                        } ${PANEL_ICON_BUTTON_HOVER_CLASS}`}
-                      title={
-                        isCurrentUser && !isInactive
-                          ? "You cannot delete your current account here"
-                          : isInactive
-                            ? "Restore user"
-                            : "Delete user"
-                      }
+                      className={`rounded-lg border p-2 transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${isInactive
+                        ? "border-green-200 text-green-600 hover:bg-green-50"
+                        : "border-red-200 text-red-500 hover:bg-red-50"
+                        }`}
+                      title={isCurrentUser && !isInactive ? "You cannot delete your current account here" : isInactive ? "Restore user" : "Delete user"}
                     >
                       {isInactive ? (
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -739,33 +629,28 @@ const AdminPanel = () => {
           )}
         </div>
 
-        {/* FIX: Clean, minimal pagination footer */}
         {filteredUsers.length > 0 ? (
-          <div className="flex flex-shrink-0 items-center justify-between border-t border-neutral-200 bg-white px-4 py-3">
-            <p className="text-xs text-neutral-500">
-              Page <span className="font-medium text-neutral-900">{currentPage}</span> out of{" "}
-              <span className="font-medium text-neutral-900">{totalPages}</span>
+          <div className="flex flex-shrink-0 items-center justify-between border-t border-gray-100 bg-white px-4 py-3">
+            <p className="text-xs text-gray-500">
+              Page <span className="font-medium text-gray-900">{currentPage}</span> out of{" "}
+              <span className="font-medium text-gray-900">{totalPages}</span>
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`flex items-center gap-1 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm font-medium text-neutral-700 transition-all duration-200 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
+                className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 bg-white shadow-sm hover:shadow disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                </svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                 Prev
               </button>
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`flex items-center gap-1 rounded-lg border border-neutral-200 px-3 py-1.5 text-sm font-medium text-neutral-700 transition-all duration-200 hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40 ${PANEL_BUTTON_HOVER_CLASS}`}
+                className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-700 bg-white shadow-sm hover:shadow disabled:opacity-40 disabled:cursor-not-allowed transition-all"
               >
                 Next
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
               </button>
             </div>
           </div>

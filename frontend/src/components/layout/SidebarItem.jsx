@@ -9,8 +9,8 @@ const SidebarItem = ({ icon, label, path, isCollapsed, onClick }) => {
       className={({ isActive }) =>
         `flex items-center rounded-lg transition-all duration-200 group ${
           isActive
-            ? 'bg-brand-pale text-brand font-semibold' 
-            : 'text-white/70 hover:bg-neutral-dark hover:text-surface-white'
+            ? 'bg-red-500/25 text-red-400 font-semibold'
+            : 'text-gray-400 hover:bg-gray-700 hover:text-white'
         } ${
           isCollapsed ? 'w-10 h-10 mx-auto justify-center' : 'px-3 py-2.5'
         }`
@@ -18,7 +18,6 @@ const SidebarItem = ({ icon, label, path, isCollapsed, onClick }) => {
     >
       <span className="flex-shrink-0">{icon}</span>
       
-      {/* FIX: Removed gap-3 from parent. Added conditional ml-3 here instead */}
       <div className={`grid transition-[grid-template-columns] duration-300 ${isCollapsed ? '' : 'ml-3'}`} style={{ gridTemplateColumns: isCollapsed ? '0fr' : '1fr' }}>
         <span className="whitespace-nowrap text-sm overflow-hidden">{label}</span>
       </div>

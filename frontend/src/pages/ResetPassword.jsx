@@ -74,7 +74,7 @@ export default function ResetPassword() {
   ];
 
   return (
-    <div className="min-h-screen bg-surface-gray flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex justify-center mb-8">
@@ -86,13 +86,13 @@ export default function ResetPassword() {
         </div>
 
         {/* Card */}
-        <div className="bg-surface-white border border-border-main rounded-xl shadow-sm p-6">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6">
           {!isSuccess ? (
             <>
               {/* Icon */}
               <div className="flex justify-center mb-4">
-                <div className="w-14 h-14 rounded-full bg-brand-pale flex items-center justify-center">
-                  <span className="text-brand">
+                <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+                  <span className="text-red-500">
                     <IconKey className="w-7 h-7" />
                   </span>
                 </div>
@@ -100,10 +100,10 @@ export default function ResetPassword() {
 
               {/* Header */}
               <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold text-text-primary">
+                <h1 className="text-2xl font-bold text-gray-900">
                   Reset Password
                 </h1>
-                <p className="text-sm text-text-secondary mt-1.5">
+                <p className="text-sm text-gray-500 mt-1.5">
                   Enter your new password below
                 </p>
               </div>
@@ -119,11 +119,11 @@ export default function ResetPassword() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* New Password */}
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">
+                  <label className="block text-sm font-medium text-gray-900 mb-1.5">
                     New Password
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-placeholder">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <IconLock />
                     </span>
                     <input
@@ -131,12 +131,12 @@ export default function ResetPassword() {
                       value={form.password}
                       onChange={update("password")}
                       placeholder="Min. 6 characters"
-                      className="w-full pl-10 pr-10 py-2.5 bg-surface-gray border border-border-main rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
+                      className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-placeholder hover:text-text-secondary transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500 transition-colors"
                     >
                       {showPassword ? <IconEyeSlash /> : <IconEye />}
                     </button>
@@ -145,11 +145,11 @@ export default function ResetPassword() {
 
                 {/* Confirm Password */}
                 <div>
-                  <label className="block text-sm font-medium text-text-primary mb-1.5">
+                  <label className="block text-sm font-medium text-gray-900 mb-1.5">
                     Confirm New Password
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-placeholder">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                       <IconLock />
                     </span>
                     <input
@@ -157,12 +157,12 @@ export default function ResetPassword() {
                       value={form.confirmPassword}
                       onChange={update("confirmPassword")}
                       placeholder="Re-enter your password"
-                      className="w-full pl-10 pr-10 py-2.5 bg-surface-gray border border-border-main rounded-lg text-sm text-text-primary placeholder:text-text-placeholder focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
+                      className="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none transition-colors"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirm(!showConfirm)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-text-placeholder hover:text-text-secondary transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500 transition-colors"
                     >
                       {showConfirm ? <IconEyeSlash /> : <IconEye />}
                     </button>
@@ -180,8 +180,8 @@ export default function ResetPassword() {
                         <span
                           className={
                             check.met
-                              ? "text-emerald-500"
-                              : "text-text-placeholder"
+                              ? "text-green-500"
+                              : "text-gray-400"
                           }
                         >
                           <IconCheck className="w-3.5 h-3.5" />
@@ -189,8 +189,8 @@ export default function ResetPassword() {
                         <span
                           className={
                             check.met
-                              ? "text-emerald-600 font-medium"
-                              : "text-text-secondary"
+                              ? "text-green-600 font-medium"
+                              : "text-gray-500"
                           }
                         >
                           {check.label}
@@ -204,7 +204,7 @@ export default function ResetPassword() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-2.5 bg-brand hover:bg-brand-hover text-surface-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {isLoading ? "Resetting..." : "Reset Password"}
                 </button>
@@ -213,21 +213,21 @@ export default function ResetPassword() {
           ) : (
             /* Success State */
             <div className="flex flex-col items-center py-6">
-              <div className="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center mb-4">
-                <span className="text-emerald-500">
+              <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mb-4">
+                <span className="text-green-500">
                   <IconCheck className="w-7 h-7" />
                 </span>
               </div>
-              <h1 className="text-2xl font-bold text-text-primary mb-2">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 Password Reset Successful
               </h1>
-              <p className="text-sm text-text-secondary text-center leading-relaxed">
+              <p className="text-sm text-gray-500 text-center leading-relaxed">
                 Your password has been updated. You can now sign in with your
                 new password.
               </p>
               <button
                 onClick={() => navigate("/login", { replace: true })}
-                className="mt-6 w-full py-2.5 bg-brand hover:bg-brand-hover text-surface-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
+                className="mt-6 w-full py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors"
               >
                 Go to Sign In
               </button>
@@ -236,10 +236,10 @@ export default function ResetPassword() {
 
           {/* Back to Login */}
           {!isSuccess && (
-            <div className="mt-6 pt-4 border-t border-border-light">
+            <div className="mt-6 pt-4 border-t border-gray-100">
               <Link
                 to="/login"
-                className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary transition-colors"
+                className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
               >
                 <IconArrowLeft className="w-4 h-4" />
                 Back to Sign In
