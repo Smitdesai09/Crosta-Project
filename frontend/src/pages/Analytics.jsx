@@ -94,6 +94,7 @@ const Analytics = () => {
   const [availableYears, setAvailableYears] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -119,7 +120,6 @@ const Analytics = () => {
     if (!month || !year) return;
     setLoading(true);
     try {
-      // ✅ FIX: Added _t: Date.now() to prevent browser from returning cached response
       const res = await analyticsService.getAnalytics({ month, year, _t: Date.now() });
       setData(res.data);
     } catch (error) {
@@ -230,6 +230,33 @@ const Analytics = () => {
     return num < 10 ? num.toFixed(1) : num.toFixed(0);
   };
 
+  const handleDownloadReport = async () => {
+    setIsDownloading(true);
+
+    try {
+      const res = await analyticsService.downloadAnalyticsReport({ month, year });
+      const blob = new Blob([res.data], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const contentDisposition = res.headers['content-disposition'] || '';
+      const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/i);
+      const fileName = fileNameMatch?.[1] || `analytics-report-${year}-${String(month).padStart(2, '0')}.csv`;
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      showToast('Analytics report downloaded', 'success');
+    } catch (error) {
+      showToast('Failed to download analytics report', error);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   if (loading || !data) {
     return (
       <div className="flex items-center justify-center h-full bg-gray-100">
@@ -248,6 +275,14 @@ const Analytics = () => {
           Analytics
         </h1>
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleDownloadReport}
+            disabled={isDownloading}
+            className="px-4 py-3 rounded-lg border border-gray-300 bg-white text-sm font-semibold text-gray-700 shadow-sm transition-all hover:border-gray-400 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isDownloading ? 'Downloading...' : 'Download Report'}
+          </button>
           <div className="w-36">
             <FilterSelect
               value={String(month)}

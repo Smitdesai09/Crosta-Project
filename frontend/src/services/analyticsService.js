@@ -4,6 +4,13 @@ const analyticsService = {
   getAnalytics: async (params) => {
     const response = await api.get('/api/analytics', { params });
     return response;
+  },
+  downloadAnalyticsReport: async (params) => {
+    const response = await api.get('/api/analytics/export', {
+      params,
+      responseType: 'blob'
+    });
+    return response;
   }
 };
 
