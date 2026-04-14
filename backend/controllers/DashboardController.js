@@ -53,7 +53,7 @@ exports.getSummary = async (req, res) => {
       quantity: p.quantity
     }));
 
-  
+
 
     // 5️. Payment type distribution
     const paymentDistribution = await Bill.aggregate([
@@ -72,22 +72,12 @@ exports.getSummary = async (req, res) => {
     }));
 
 
-
     // 6️. Order type distribution
     const orderTypeAgg = await Bill.aggregate([
       { $match: { createdAt: { $gte: start, $lt: end } } },
       {
-        $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "order"
-        }
-      },
-      { $unwind: "$order" },
-      {
         $group: {
-          _id: "$order.orderType",
+          _id: "$orderType",
           count: { $sum: 1 }
         }
       }
@@ -99,7 +89,7 @@ exports.getSummary = async (req, res) => {
     }));
 
 
-    
+
     res.json({
       summary: {
         todayRevenue,

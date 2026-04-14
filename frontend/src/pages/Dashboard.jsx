@@ -1,4 +1,3 @@
-// Dashboard.jsx
 /* eslint-disable react-hooks/immutability */
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -30,6 +29,12 @@ const productPieColors = [
   '#EF4444', '#F97316', '#F59E0B', '#10B981', '#3B82F6',
   '#8B5CF6', '#EC4899', '#14B8A6', '#F43F5E', '#84CC16', '#6B7280'
 ];
+
+const formatType = (type) => {
+  if (type === 'dine-in') return 'Dine-in';
+  if (type === 'takeaway') return 'Takeaway';
+  return type;
+};
 
 const PieChart = ({ data, colors, size = 'md' }) => {
   const total = data.reduce((sum, item) => sum + item.value, 0);
@@ -109,10 +114,17 @@ const Dashboard = () => {
       .sort((a, b) => b.value - a.value),
     [data?.paymentDistribution]);
 
-  const typePieData = useMemo(() =>
-    (data?.orderTypeDistribution || []).map(o => ({ _id: o.type, value: o.count }))
-      .sort((a, b) => b.value - a.value),
-    [data?.orderTypeDistribution]);
+  const typePieData = useMemo(() => {
+    const raw = data?.orderTypeDistribution || [];
+    const normalized = {};
+    raw.forEach(o => {
+      const key = formatType(o.type);
+      normalized[key] = (normalized[key] || 0) + o.count;
+    });
+    return Object.entries(normalized)
+      .map(([type, count]) => ({ _id: type, value: count }))
+      .sort((a, b) => b.value - a.value);
+  }, [data?.orderTypeDistribution]);
 
   const todayDate = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   const formatDateTime = (dateStr) => new Date(dateStr).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
@@ -209,13 +221,13 @@ const Dashboard = () => {
                   <div className="text-xs text-gray-600 truncate">{formatDateTime(bill.createdAt)}</div>
                   <div className="text-xs text-gray-900 font-medium truncate">{bill.operatorName || 'Unknown'}</div>
                   <div className="flex justify-start">
-                    <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-gray-100 text-gray-700 w-20 text-center">
-                      {bill.orderType ? bill.orderType.replace(/-/g, ' ') : '—'}
+                    <span className="px-2.5 py-1 text-[10px] font-bold rounded-full bg-gray-100 text-gray-700 w-20 text-center">
+                      {formatType(bill.orderType) || '—'}
                     </span>
                   </div>
                   <div className="text-sm font-bold text-gray-900 text-right">₹{bill.totalAmount.toFixed(2)}</div>
                   <div className="flex justify-end">
-                    <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-gray-100 text-gray-700 w-16 text-center">
+                    <span className="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full bg-gray-100 text-gray-700 w-16 text-center capitalize">
                       {bill.paymentType}
                     </span>
                   </div>
@@ -272,7 +284,7 @@ const Dashboard = () => {
 
             <div className="bg-white rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
               <div className="px-5 py-3.5 bg-red-50 text-red-500">
-                <h2 className="text-sm font-bold  uppercase tracking-wide">
+                <h2 className="text-sm font-bold uppercase tracking-wide">
                   Payment Methods
                 </h2>
               </div>
@@ -333,12 +345,11 @@ const Dashboard = () => {
                         const total = typePieData.reduce((s, item) => s + item.value, 0);
                         const percent = total > 0 ? ((o.value / total) * 100).toFixed(1) : '0';
                         const bgColors = ['bg-red-500', 'bg-orange-500', 'bg-red-300'];
-                        const labels = { 'dine-in': 'Dine-in', takeaway: 'Takeaway' };
                         return (
                           <div key={o._id} className="flex items-center gap-2">
                             <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                            <span className="text-xs text-gray-900 capitalize truncate flex-1 min-w-0">
-                              {labels[o._id] || o._id}
+                            <span className="text-xs text-gray-900 truncate flex-1 min-w-0">
+                              {o._id}
                             </span>
                             <span className="text-[11px] text-gray-500 shrink-0 tabular-nums">
                               {o.value}

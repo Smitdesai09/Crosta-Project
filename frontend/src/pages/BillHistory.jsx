@@ -2,6 +2,12 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import billService from '../services/billService';
 import { useToast } from '../lib/ToastContext';
 
+const formatType = (type) => {
+  if (type === 'dine-in') return 'Dine-in';
+  if (type === 'takeaway') return 'Takeaway';
+  return type;
+};
+
 const FilterSelect = ({ value, onChange, options, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
@@ -185,8 +191,9 @@ const BillHistory = () => {
   const handlePrint = () => {
     if (!selectedBill) return;
     const data = selectedBill;
+    const displayType = formatType(data.orderType);
     const itemsHtml = data.items.map(item => `<tr><td style="padding: 4px 0; font-size: 12px;">${item.quantity}x ${item.name} (${item.variant})</td><td style="padding: 4px 0; text-align: right; font-size: 12px;">₹${item.subtotal.toFixed(2)}</td></tr>`).join('');
-    const fullReceiptHtml = `<html><head><title>Bill - Table ${data.tableNumber}</title><style>body{font-family:'Courier New',Courier,monospace;width:300px;margin:0 auto;padding:20px;color:#000}h2{text-align:center;margin-bottom:0;font-size:20px;text-transform:uppercase}.sub{text-align:center;font-size:12px;color:#555;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin-bottom:20px}th{text-align:left;font-size:12px;border-bottom:1px solid #000;padding-bottom:4px}.totals{width:100%;font-size:12px}.totals tr td:last-child{text-align:right}.final-total{font-size:16px;font-weight:bold;border-top:2px solid #000;margin-top:10px}.final-total td{padding-top:8px!important}.footer{text-align:center;margin-top:30px;font-size:12px;color:#555}</style></head><body><h2>CROSTA PIZZA</h2><div class="sub">Table ${data.tableNumber} | ${data.orderType.toUpperCase()}</div><table><thead><tr><th>Item</th><th style="text-align:right;">Amount</th></tr></thead><tbody>${itemsHtml}</tbody></table><table class="totals"><tr><td>Subtotal</td><td>₹${data.subtotal.toFixed(2)}</td></tr>${data.discount > 0 ? `<tr><td>Discount</td><td>- ₹${data.discount.toFixed(2)}</td></tr>` : ''}<tr><td>GST</td><td>+ ₹${data.gst.toFixed(2)}</td></tr><tr class="final-total"><td>TOTAL</td><td>₹${data.totalAmount.toFixed(2)}</td></tr></table><div class="footer">Operator: ${data.operatorName}<br>Payment: ${data.paymentType.toUpperCase()}<br>Billed: ${new Date(data.createdAt).toLocaleString()}</div></body></html>`;
+    const fullReceiptHtml = `<html><head><title>Bill</title><style>body{font-family:'Courier New',Courier,monospace;width:300px;margin:0 auto;padding:20px;color:#000}h2{text-align:center;margin-bottom:0;font-size:20px;text-transform:uppercase}.sub{text-align:center;font-size:12px;color:#555;margin-bottom:20px}table{width:100%;border-collapse:collapse;margin-bottom:20px}th{text-align:left;font-size:12px;border-bottom:1px solid #000;padding-bottom:4px}.totals{width:100%;font-size:12px}.totals tr td:last-child{text-align:right}.final-total{font-size:16px;font-weight:bold;border-top:2px solid #000;margin-top:10px}.final-total td{padding-top:8px!important}.footer{text-align:center;margin-top:30px;font-size:12px;color:#555}</style></head><body><h2>Crosta by PD²</h2><div class="sub">${data.tableNumber ? `Table ${data.tableNumber}` : displayType} | ${displayType}</div><table><thead><tr><th>Item</th><th style="text-align:right;">Amount</th></tr></thead><tbody>${itemsHtml}</tbody></table><table class="totals"><tr><td>Subtotal</td><td>₹${data.subtotal.toFixed(2)}</td></tr>${data.discount > 0 ? `<tr><td>Discount</td><td>- ₹${data.discount.toFixed(2)}</td></tr>` : ''}<tr><td>GST</td><td>+ ₹${data.gst.toFixed(2)}</td></tr><tr class="final-total"><td>TOTAL</td><td>₹${data.totalAmount.toFixed(2)}</td></tr></table><div class="footer">Operator: ${data.operatorName}<br>Payment: ${data.paymentType.toUpperCase()}<br>Billed: ${new Date(data.createdAt).toLocaleString()}</div></body></html>`;
     const printWindow = window.open('', '_blank');
     if (!printWindow) { showToast("Please allow popups to print", "error"); return; }
     printWindow.document.write(fullReceiptHtml);
@@ -280,14 +287,14 @@ const BillHistory = () => {
                 </div>
 
                 <div className="flex justify-center">
-                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gray-100 text-gray-700 w-20 text-center">
+                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gray-100 text-gray-700 w-20 text-center capitalize">
                     {bill.paymentType}
                   </span>
                 </div>
 
                 <div className="flex justify-center">
-                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-gray-100 text-gray-700 w-20 text-center">
-                    {bill.orderType === 'dine-in' ? 'Dine-in' : 'Takeaway'}
+                  <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-gray-100 text-gray-700 w-20 text-center">
+                    {formatType(bill.orderType) || '—'}
                   </span>
                 </div>
 
@@ -330,7 +337,6 @@ const BillHistory = () => {
         )}
       </div>
 
-      {/* BILL MODAL */}
       {isModalOpen && selectedBill && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 flex flex-col max-h-[90vh]">
@@ -338,7 +344,7 @@ const BillHistory = () => {
             <div className="flex items-center justify-between p-4 border-b border-gray-100 rounded-t-2xl">
               <div>
                 <h2 className="text-base font-bold text-gray-900">Bill Details</h2>
-                <p className="text-xs text-gray-500 mt-0.5">Table {selectedBill.tableNumber} &bull; {formatDateTime(selectedBill.createdAt)}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{selectedBill.tableNumber ? `Table ${selectedBill.tableNumber}` : formatType(selectedBill.orderType)} &bull; {formatDateTime(selectedBill.createdAt)}</p>
                 <p className="text-xs text-gray-500 mt-0.5">Operator: <span className="font-medium text-gray-900">{selectedBill.operatorName}</span></p>
               </div>
               <button onClick={() => setIsModalOpen(false)} className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900">
@@ -351,7 +357,7 @@ const BillHistory = () => {
               <div className={`grid gap-3 ${selectedBill.customerPhone ? 'grid-cols-3' : 'grid-cols-2'}`}>
                 <div className="bg-gray-50 p-2 rounded-lg text-center border border-gray-100">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase">Type</p>
-                  <p className="text-sm font-medium text-gray-900 capitalize mt-0.5">{selectedBill.orderType}</p>
+                  <p className="text-sm font-medium text-gray-900 mt-0.5">{formatType(selectedBill.orderType)}</p>
                 </div>
                 <div className="bg-gray-50 p-2 rounded-lg text-center border border-gray-100">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase">Payment</p>
@@ -392,8 +398,8 @@ const BillHistory = () => {
 
               <div className="bg-gray-900 rounded-xl p-4 text-white space-y-2 text-sm">
                 <div className="flex justify-between"><span className="text-gray-400">Subtotal</span><span>₹{selectedBill.subtotal.toFixed(2)}</span></div>
-                {selectedBill.discount > 0 && (<div className="flex justify-between"><span className="text-gray-400">Discount</span><span className="text-red-400">- ₹{selectedBill.discount.toFixed(2)}</span></div>)}
-                <div className="flex justify-between"><span className="text-gray-400">GST</span><span>+ ₹{selectedBill.gst.toFixed(2)}</span></div>
+                {selectedBill.discount > 0 && (<div className="flex justify-between"><span className="text-gray-400">Discount</span><span className="text-red-400">- ₹${selectedBill.discount.toFixed(2)}</span></div>)}
+                <div className="flex justify-between"><span className="text-gray-400">GST</span><span>+ ₹${selectedBill.gst.toFixed(2)}</span></div>
                 <div className="border-t border-gray-700 pt-3 mt-3 flex justify-between items-end">
                   <span className="text-sm font-bold text-gray-400">Total Paid</span>
                   <span className="text-2xl font-extrabold text-red-400">₹{selectedBill.totalAmount.toFixed(2)}</span>

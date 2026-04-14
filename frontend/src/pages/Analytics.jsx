@@ -4,6 +4,12 @@ import analyticsService from '../services/analyticsService';
 import billService from '../services/billService';
 import { useToast } from '../lib/ToastContext';
 
+const formatType = (type) => {
+  if (type === 'dine-in') return 'Dine-in';
+  if (type === 'takeaway') return 'Takeaway';
+  return type;
+};
+
 const PieChart = ({ data, colors, size = 'md' }) => {
   const total = data.reduce((sum, item) => sum + item.revenue, 0);
 
@@ -212,8 +218,15 @@ const Analytics = () => {
   }, [data?.paymentDistribution]);
 
   const orderTypeSorted = useMemo(() => {
-    if (!data?.orderTypeDistribution?.length) return [];
-    return [...data.orderTypeDistribution].sort((a, b) => b.revenue - a.revenue);
+    const raw = data?.orderTypeDistribution || [];
+    const normalized = {};
+    raw.forEach(o => {
+      const key = formatType(o.type);
+      normalized[key] = (normalized[key] || 0) + o.revenue;
+    });
+    return Object.entries(normalized)
+      .map(([type, revenue]) => ({ _id: type, revenue }))
+      .sort((a, b) => b.revenue - a.revenue);
   }, [data?.orderTypeDistribution]);
 
   const formatCurrency = (num) =>
@@ -495,7 +508,7 @@ const Analytics = () => {
                     return (
                       <div key={p._id} className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                        <span className="text-xs text-gray-900 capitalize truncate flex-1 min-w-0">{p._id}</span>
+                        <span className="text-xs text-gray-900 capitalize truncate flex-1 min-w-0">{p.type}</span>
                         <span className="text-[11px] text-gray-500 shrink-0 tabular-nums">
                           {formatCurrency(p.revenue)}
                         </span>
@@ -525,11 +538,10 @@ const Analytics = () => {
                     const total = orderTypeSorted.reduce((s, item) => s + item.revenue, 0);
                     const percent = total > 0 ? ((o.revenue / total) * 100).toFixed(1) : '0';
                     const bgColors = ['bg-red-500', 'bg-orange-500', 'bg-red-300'];
-                    const labels = { 'dine-in': 'Dine-in', takeaway: 'Takeaway' };
                     return (
                       <div key={o._id} className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
-                        <span className="text-xs text-gray-900 capitalize truncate flex-1 min-w-0">{labels[o._id] || o._id}</span>
+                        <span className="text-xs text-gray-900 truncate flex-1 min-w-0">{o._id}</span>
                         <span className="text-[11px] text-gray-500 shrink-0 tabular-nums">
                           {formatCurrency(o.revenue)}
                         </span>

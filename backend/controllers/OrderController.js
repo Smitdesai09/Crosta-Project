@@ -3,12 +3,19 @@ const Order = require("../models/orders");
 const Product = require("../models/products");
 
 
+function generateOrderId(objectId, orderType) {
+    const suffix = objectId.toString().slice(-4).toUpperCase();
+    const prefix = orderType === "dine-in" ? "D" : "T";
+    return `${prefix}-${suffix}`;
+}
+
+
 exports.getActiveOrders = async (req, res) => {
     try {
 
         const orders = await Order.find(
             { status: "active" },
-            { tableNumber: 1, subtotal: 1, orderType: 1, createdAt: 1 }
+            { orderId: 1, tableNumber: 1, subtotal: 1, orderType: 1, createdAt: 1 }
         )
             .sort({ createdAt: -1 })
             .lean();
@@ -71,33 +78,53 @@ exports.createOrder = async (req, res) => {
 
     try {
 
-        const { tableNumber, orderType = "dine-in", items } = req.body;
+        const { tableNumber = null, orderType = "dine-in", items } = req.body;
 
-        if (tableNumber === undefined || tableNumber === null)
+        if (!["dine-in", "takeaway"].includes(orderType))
             return res.status(400).json({
                 success: false,
-                message: "Table number required"
+                message: "Invalid order type"
             });
 
-        if (typeof tableNumber !== "number" || tableNumber < 1 || tableNumber > 6)
-            return res.status(400).json({
-                success: false,
-                message: "Table number must be between 1 and 6"
-            });
+        if (orderType === "dine-in") {
 
-        const existingOrder = await Order.findOne({ tableNumber, status: "active" });
+            if (tableNumber === null || tableNumber === undefined)
+                return res.status(400).json({
+                    success: false,
+                    message: "Table number required for Dine-in"
+                });
 
-        if (existingOrder)
-            return res.status(400).json({
-                success: false,
-                message: `Table ${tableNumber} already has an active order`
-            });
+            if (typeof tableNumber !== "number" || tableNumber < 1 || tableNumber > 6)
+                return res.status(400).json({
+                    success: false,
+                    message: "Table number must be between 1 and 6"
+                });
+
+            const existingOrder = await Order.findOne({ tableNumber, status: "active" });
+
+            if (existingOrder)
+                return res.status(400).json({
+                    success: false,
+                    message: `Table ${tableNumber} already has an active order`
+                });
+
+        }
+
+        if (orderType === "takeaway") {
+            if (tableNumber !== null && tableNumber !== undefined)
+                return res.status(400).json({
+                    success: false,
+                    message: "Takeaway order cannot have table number"
+                });
+        }
+
 
         if (!items || !Array.isArray(items) || items.length === 0)
             return res.status(400).json({
                 success: false,
                 message: "Items required"
             });
+
 
         const productIds = [...new Set(items.map(i => i.productId))];
 
@@ -146,12 +173,18 @@ exports.createOrder = async (req, res) => {
             subtotal += itemSubtotal;
         }
 
-        const order = await Order.create({
+
+        const order = new Order({
             tableNumber,
             orderType,
             items: validatedItems,
             subtotal
         });
+
+        order.orderId = generateOrderId(order._id, order.orderType);
+
+        await order.save();
+
 
         return res.status(201).json({
             success: true,
@@ -175,7 +208,7 @@ exports.updateOrder = async (req, res) => {
     try {
 
         const { id } = req.params;
-        const { items, orderType } = req.body;
+        const { items } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(id))
             return res.status(400).json({
@@ -197,19 +230,13 @@ exports.updateOrder = async (req, res) => {
                 message: "Cannot modify billed order"
             });
 
-        if (orderType && !["dine-in", "takeaway"].includes(orderType))
-            return res.status(400).json({
-                success: false,
-                message: "Invalid orderType"
-            });
-
-        if (orderType) order.orderType = orderType;
 
         if (!items || !Array.isArray(items) || items.length === 0)
             return res.status(400).json({
                 success: false,
                 message: "Items required"
             });
+
 
         const productIds = [...new Set(items.map(i => i.productId))];
 

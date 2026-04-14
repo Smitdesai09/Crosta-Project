@@ -1,14 +1,21 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useMemo, useEffect } from 'react';
 import TableCard from '../components/order/TableCard';
 import ProductCard from '../components/order/ProductCard';
 import CartItem from '../components/order/CartItem';
-import OrderTypeCard from '../components/order/OrderTypeCard';
 import BillModal from '../components/order/BillModal';
+import TakeawayOrderCard from '../components/order/TakeawayOrderCard';
 import orderService from '../services/orderService';
 import billService from '../services/billService';
 import { useToast } from '../lib/ToastContext';
 
 const API_BASE = import.meta.env.VITE_API_URL;
+
+const formatType = (type) => {
+  if (type === 'dine-in') return 'Dine-in';
+  if (type === 'takeaway') return 'Takeaway';
+  return type;
+};
 
 const Orders = () => {
   const { showToast } = useToast();
@@ -16,13 +23,14 @@ const Orders = () => {
   const [view, setView] = useState('tables');
   const [selectedTable, setSelectedTable] = useState(null);
   const [orderId, setOrderId] = useState(null);
-  const [orderType, setOrderType] = useState('Dine-in');
+  const [displayOrderId, setDisplayOrderId] = useState(null);
   const [cart, setCart] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [isBillModalOpen, setIsBillModalOpen] = useState(false);
 
   const [tables, setTables] = useState([]);
+  const [takeawayOrders, setTakeawayOrders] = useState([]);
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,6 +39,8 @@ const Orders = () => {
   const [isCartDirty, setIsCartDirty] = useState(false);
   const [isBillingLoading, setIsBillingLoading] = useState(false);
   const [isSavingForBill, setIsSavingForBill] = useState(false);
+
+  const currentOrderType = selectedTable ? 'dine-in' : 'takeaway';
 
   const fetchInitialData = async () => {
     setIsLoading(true);
@@ -43,30 +53,35 @@ const Orders = () => {
       const activeOrders = ordersRes.data.data;
       const activeProducts = productsRes.data.data;
 
-      const activeMap = {};
-      activeOrders.forEach(order => {
-        activeMap[order.tableNumber] = order;
+      const activeDineInOrders = activeOrders.filter(o => o.orderType === 'dine-in');
+      const activeTakeawayOrders = activeOrders.filter(o => o.orderType === 'takeaway');
+
+      const dineInMap = {};
+      activeDineInOrders.forEach(order => {
+        dineInMap[order.tableNumber] = order;
       });
 
       const mappedTables = Array.from({ length: 6 }, (_, i) => {
         const tableNum = i + 1;
-        const activeOrder = activeMap[tableNum];
+        const activeOrder = dineInMap[tableNum];
         if (activeOrder) {
           return {
             id: tableNum,
             status: 'Occupied',
             orderId: activeOrder._id,
+            displayOrderId: activeOrder.orderId,
             subtotal: activeOrder.subtotal,
-            orderType: activeOrder.orderType
+            createdAt: activeOrder.createdAt
           };
         }
         return { id: tableNum, status: 'Available' };
       });
 
       setTables(mappedTables);
+      setTakeawayOrders(activeTakeawayOrders);
       setProducts(activeProducts);
     } catch (error) {
-      showToast("Failed to load initial data", error);
+      showToast("Failed to load initial data", "error");
     } finally {
       setIsLoading(false);
     }
@@ -77,29 +92,34 @@ const Orders = () => {
       const ordersRes = await orderService.getActiveOrders();
       const activeOrders = ordersRes.data.data;
 
-      const activeMap = {};
-      activeOrders.forEach(order => {
-        activeMap[order.tableNumber] = order;
+      const activeDineInOrders = activeOrders.filter(o => o.orderType === 'dine-in');
+      const activeTakeawayOrders = activeOrders.filter(o => o.orderType === 'takeaway');
+
+      const dineInMap = {};
+      activeDineInOrders.forEach(order => {
+        dineInMap[order.tableNumber] = order;
       });
 
       const mappedTables = Array.from({ length: 6 }, (_, i) => {
         const tableNum = i + 1;
-        const activeOrder = activeMap[tableNum];
+        const activeOrder = dineInMap[tableNum];
         if (activeOrder) {
           return {
             id: tableNum,
             status: 'Occupied',
             orderId: activeOrder._id,
+            displayOrderId: activeOrder.orderId,
             subtotal: activeOrder.subtotal,
-            orderType: activeOrder.orderType
+            createdAt: activeOrder.createdAt
           };
         }
         return { id: tableNum, status: 'Available' };
       });
 
       setTables(mappedTables);
+      setTakeawayOrders(activeTakeawayOrders);
     } catch (error) {
-      showToast("Failed to refresh tables", error);
+      showToast("Failed to refresh tables", "error");
     }
   };
 
@@ -161,7 +181,7 @@ const Orders = () => {
         const res = await orderService.getOrderById(table.orderId);
         const orderData = res.data.data;
         setOrderId(orderData._id);
-        setOrderType(orderData.orderType === 'dine-in' ? 'Dine-in' : 'Takeaway');
+        setDisplayOrderId(orderData.orderId);
         const mappedCart = orderData.items.map(item => ({ cartId: Date.now() + Math.random(), _id: item.productId, name: item.name, variant: item.variant, price: item.price, quantity: item.quantity }));
         setCart(mappedCart);
         setIsCartDirty(false);
@@ -171,9 +191,36 @@ const Orders = () => {
       }
     } else {
       setOrderId(null);
+      setDisplayOrderId(null);
       setCart([]);
-      setOrderType('Dine-in');
       setIsCartDirty(false);
+    }
+  };
+
+  const handleNewTakeaway = () => {
+    setSelectedTable(null);
+    setOrderId(null);
+    setDisplayOrderId(null);
+    setCart([]);
+    setIsCartDirty(false);
+    setView('cart');
+  };
+
+  const handleSelectTakeawayOrder = async (takeawayOrder) => {
+    setSelectedTable(null);
+    setView('cart');
+
+    try {
+      const res = await orderService.getOrderById(takeawayOrder._id);
+      const orderData = res.data.data;
+      setOrderId(orderData._id);
+      setDisplayOrderId(orderData.orderId);
+      const mappedCart = orderData.items.map(item => ({ cartId: Date.now() + Math.random(), _id: item.productId, name: item.name, variant: item.variant, price: item.price, quantity: item.quantity }));
+      setCart(mappedCart);
+      setIsCartDirty(false);
+    } catch (error) {
+      showToast(error.response?.data?.message || "Failed to fetch order", "error");
+      resetToTables();
     }
   };
 
@@ -182,6 +229,7 @@ const Orders = () => {
     setSelectedTable(null);
     setCart([]);
     setOrderId(null);
+    setDisplayOrderId(null);
   };
 
   const printKOT = () => {
@@ -202,7 +250,7 @@ const Orders = () => {
     printWindow.document.write(`
       <html>
         <head>
-          <title>KOT - Table ${selectedTable}</title>
+          <title>KOT - ${displayOrderId || 'New Order'}</title>
           <style>
             body { font-family: 'Courier New', Courier, monospace; width: 300px; margin: 0 auto; padding: 20px; color: #000; }
             h2 { text-align: center; margin-bottom: 5px; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
@@ -214,8 +262,7 @@ const Orders = () => {
         <body>
           <h2>Kitchen Order Ticket</h2>
           <div class="meta">
-            <strong>Table ${selectedTable}</strong> | ${orderType}<br>
-            ${orderId ? `ID: ORD_${orderId.slice(-5)}` : 'NEW ORDER'}
+            <strong>${formatType(currentOrderType)}</strong> | ${displayOrderId || 'NEW ORDER'}
           </div>
           <table>
             <tbody>${itemsHtml}</tbody>
@@ -234,14 +281,23 @@ const Orders = () => {
     };
   };
 
+  const buildPayload = () => {
+    const payload = {
+      orderType: currentOrderType,
+      items: cart.map(item => ({ productId: item._id, variant: item.variant, quantity: item.quantity }))
+    };
+
+    if (selectedTable) {
+      payload.tableNumber = selectedTable;
+    }
+
+    return payload;
+  };
+
   const handleSaveKOT = async (shouldPrint = false) => {
     if (isCartEmpty) return;
 
-    const payload = {
-      tableNumber: selectedTable,
-      orderType: orderType === 'Dine-in' ? 'dine-in' : 'takeaway',
-      items: cart.map(item => ({ productId: item._id, variant: item.variant, quantity: item.quantity }))
-    };
+    const payload = buildPayload();
 
     try {
       let res;
@@ -250,6 +306,7 @@ const Orders = () => {
       } else {
         res = await orderService.createOrder(payload);
         setOrderId(res.data.data._id);
+        setDisplayOrderId(res.data.data.orderId);
       }
 
       setIsCartDirty(false);
@@ -290,17 +347,14 @@ const Orders = () => {
     if (isCartDirty || !orderId) {
       setIsSavingForBill(true);
       try {
-        const payload = {
-          tableNumber: selectedTable,
-          orderType: orderType === 'Dine-in' ? 'dine-in' : 'takeaway',
-          items: cart.map(item => ({ productId: item._id, variant: item.variant, quantity: item.quantity }))
-        };
+        const payload = buildPayload();
 
         if (orderId) {
           await orderService.updateOrder(orderId, payload);
         } else {
           const res = await orderService.createOrder(payload);
           setOrderId(res.data.data._id);
+          setDisplayOrderId(res.data.data.orderId);
         }
 
         setIsCartDirty(false);
@@ -355,7 +409,7 @@ const Orders = () => {
       });
 
       const billData = res.data.data;
-      
+
       setIsBillModalOpen(false);
 
       if (shouldPrint) {
@@ -408,9 +462,9 @@ const Orders = () => {
             .meta { text-align: center; font-size: 11px; color: #000; margin-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
             th { text-align: left; font-size: 12px; border-bottom: 1px solid #000; padding-bottom: 4px; }
-            .totals { width: 100%; font-size: 12px; } 
+            .totals { width: 100%; font-size: 12px; }
             .totals tr td:last-child { text-align: right; }
-            .final-total { font-size: 16px; font-weight: bold; border-top: 2px solid #000; } 
+            .final-total { font-size: 16px; font-weight: bold; border-top: 2px solid #000; }
             .footer { margin-top: 25px; }
             .payment { font-size: 11px; color: #000; margin-bottom: 15px; }
             .thanks { text-align: center; font-size: 12px; color: #555; }
@@ -419,7 +473,7 @@ const Orders = () => {
         <body>
           <h2>Crosta by PD²</h2>
           <div class="gstin">GSTIN: 24CPUPD4122D1Z8</div>
-          <div class="meta">${dateTimeStr} | ${billData.orderType.toUpperCase()}</div>
+          <div class="meta">${dateTimeStr} | ${formatType(billData.orderType)}</div>
           
           <table>
             <thead><tr><th>Item</th><th style="text-align:right;">Amount</th></tr></thead>
@@ -449,7 +503,7 @@ const Orders = () => {
 
     printWindow.document.write(fullReceiptHtml);
     printWindow.document.close();
-    
+
     printWindow.onload = () => {
       printWindow.print();
       setTimeout(() => {
@@ -476,9 +530,9 @@ const Orders = () => {
       )}
 
       {view === 'tables' ? (
-        <div className="p-6">
+        <div className="p-6 h-full flex flex-col">
 
-          <div className="bg-white border border-gray-200 rounded-xl px-5 py-4 mb-6 flex items-center justify-between shadow-sm">
+          <div className="bg-white border border-gray-200 rounded-xl px-5 py-4 mb-6 flex items-center justify-between shadow-sm flex-shrink-0">
             <div className="flex items-center gap-4">
               <h1 className="text-3xl font-extrabold italic tracking-tight text-gray-900">Orders</h1>
               <div className="h-6 w-px bg-gray-200"></div>
@@ -491,14 +545,49 @@ const Orders = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-4xl">
-            {tables.map(table => <TableCard key={table.id} table={table} onClick={handleSelectTable} />)}
+          <div className="flex gap-0 flex-1 min-h-0">
+
+            <div className="flex-1 grid grid-cols-2 gap-4 content-start pr-6">
+              {tables.map(table => (
+                <TableCard key={table.id} table={table} onClick={handleSelectTable} />
+              ))}
+            </div>
+
+            <div className="w-px bg-gray-200 flex-shrink-0 my-1"></div>
+
+            <div className="flex-1 flex flex-col min-h-0 min-w-0 pl-6">
+              <div
+                onClick={handleNewTakeaway}
+                className="w-full flex items-center gap-2 px-4 py-2.5 bg-white border border-dashed border-gray-300 hover:border-gray-500 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-sm group flex-shrink-0"
+              >
+                <svg className="w-4 h-4 text-gray-300 group-hover:text-gray-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span className="text-xs font-medium text-gray-400 group-hover:text-gray-700 transition-colors">New Takeaway</span>
+              </div>
+
+              <div className="mt-3 flex-1 overflow-y-auto space-y-2 min-h-0 pr-1">
+                {takeawayOrders.length > 0 ? takeawayOrders.map(order => (
+                  <TakeawayOrderCard
+                    key={order._id}
+                    order={order}
+                    onClick={handleSelectTakeawayOrder}
+                  />
+                )) : (
+                  <div className="flex flex-col items-center justify-center py-8 text-gray-300">
+                    <svg className="w-10 h-10 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span className="text-xs font-medium">No active takeaway orders</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       ) : (
         <div className="flex-1 flex gap-2 px-2 pb-2 pt-0 min-h-0 min-w-0">
 
-          {/* LEFT: Products Panel */}
           <div className="flex-1 flex flex-col bg-white rounded-xl border border-gray-200 shadow-sm min-h-0 min-w-0 overflow-hidden">
             <div className="px-3 pt-3 pb-2 border-b border-gray-100 flex-shrink-0">
               <div className="flex items-center gap-2 mb-2">
@@ -507,11 +596,11 @@ const Orders = () => {
                   Back
                 </button>
                 <div className="flex-1 min-w-0 relative">
-                  <input 
-                    type="text" 
-                    placeholder="Search products..." 
-                    value={searchTerm} 
-                    onChange={(e) => setSearchTerm(e.target.value)} 
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className={`w-full px-3 py-2 pr-9 bg-white border rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-colors ${searchTerm ? 'border-red-500/30 bg-red-50 font-medium' : 'border-gray-300'}`}
                   />
                   {searchTerm && (
@@ -541,17 +630,20 @@ const Orders = () => {
             </div>
           </div>
 
-          {/* RIGHT: Cart Panel */}
           <div className="w-96 flex-shrink-0 bg-white rounded-xl border border-gray-200 flex flex-col shadow-sm min-h-0">
-            <div className="px-3 pt-3 pb-2 border-b border-gray-100 flex-shrink-0">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-bold text-gray-900">Table {selectedTable}</h2>
-                <button onClick={handleCancelOrder} className="text-xs font-semibold text-red-500 hover:text-red-700">{orderId ? 'Cancel Order' : 'Clear Order'}</button>
+            <div className="bg-red-500 px-3 py-2.5 rounded-t-xl flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-1.5 text-sm font-bold text-white">
+                <span>{formatType(currentOrderType)}</span>
+                <span className="text-red-200">|</span>
+                <span>{displayOrderId || 'New Order'}</span>
+                {selectedTable && (
+                  <>
+                    <span className="text-red-200">|</span>
+                    <span>Table {selectedTable}</span>
+                  </>
+                )}
               </div>
-              <div className="flex gap-2">
-                <OrderTypeCard type="Dine-in" isActive={orderType === 'Dine-in'} onClick={() => setOrderType('Dine-in')} />
-                <OrderTypeCard type="Takeaway" isActive={orderType === 'Takeaway'} onClick={() => setOrderType('Takeaway')} />
-              </div>
+              <button onClick={handleCancelOrder} className="text-xs font-medium text-red-200 hover:text-white transition-colors">{orderId ? 'Cancel' : 'Clear'}</button>
             </div>
 
             <div className="flex-1 overflow-y-auto min-h-0 max-h-[28.5rem] px-3 py-1.5 divide-y divide-gray-100">
@@ -594,7 +686,7 @@ const Orders = () => {
             onGenerateBill={handleGenerateBill}
             isBillingLoading={isBillingLoading}
             tableNumber={selectedTable}
-            orderType={orderType}
+            orderType={currentOrderType}
           />
         </div>
       )}

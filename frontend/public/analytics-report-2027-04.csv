@@ -1,0 +1,33 @@
+﻿"Analytics Report"
+"Month","April"
+"Year","2027"
+"Generated At","14 Apr 2026, 12:26 pm"
+
+"Summary"
+"Metric","Value"
+"Total Revenue","1203.3"
+"Total Orders","1"
+"Total Items","4"
+
+"Daily Sales"
+"Day","Revenue"
+"8","1203.3"
+
+"Hourly Sales"
+"Hour","Revenue"
+"18","1203.3"
+
+"Payment Distribution"
+"Payment Type","Revenue"
+"cash","1203.3"
+
+"Order Type Distribution"
+"Order Type","Revenue"
+"takeaway","1203.3"
+
+"Top Products"
+"Product Name","Revenue"
+"Margherita","469"
+"All Veggies","279"
+"Garlic Bread","249"
+"Salted","149"
