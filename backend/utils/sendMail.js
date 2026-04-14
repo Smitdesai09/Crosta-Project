@@ -10,7 +10,7 @@ const sendMail = async (to, subject, html) => {
     });
 
     await transporter.sendMail({
-        from: `"Auth System" <${process.env.EMAIL_USER}>`,
+        from: `"Crosta by PD²" <${process.env.EMAIL_USER}>`,
         to,
         subject,
         html
