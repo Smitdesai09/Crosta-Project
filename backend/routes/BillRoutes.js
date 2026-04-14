@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   createBill,
   getAllBills,
+  getAvailableBillYears,
   getBillById,
   generatePdf
 } = require("../controllers/billController");
@@ -12,11 +13,13 @@ const { isAuthenticated } = require("../middlewares/authMiddleware");
 
 // Create bill 
 router.post("/", isAuthenticated, createBill);
+// Get available bill years
+router.get("/years", isAuthenticated, getAvailableBillYears);
 // Get all bills (history)
 router.get("/", isAuthenticated, getAllBills);
-// Get single bill
-router.get("/:id", isAuthenticated, getBillById);
 // Generate PDF for a bill
 router.get("/pdf/download/:id", generatePdf);
+// Get single bill
+router.get("/:id", isAuthenticated, getBillById);
 
 module.exports = router;

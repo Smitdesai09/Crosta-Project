@@ -177,6 +177,44 @@ exports.getAllBills = async (req, res) => {
     }
 };
 
+exports.getAvailableBillYears = async (req, res) => {
+    try {
+        const bills = await Bill.find({}, { createdAt: 1, _id: 0 })
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const uniqueYears = [];
+        const seenYears = new Set();
+
+        for (const bill of bills) {
+            if (!bill.createdAt) continue;
+
+            // Shift UTC timestamp to IST before reading the year so year boundaries stay correct.
+            const istDate = new Date(new Date(bill.createdAt).getTime() + (5.5 * 60 * 60 * 1000));
+            const year = istDate.getUTCFullYear();
+
+            if (!seenYears.has(year)) {
+                seenYears.add(year);
+                uniqueYears.push(year);
+            }
+        }
+
+        uniqueYears.sort((a, b) => b - a);
+
+        return res.status(200).json({
+            success: true,
+            message: "Available bill years fetched successfully",
+            data: uniqueYears
+        });
+    } catch (error) {
+        console.error("AVAILABLE BILL YEARS ERROR:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to fetch available bill years"
+        });
+    }
+};
+
 exports.getBillById = async (req, res) => {
     try {
         const { id } = req.params;

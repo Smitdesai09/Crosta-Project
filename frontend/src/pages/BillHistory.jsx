@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import billService from '../services/billService';
 import { useToast } from '../lib/ToastContext';
 
@@ -68,6 +68,7 @@ const BillHistory = () => {
   const [year, setYear] = useState(currentYear);
   const [paymentType, setPaymentType] = useState("");
   const [orderType, setOrderType] = useState("");
+  const [availableYears, setAvailableYears] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -80,10 +81,17 @@ const BillHistory = () => {
       .map((m, i) => ({ value: String(i + 1).padStart(2, '0'), label: m }))
   ];
 
-  const years = [
-    { value: "", label: "Year" },
-    ...Array.from({ length: 5 }, (_, i) => ({ value: String(currentYear - i), label: String(currentYear - i) }))
-  ];
+  const years = useMemo(() => {
+    const sourceYears = availableYears.length ? availableYears : [Number(currentYear)];
+
+    return [
+      { value: "", label: "Year" },
+      ...sourceYears.map((item) => ({
+        value: String(item),
+        label: String(item)
+      }))
+    ];
+  }, [availableYears, currentYear]);
 
   const paymentOptions = [
     { value: "", label: "Payment" },
@@ -101,7 +109,13 @@ const BillHistory = () => {
   const handleResetFilters = () => {
     setSearch("");
     setMonth(currentMonth);
-    setYear(currentYear);
+    setYear(
+      availableYears.some((item) => String(item) === currentYear)
+        ? currentYear
+        : availableYears[0]
+          ? String(availableYears[0])
+          : currentYear
+    );
     setPaymentType("");
     setOrderType("");
   };
@@ -127,6 +141,29 @@ const BillHistory = () => {
   }, [search, month, year, paymentType, orderType, showToast, currentYear]);
 
   useEffect(() => { fetchBills(1); }, [fetchBills]);
+
+  useEffect(() => {
+    const fetchAvailableYears = async () => {
+      try {
+        const res = await billService.getAvailableYears();
+        const fetchedYears = [...(res.data?.data || [])].sort((a, b) => Number(b) - Number(a));
+
+        setAvailableYears(fetchedYears);
+
+        if (fetchedYears.length) {
+          setYear((prev) =>
+            fetchedYears.some((item) => String(item) === prev)
+              ? prev
+              : String(fetchedYears[0])
+          );
+        }
+      } catch (error) {
+        showToast("Failed to load years", error);
+      }
+    };
+
+    fetchAvailableYears();
+  }, [showToast]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.pages) fetchBills(newPage);

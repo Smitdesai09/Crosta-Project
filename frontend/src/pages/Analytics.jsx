@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect, useMemo } from 'react';
 import analyticsService from '../services/analyticsService';
+import billService from '../services/billService';
 import { useToast } from '../lib/ToastContext';
 
 const PieChart = ({ data, colors, size = 'md' }) => {
@@ -90,6 +91,7 @@ const Analytics = () => {
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth() + 1);
   const [year, setYear] = useState(now.getFullYear());
+  const [availableYears, setAvailableYears] = useState([]);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -104,10 +106,14 @@ const Analytics = () => {
   }));
 
   const currentYear = now.getFullYear();
-  const yearOptions = Array.from({ length: 3 }, (_, i) => ({
-    value: String(currentYear - i),
-    label: String(currentYear - i)
-  }));
+  const yearOptions = useMemo(() => {
+    const sourceYears = availableYears.length ? availableYears : [currentYear];
+
+    return sourceYears.map((item) => ({
+      value: String(item),
+      label: String(item)
+    }));
+  }, [availableYears, currentYear]);
 
   const fetchAnalytics = async () => {
     if (!month || !year) return;
@@ -126,6 +132,29 @@ const Analytics = () => {
   useEffect(() => {
     fetchAnalytics();
   }, [month, year]);
+
+  useEffect(() => {
+    const fetchAvailableYears = async () => {
+      try {
+        const res = await billService.getAvailableYears();
+        const fetchedYears = [...(res.data?.data || [])].sort((a, b) => Number(b) - Number(a));
+
+        setAvailableYears(fetchedYears);
+
+        if (fetchedYears.length) {
+          setYear((prev) =>
+            fetchedYears.some((item) => Number(item) === Number(prev))
+              ? Number(prev)
+              : Number(fetchedYears[0])
+          );
+        }
+      } catch (error) {
+        showToast('Failed to load years', error);
+      }
+    };
+
+    fetchAvailableYears();
+  }, [showToast]);
 
   const daysInMonth = useMemo(() => new Date(year, month, 0).getDate(), [year, month]);
 
