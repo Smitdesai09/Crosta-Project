@@ -257,7 +257,7 @@ exports.downloadAnalyticsReport = async (req, res) => {
             buildCsvRow(["Top Products"]),
             buildCsvRow(["Product Name", "Revenue"]),
             ...analytics.topProducts.map(p =>
-                buildCsvRow([p.type, p.revenue])
+                buildCsvRow([p._id, p.revenue])
             )
         ];
 

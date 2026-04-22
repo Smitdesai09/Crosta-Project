@@ -24,16 +24,6 @@ const PRODUCT_STATS = [
       </svg>
     ),
   },
-  {
-    key: "unavailable",
-    label: "Unavailable Products",
-    iconClass: "bg-red-50 text-red-500",
-    icon: (
-      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-      </svg>
-    ),
-  },
 ];
 
 const PRODUCT_CARD_HOVER_CLASS =
@@ -412,8 +402,8 @@ const ProductStatusModal = ({ isOpen, product, deleting, onClose, onConfirm }) =
           <button
             type="button"
             className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-white shadow-sm ${!product.isAvailable
-                ? "bg-red-600 hover:bg-red-700 focus:ring-red-500/50"
-                : "bg-red-600 hover:bg-red-700 focus:ring-red-500"
+              ? "bg-red-600 hover:bg-red-700 focus:ring-red-500/50"
+              : "bg-red-600 hover:bg-red-700 focus:ring-red-500"
               } ${PRODUCT_ACTION_BUTTON_CLASS}`}
             onClick={onConfirm}
             disabled={deleting}
@@ -736,7 +726,7 @@ const ProductManagement = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 flex-shrink-0">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 flex-shrink-0">
         {isPageLoading ? (
           <ProductStatsSkeleton />
         ) : (
