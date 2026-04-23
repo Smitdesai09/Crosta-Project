@@ -6,11 +6,11 @@ const {
     logout,
     forgotPassword,
     resetPassword
-} = require("../controllers/authController");
+} = require("../controllers/AuthController");
 
 const {
     isAuthenticated
-} = require("../middlewares/authMiddleware");
+} = require("../middlewares/AuthMiddleware");
 
 
 // ROUTES
