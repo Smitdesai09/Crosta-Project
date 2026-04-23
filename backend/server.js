@@ -15,8 +15,12 @@ dotenv.config()
 connectDB()
 
 const app = express()
-app.use(cookieParser());
-app.use(express.json());
+
+app.use(cors({
+  origin: "https://crosta-project-3.onrender.com",
+  credentials: true
+}));
+
 
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "https://crosta-project-3.onrender.com");
@@ -25,7 +29,12 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   next();
 });
-app.options("*", cors());
+
+
+app.use(cookieParser());
+app.use(express.json());
+
+// app.options("*", cors());
 
 //routes
 app.use("/api/auth",authRoutes);
