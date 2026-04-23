@@ -20,10 +20,12 @@ app.use(express.json());
 
 app.use(cors({
     // origin: process.env.CLIENT_URL || "http://localhost:3000",
-    origin: "https://crosta-project-lcploy10q-rutvik1546s-projects.vercel.app/",
+    // origin: "https://crosta-project-lcploy10q-rutvik1546s-projects.vercel.app/",
+    origin:true,
     credentials: true //  allows cookies
 }));
 
+app.options("*", cors());
 
 //routes
 app.use("/api/auth",authRoutes);
