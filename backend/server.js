@@ -3,13 +3,13 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const connectDB = require("./config/db");
-const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
-const productRoutes = require("./routes/productRoutes");
-const orderRoutes = require("./routes/orderRoutes");
-const billRoutes = require("./routes/billRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes");
-const analyticsRoutes = require("./routes/analyticsRoutes");
+const authRoutes = require("./routes/AuthRoutes");
+const userRoutes = require("./routes/UserRoutes");
+const productRoutes = require("./routes/ProductRoutes");
+const orderRoutes = require("./routes/OrderRoutes");
+const billRoutes = require("./routes/BillRoutes");
+const dashboardRoutes = require("./routes/DashboardRoutes");
+const analyticsRoutes = require("./routes/AnalyticsRoutes");
 
 dotenv.config()
 connectDB()

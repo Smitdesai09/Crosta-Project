@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const Bill = require("../models/bills");
-const Order = require("../models/orders");
+const Bill = require("../models/Bills");
+const Order = require("../models/Orders");
 const PDFDocument = require("pdfkit");
 
 exports.createBill = async (req, res) => {

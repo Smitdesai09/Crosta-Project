@@ -7,9 +7,9 @@ const {
   getAvailableBillYears,
   getBillById,
   generatePdf
-} = require("../controllers/billController");
+} = require("../controllers/BillController");
 
-const { isAuthenticated } = require("../middlewares/authMiddleware");
+const { isAuthenticated } = require("../middlewares/AuthMiddleware");
 
 // Create bill 
 router.post("/", isAuthenticated, createBill);

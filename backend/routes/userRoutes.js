@@ -8,12 +8,12 @@ const {
     updateUser,
     deleteUser,
     restoreUser
-} = require("../controllers/userController");
+} = require("../controllers/UserController");
 
 const {
     isAuthenticated,
     authorizeRoles
-} = require("../middlewares/authMiddleware");
+} = require("../middlewares/AuthMiddleware");
 
 
 router.get(

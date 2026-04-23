@@ -9,9 +9,9 @@ const {
     updateProduct,
     deleteProduct,
     restoreProduct
-} = require("../controllers/productController");
+} = require("../controllers/ProductController");
 
-const { isAuthenticated, authorizeRoles } = require("../middlewares/authMiddleware");
+const { isAuthenticated, authorizeRoles } = require("../middlewares/AuthMiddleware");
 
 router.get("/admin", isAuthenticated, authorizeRoles("admin") , getAllProductsAdmin);
 router.get("/stats", isAuthenticated, getProductStats);

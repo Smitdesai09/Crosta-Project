@@ -7,9 +7,9 @@ const {
   getOrderById,
   updateOrder,
   cancelOrder
-} = require("../controllers/orderController");
+} = require("../controllers/OrderController");
 
-const { isAuthenticated } = require("../middlewares/authMiddleware");
+const { isAuthenticated } = require("../middlewares/AuthMiddleware");
 
 // Get all active orders (active tables)
 router.get("/active", isAuthenticated, getActiveOrders);

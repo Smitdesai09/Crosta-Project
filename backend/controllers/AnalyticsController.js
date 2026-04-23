@@ -1,4 +1,4 @@
-const Bill = require("../models/bills");
+const Bill = require("../models/Bills");
 
 const TIMEZONE = "+05:30";
 

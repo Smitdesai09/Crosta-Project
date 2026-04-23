@@ -7,7 +7,7 @@ const connectDB = async () => {
     }
 
     const mongoUri =
-      process.env.MONGO_URI || "mongodb://127.0.0.1:27017/crosta_store";
+      process.env.MONGO_URI;
 
     const conn = await mongoose.connect(mongoUri);
 
