@@ -5,9 +5,9 @@ exports.getSummary = async (req, res) => {
   try {
 
     const start = new Date();
-    start.setHours(0, 0, 0, 0); // 00:00 AM Morning
+    start.setHours(0, 0, 0, 0);
     const end = new Date();
-    end.setHours(23, 59, 59, 999); // 23:59 PM Night
+    end.setHours(23, 59, 59, 999);
 
     // 1. Today orders and revenue
     const summaryAgg = await Bill.aggregate([
@@ -20,75 +20,70 @@ exports.getSummary = async (req, res) => {
         }
       }
     ]);
+
     const todayRevenue = summaryAgg.length ? summaryAgg[0].todayRevenue : 0;
     const todayOrders = summaryAgg.length ? summaryAgg[0].todayOrders : 0;
 
-
-    // 2️. Active products
+    // 2. Active products
     const activeProducts = await Product.countDocuments({ isAvailable: true });
 
-    // 3️. Recent 5 bills
+    // 3. Recent 5 bills
     const recentBills = await Bill.find({ createdAt: { $gte: start, $lt: end } })
       .sort({ createdAt: -1 })
       .limit(5)
       .select("_id totalAmount paymentType createdAt operatorName orderType")
       .lean();
 
-    // 4️. Top products today
+    // 4. Top products today (revenue based)
     const topProductsAgg = await Bill.aggregate([
       { $match: { createdAt: { $gte: start, $lt: end } } },
       { $unwind: "$items" },
       {
         $group: {
           _id: "$items.name",
-          quantity: { $sum: "$items.quantity" }
+          revenue: { $sum: { $multiply: ["$items.price", "$items.quantity"] } }
         }
       },
-      { $sort: { quantity: -1 } },
+      { $sort: { revenue: -1 } },
       { $limit: 7 }
     ]);
 
     const topProducts = topProductsAgg.map(p => ({
       name: p._id,
-      quantity: p.quantity
+      revenue: p.revenue
     }));
 
-
-
-    // 5️. Payment type distribution
+    // 5. Payment type distribution (revenue based)
     const paymentDistribution = await Bill.aggregate([
       { $match: { createdAt: { $gte: start, $lt: end } } },
       {
         $group: {
           _id: "$paymentType",
-          count: { $sum: 1 }
+          revenue: { $sum: "$totalAmount" }
         }
       }
     ]);
 
     const paymentTypes = paymentDistribution.map(p => ({
       type: p._id,
-      count: p.count
+      revenue: p.revenue
     }));
 
-
-    // 6️. Order type distribution
+    // 6. Order type distribution (revenue based)
     const orderTypeAgg = await Bill.aggregate([
       { $match: { createdAt: { $gte: start, $lt: end } } },
       {
         $group: {
           _id: "$orderType",
-          count: { $sum: 1 }
+          revenue: { $sum: "$totalAmount" }
         }
       }
     ]);
 
     const orderTypeDistribution = orderTypeAgg.map(o => ({
       type: o._id,
-      count: o.count
+      revenue: o.revenue
     }));
-
-
 
     res.json({
       summary: {

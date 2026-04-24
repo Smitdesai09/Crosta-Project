@@ -26,14 +26,28 @@ const summaryCards = [
 ];
 
 const productPieColors = [
-  '#EF4444', '#F97316', '#F59E0B', '#10B981', '#3B82F6',
-  '#8B5CF6', '#EC4899', '#14B8A6', '#F43F5E', '#84CC16', '#6B7280'
+  '#EF4444',
+  '#F97316',
+  '#F59E0B',
+  '#10B981',
+  '#3B82F6',
+  '#8B5CF6',
+  '#EC4899',
+  '#14B8A6',
+  '#F43F5E',
+  '#84CC16',
+  '#6B7280'
 ];
 
 const formatType = (type) => {
   if (type === 'dine-in') return 'Dine-in';
   if (type === 'takeaway') return 'Takeaway';
   return type;
+};
+
+const formatK = (num) => {
+  if (num >= 1000) return `₹${(num / 1000).toFixed(2)}k`;
+  return `₹${num.toFixed(2)}`;
 };
 
 const PieChart = ({ data, colors, size = 'md' }) => {
@@ -78,7 +92,7 @@ const PieChart = ({ data, colors, size = 'md' }) => {
         ))}
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className={`${textMain} font-bold text-gray-900`}>{total}</span>
+        <span className={`${textMain} font-bold text-gray-900`}>{formatK(total)}</span>
         <span className={`${textSub} text-gray-500 uppercase`}>Total</span>
       </div>
     </div>
@@ -105,12 +119,30 @@ const Dashboard = () => {
     fetchDashboard();
   }, [showToast]);
 
-  const prodPieData = useMemo(() =>
-    (data?.topProducts || []).map(p => ({ _id: p.name, value: p.quantity })),
-    [data?.topProducts]);
+  const prodPieData = useMemo(() => {
+    const products = data?.topProducts || [];
+    const totalRevenue = data?.summary?.todayRevenue || 0;
+
+    const mapped = products.map(p => ({
+      _id: p.name,
+      value: p.revenue
+    }));
+
+    const usedRevenue = mapped.reduce((s, p) => s + p.value, 0);
+    const otherRevenue = Math.max(totalRevenue - usedRevenue, 0);
+
+    if (otherRevenue > 0) {
+      mapped.push({
+        _id: "OTHER",
+        value: otherRevenue
+      });
+    }
+
+    return mapped;
+  }, [data?.topProducts, data?.summary?.todayRevenue]);
 
   const payPieData = useMemo(() =>
-    (data?.paymentDistribution || []).map(p => ({ _id: p.type, value: p.count }))
+    (data?.paymentDistribution || []).map(p => ({ _id: p.type, value: p.revenue }))
       .sort((a, b) => b.value - a.value),
     [data?.paymentDistribution]);
 
@@ -119,10 +151,10 @@ const Dashboard = () => {
     const normalized = {};
     raw.forEach(o => {
       const key = formatType(o.type);
-      normalized[key] = (normalized[key] || 0) + o.count;
+      normalized[key] = (normalized[key] || 0) + o.revenue;
     });
     return Object.entries(normalized)
-      .map(([type, count]) => ({ _id: type, value: count }))
+      .map(([type, revenue]) => ({ _id: type, value: revenue }))
       .sort((a, b) => b.value - a.value);
   }, [data?.orderTypeDistribution]);
 
@@ -148,7 +180,6 @@ const Dashboard = () => {
 
       <div className="h-full w-full flex flex-col gap-6 overflow-y-auto p-4 lg:p-6 pb-10 dashboard-scroll bg-gray-100">
 
-        {/* HEADER */}
         <div className="flex items-end justify-between flex-shrink-0">
           <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Dashboard</h1>
           <p className="text-sm text-gray-600 font-medium bg-white px-3 py-1.5 rounded-lg shadow-sm">
@@ -156,7 +187,6 @@ const Dashboard = () => {
           </p>
         </div>
 
-        {/* QUICK ACTIONS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
           {quickActions.map((action) => (
             <button
@@ -175,7 +205,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* SUMMARY CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-shrink-0">
           {summaryCards.map((card) => (
             <div key={card.key} className="relative bg-white rounded-xl p-5 text-left shadow-sm">
@@ -192,7 +221,6 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* RECENT BILLS */}
         <div className="bg-white rounded-xl shadow-sm flex-shrink-0 overflow-hidden">
           <div className="px-5 py-3.5 bg-red-50 text-red-500 flex items-center justify-between">
             <h2 className="text-sm font-bold uppercase tracking-wide">Recent Bills</h2>
@@ -237,7 +265,6 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* ANALYTICS ROW */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-shrink-0">
 
           <div className="lg:col-span-3 bg-white rounded-xl shadow-sm overflow-hidden flex flex-col">
@@ -265,10 +292,10 @@ const Dashboard = () => {
                           <span className="text-sm text-gray-900 truncate font-medium flex-1 min-w-0">
                             {prod._id}
                           </span>
-                          <span className="text-xs text-gray-500 shrink-0 tabular-nums">
-                            {prod.value} qty
+                          <span className="text-xs text-gray-500 shrink-0 tabular-nums text-right w-20">
+                            {formatK(prod.value)}
                           </span>
-                          <span className="text-xs font-bold text-gray-900 shrink-0 tabular-nums pl-1">
+                          <span className="text-xs font-bold text-gray-900 shrink-0 tabular-nums text-right w-12">
                             {percent}%
                           </span>
                         </div>
@@ -309,10 +336,10 @@ const Dashboard = () => {
                             <span className="text-xs text-gray-900 capitalize truncate flex-1 min-w-0">
                               {p._id}
                             </span>
-                            <span className="text-[11px] text-gray-500 shrink-0 tabular-nums">
-                              {p.value}
+                            <span className="text-[11px] text-gray-500 shrink-0 tabular-nums text-right w-16">
+                              {formatK(p.value)}
                             </span>
-                            <span className="text-[11px] font-bold text-gray-900 shrink-0 tabular-nums pl-1">
+                            <span className="text-[11px] font-bold text-gray-900 shrink-0 tabular-nums text-right w-10">
                               {percent}%
                             </span>
                           </div>
@@ -334,7 +361,10 @@ const Dashboard = () => {
                 <div className="flex items-center gap-5 w-full">
                   <PieChart
                     data={typePieData}
-                    colors={['#EF4444', '#F97316', '#FCA5A5']}
+                    colors={[
+                      '#DC2626',
+                      '#ffcd07'
+                    ]}
                     size="sm"
                   />
                   <div className="flex flex-col gap-2.5 min-w-0 flex-1">
@@ -344,15 +374,15 @@ const Dashboard = () => {
                       typePieData.map((o, i) => {
                         const total = typePieData.reduce((s, item) => s + item.value, 0);
                         const percent = total > 0 ? ((o.value / total) * 100).toFixed(1) : '0';
-                        const bgColors = ['bg-red-500', 'bg-orange-500', 'bg-red-300'];
+                        const bgColors = ['bg-red-600', 'bg-yellow-400'];
                         return (
                           <div key={o._id} className="flex items-center gap-2">
                             <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
                             <span className="text-xs text-gray-900 truncate flex-1 min-w-0">
                               {o._id}
                             </span>
-                            <span className="text-[11px] text-gray-500 shrink-0 tabular-nums">
-                              {o.value}
+                            <span className="text-[11px] text-gray-500 shrink-0 tabular-nums text-right w-16">
+                              {formatK(o.value)}
                             </span>
                             <span className="text-[11px] font-bold text-gray-900 shrink-0 tabular-nums pl-1">
                               {percent}%

@@ -197,9 +197,21 @@ const Analytics = () => {
   const avgOrderSize = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
   const productPieColors = [
-    '#EF4444', '#F97316', '#F59E0B', '#10B981', '#3B82F6',
-    '#8B5CF6', '#EC4899', '#14B8A6', '#F43F5E', '#84CC16', '#6B7280'
+    '#DC2626',
+    '#F97316',
+    '#F59E0B',
+    '#22C55E',
+    '#3B82F6',
+    '#8B5CF6',
+    '#EC4899',
+    '#06B6D4',
+    '#E11D48',
+    '#84CC16',
+    '#9CA3AF'
   ];
+
+  const HIGH_COLOR = '#DC2626'
+  const LOW_COLOR = '#FCA5A5'
 
   const productPieData = useMemo(() => {
     if (!data?.topProducts?.length) return [];
@@ -377,7 +389,12 @@ const Analytics = () => {
               return (
                 <div key={day._id} className="flex-1 h-full relative">
                   <div
-                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${day.revenue === 0 ? 'bg-gray-100' : 'bg-red-500'}`}
+                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${day.revenue === 0
+                      ? 'bg-gray-100'
+                      : day.revenue >= 20000
+                        ? 'bg-red-500'
+                        : 'bg-red-300'
+                      }`}
                     style={{ height: `${barPct}%` }}
                   />
                   {label && (
@@ -417,7 +434,12 @@ const Analytics = () => {
               return (
                 <div key={hour._id} className="flex-1 h-full relative">
                   <div
-                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${hour.revenue === 0 ? 'bg-gray-100' : 'bg-red-500'}`}
+                    className={`absolute bottom-0 left-0 right-0 rounded-t-sm transition-all duration-300 ${hour.revenue === 0
+                        ? 'bg-gray-100'
+                        : hour.revenue >= 20000
+                          ? 'bg-red-500'
+                          : 'bg-red-300'
+                      }`}
                     style={{ height: `${barPct}%` }}
                   />
                   {label && (
@@ -473,10 +495,10 @@ const Analytics = () => {
                         style={{ backgroundColor: productPieColors[i] }}
                       />
                       <span className="text-base text-gray-900 truncate font-medium flex-1 min-w-0">{prod._id}</span>
-                      <span className="text-sm text-gray-500 shrink-0 tabular-nums">
+                      <span className="text-[11px] text-gray-900 shrink-0 tabular-nums text-right w-10">
                         {formatCurrency(prod.revenue)}
                       </span>
-                      <span className="text-sm font-bold text-gray-900 shrink-0 tabular-nums pl-1">
+                      <span className="text-xs font-bold text-gray-900 shrink-0 tabular-nums text-right w-12">
                         {percent}%
                       </span>
                     </div>
@@ -511,8 +533,7 @@ const Analytics = () => {
                         <span className="text-xs text-gray-900 capitalize truncate flex-1 min-w-0">{p.type}</span>
                         <span className="text-[11px] text-gray-500 shrink-0 tabular-nums">
                           {formatCurrency(p.revenue)}
-                        </span>
-                        <span className="text-[11px] font-bold text-gray-900 shrink-0 tabular-nums pl-1">
+                        </span><span className="text-[11px] font-bold text-gray-900 shrink-0 tabular-nums text-right w-10">
                           {percent}%
                         </span>
                       </div>
@@ -532,20 +553,19 @@ const Analytics = () => {
             </div>
             <div className="p-5 flex-1 flex items-center">
               <div className="flex items-center gap-5 w-full">
-                <PieChart data={orderTypeSorted} colors={['#EF4444', '#F97316', '#FCA5A5']} size="sm" />
+                <PieChart data={orderTypeSorted} colors={['#DC2626', '#ffcd07']} size="sm" />
                 <div className="flex flex-col gap-2.5 min-w-0 flex-1">
                   {orderTypeSorted.map((o, i) => {
                     const total = orderTypeSorted.reduce((s, item) => s + item.revenue, 0);
                     const percent = total > 0 ? ((o.revenue / total) * 100).toFixed(1) : '0';
-                    const bgColors = ['bg-red-500', 'bg-orange-500', 'bg-red-300'];
+                    const bgColors = ['bg-red-600', 'bg-yellow-400'];
                     return (
                       <div key={o._id} className="flex items-center gap-2">
                         <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${bgColors[i]}`} />
                         <span className="text-xs text-gray-900 truncate flex-1 min-w-0">{o._id}</span>
-                        <span className="text-[11px] text-gray-500 shrink-0 tabular-nums">
+                        <span className="text-[11px] text-gray-500 shrink-0 tabular-nums text-right w-16">
                           {formatCurrency(o.revenue)}
-                        </span>
-                        <span className="text-[11px] font-bold text-gray-900 shrink-0 tabular-nums pl-1">
+                        </span><span className="text-[11px] font-bold text-gray-900 shrink-0 tabular-nums text-right w-10">
                           {percent}%
                         </span>
                       </div>
