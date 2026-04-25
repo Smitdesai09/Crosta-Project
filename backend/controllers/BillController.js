@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const Bill = require("../models/Bills");
 const Order = require("../models/Orders");
 const PDFDocument = require("pdfkit");
+const { buildDateFilter } = require("../utils/dateFilter");
+
 
 exports.createBill = async (req, res) => {
     try {
@@ -87,10 +89,10 @@ exports.createBill = async (req, res) => {
 exports.getAllBills = async (req, res) => {
     try {
 
-        let { page = 1, limit = 10, search, paymentType, orderType, month, year } = req.query;
+        let { page = 1, limit = 10, search, paymentType, orderType, filter = "month", from, to } = req.query;
 
-        page = parseInt(page);
-        limit = parseInt(limit);
+        page = parseInt(page, 10);
+        limit = parseInt(limit, 10);
 
         const query = {};
 
@@ -109,17 +111,12 @@ exports.getAllBills = async (req, res) => {
         if (orderType)
             query.orderType = orderType;
 
-        if (month && year) {
+        const { startDate, endDate } = buildDateFilter({ filter, from, to });
 
-            const startDate = new Date(year, month - 1, 1);
-            const endDate = new Date(year, month, 1);
-
-            query.createdAt = {
-                $gte: startDate,
-                $lt: endDate
-            };
-
-        }
+        query.createdAt = {
+            $gte: startDate,
+            $lte: endDate
+        };
 
         const total = await Bill.countDocuments(query);
 
@@ -165,6 +162,13 @@ exports.getAllBills = async (req, res) => {
 
     }
     catch (error) {
+
+        if (error.status) {
+            return res.status(error.status).json({
+                success: false,
+                message: error.message
+            });
+        }
 
         return res.status(500).json({
             success: false,

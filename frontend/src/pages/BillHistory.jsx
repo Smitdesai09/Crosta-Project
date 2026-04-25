@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import billService from '../services/billService';
 import { useToast } from '../lib/ToastContext';
+import DateFilterBar from '../components/DateFilterBar';
 
 const formatType = (type) => {
   if (type === 'dine-in') return 'Dine-in';
@@ -66,38 +67,17 @@ const BillHistory = () => {
   const [bills, setBills] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, limit: 10, pages: 0 });
 
-  const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
-  const currentYear = String(new Date().getFullYear());
-
   const [search, setSearch] = useState("");
-  const [month, setMonth] = useState(currentMonth);
-  const [year, setYear] = useState(currentYear);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [paymentType, setPaymentType] = useState("");
   const [orderType, setOrderType] = useState("");
-  const [availableYears, setAvailableYears] = useState([]);
 
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
   const [viewLoading, setViewLoading] = useState(false);
-
-  const months = [
-    { value: "", label: "Month" },
-    ...["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-      .map((m, i) => ({ value: String(i + 1).padStart(2, '0'), label: m }))
-  ];
-
-  const years = useMemo(() => {
-    const sourceYears = availableYears.length ? availableYears : [Number(currentYear)];
-
-    return [
-      { value: "", label: "Year" },
-      ...sourceYears.map((item) => ({
-        value: String(item),
-        label: String(item)
-      }))
-    ];
-  }, [availableYears, currentYear]);
+  const activeFilter = fromDate && toDate ? 'range' : 'month';
 
   const paymentOptions = [
     { value: "", label: "Payment" },
@@ -114,14 +94,8 @@ const BillHistory = () => {
 
   const handleResetFilters = () => {
     setSearch("");
-    setMonth(currentMonth);
-    setYear(
-      availableYears.some((item) => String(item) === currentYear)
-        ? currentYear
-        : availableYears[0]
-          ? String(availableYears[0])
-          : currentYear
-    );
+    setFromDate("");
+    setToDate("");
     setPaymentType("");
     setOrderType("");
   };
@@ -129,47 +103,25 @@ const BillHistory = () => {
   const fetchBills = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const params = { page, limit: 10 };
-      if (search) params.search = search;
-      if (month) params.month = parseInt(month);
-      if (year) params.year = parseInt(year);
-      else if (month) params.year = parseInt(currentYear);
+      const params = { page, limit: 10, filter: activeFilter };
+      if (search.trim()) params.search = search.trim();
+      if (activeFilter === 'range') {
+        params.from = fromDate;
+        params.to = toDate;
+      }
       if (paymentType) params.paymentType = paymentType;
       if (orderType) params.orderType = orderType;
       const res = await billService.getBills(params);
       setBills(res.data.data);
       setPagination(res.data.pagination);
     } catch (error) {
-      showToast("Failed to fetch bills", error);
+      showToast(error.response?.data?.message || "Failed to fetch bills", error);
     } finally {
       setLoading(false);
     }
-  }, [search, month, year, paymentType, orderType, showToast, currentYear]);
+  }, [search, fromDate, toDate, paymentType, orderType, activeFilter, showToast]);
 
   useEffect(() => { fetchBills(1); }, [fetchBills]);
-
-  useEffect(() => {
-    const fetchAvailableYears = async () => {
-      try {
-        const res = await billService.getAvailableYears();
-        const fetchedYears = [...(res.data?.data || [])].sort((a, b) => Number(b) - Number(a));
-
-        setAvailableYears(fetchedYears);
-
-        if (fetchedYears.length) {
-          setYear((prev) =>
-            fetchedYears.some((item) => String(item) === prev)
-              ? prev
-              : String(fetchedYears[0])
-          );
-        }
-      } catch (error) {
-        showToast("Failed to load years", error);
-      }
-    };
-
-    fetchAvailableYears();
-  }, [showToast]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.pages) fetchBills(newPage);
@@ -222,34 +174,39 @@ const BillHistory = () => {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm p-4 flex-shrink-0">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-          <div className="relative lg:col-span-2">
-            <input
-              type="text"
-              placeholder="Search phone, item, operator..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={`w-full pl-3 pr-9 py-2 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all ${search ? 'bg-red-50 border border-red-500/30 font-medium' : 'bg-white border border-gray-300'
-                }`}
-            />
-            {search && (
-              <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
-            )}
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="relative lg:col-span-2">
+              <input
+                type="text"
+                placeholder="Search phone, item, operator..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className={`w-full pl-3 pr-9 py-2 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all ${search ? 'bg-red-50 border border-red-500/30 font-medium' : 'bg-white border border-gray-300'
+                  }`}
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              )}
+            </div>
+
+            <FilterSelect value={paymentType} onChange={setPaymentType} options={paymentOptions} placeholder="Payment" />
+            <FilterSelect value={orderType} onChange={setOrderType} options={orderTypeOptions} placeholder="Type" />
           </div>
 
-          <FilterSelect value={month} onChange={setMonth} options={months} placeholder="Month" />
-          <FilterSelect value={year} onChange={setYear} options={years} placeholder="Year" />
-
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <FilterSelect value={paymentType} onChange={setPaymentType} options={paymentOptions} placeholder="Payment" />
-            </div>
-            <div className="flex-1">
-              <FilterSelect value={orderType} onChange={setOrderType} options={orderTypeOptions} placeholder="Type" />
-            </div>
-          </div>
+          <DateFilterBar
+            activeFilter={activeFilter}
+            fromDate={fromDate}
+            toDate={toDate}
+            onThisMonthClick={() => {
+              setFromDate("");
+              setToDate("");
+            }}
+            onFromDateChange={setFromDate}
+            onToDateChange={setToDate}
+          />
         </div>
       </div>
 

@@ -1,26 +1,15 @@
 const Bill = require("../models/Bills");
+const { buildDateFilter, TIMEZONE } = require("../utils/dateFilter");
 
-const TIMEZONE = "+05:30";
-
-const MONTH_NAMES = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-];
-
-const getAnalyticsRange = (month, year) => {
-    const start = new Date(
-        `${year}-${String(month).padStart(2, "0")}-01T00:00:00${TIMEZONE}`
-    );
-
-    const endMonth = month === 12 ? 1 : month + 1;
-    const endYear = month === 12 ? year + 1 : year;
-
-    const end = new Date(
-        `${endYear}-${String(endMonth).padStart(2, "0")}-01T00:00:00${TIMEZONE}`
-    );
-
-    return { start, end };
-};
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const DISPLAY_TIMEZONE = "Asia/Kolkata";
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const DATE_FORMATTER = new Intl.DateTimeFormat("en-US", {
+    timeZone: DISPLAY_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+});
 
 const formatCsvValue = (value) => {
     if (value === null || value === undefined) return '""';
@@ -31,7 +20,7 @@ const buildCsvRow = (values) => values.map(formatCsvValue).join(",");
 
 const formatReportDate = (date) =>
     new Date(date).toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
+        timeZone: DISPLAY_TIMEZONE,
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -40,20 +29,157 @@ const formatReportDate = (date) =>
         hour12: true
     });
 
+const formatDateLabel = (date) => {
+    const parts = DATE_FORMATTER.formatToParts(new Date(date));
+    const year = parts.find((part) => part.type === "year")?.value;
+    const month = parts.find((part) => part.type === "month")?.value;
+    const day = parts.find((part) => part.type === "day")?.value;
 
-/* -------------------------------- */
-/* CORE ANALYTICS HELPER            */
-/* -------------------------------- */
+    return `${year}-${month}-${day}`;
+};
 
-const generateMonthlyAnalytics = async (month, year) => {
+const formatShortDateLabel = (date) => {
+    const parts = DATE_FORMATTER.formatToParts(new Date(date));
+    const month = parts.find((part) => part.type === "month")?.value;
+    const day = parts.find((part) => part.type === "day")?.value;
 
-    const { start, end } = getAnalyticsRange(month, year);
+    return `${month}/${day}`;
+};
 
+const getRangeDays = (startDate, endDate) =>
+    Math.floor((endDate.getTime() - startDate.getTime()) / DAY_IN_MS) + 1;
+
+const getTrendType = (startDate, endDate) => {
+    const rangeDays = getRangeDays(startDate, endDate);
+
+    if (rangeDays <= 31) return "day";
+    if (rangeDays <= 183) return "week";
+    if (rangeDays <= 366) return "month";
+    if (rangeDays <= 1826) return "quarter";
+    return "year";
+};
+
+const buildDailySales = (entries = [], startDate, endDate) => {
+    const trendType = getTrendType(startDate, endDate);
+    const revenueByDate = new Map(entries.map((entry) => [entry._id, entry.revenue]));
+    const buckets = [];
+    const bucketMap = new Map();
+    const current = new Date(startDate);
+
+    if (trendType === "day") {
+        while (current <= endDate) {
+            const dateLabel = formatDateLabel(current);
+
+            buckets.push({
+                label: formatShortDateLabel(current),
+                value: revenueByDate.get(dateLabel) || 0
+            });
+
+            current.setUTCDate(current.getUTCDate() + 1);
+        }
+
+        return buckets;
+    }
+
+    if (trendType === "week") {
+        let weekNumber = 1;
+        let bucketValue = 0;
+        let bucketDayCount = 0;
+
+        while (current <= endDate) {
+            const dateLabel = formatDateLabel(current);
+            bucketValue += revenueByDate.get(dateLabel) || 0;
+            bucketDayCount += 1;
+
+            if (bucketDayCount === 7) {
+                buckets.push({ label: `Week ${weekNumber}`, value: bucketValue });
+                weekNumber += 1;
+                bucketValue = 0;
+                bucketDayCount = 0;
+            }
+
+            current.setUTCDate(current.getUTCDate() + 1);
+        }
+
+        if (bucketDayCount > 0) {
+            buckets.push({ label: `Week ${weekNumber}`, value: bucketValue });
+        }
+
+        return buckets;
+    }
+
+    while (current <= endDate) {
+        const dateLabel = formatDateLabel(current);
+        const [year, month] = dateLabel.split("-");
+        let bucketKey = year;
+        let bucketLabel = year;
+
+        if (trendType === "month") {
+            bucketKey = `${year}-${month}`;
+            bucketLabel = `${MONTH_NAMES[Number(month) - 1]} ${year}`;
+        }
+
+        if (trendType === "quarter") {
+            const quarter = Math.ceil(Number(month) / 3);
+            bucketKey = `${year}-Q${quarter}`;
+            bucketLabel = `Q${quarter} ${year}`;
+        }
+
+        if (!bucketMap.has(bucketKey)) {
+            const bucket = { label: bucketLabel, value: 0 };
+            bucketMap.set(bucketKey, bucket);
+            buckets.push(bucket);
+        }
+
+        bucketMap.get(bucketKey).value += revenueByDate.get(dateLabel) || 0;
+        current.setUTCDate(current.getUTCDate() + 1);
+    }
+
+    return buckets;
+};
+
+const buildHourlySales = (entries = []) => {
+    const revenueByHour = new Map(entries.map((entry) => [entry._id, entry.revenue]));
+
+    return Array.from({ length: 24 }, (_, hour) => ({
+        hour,
+        value: revenueByHour.get(hour) || 0
+    }));
+};
+
+const normalizeAnalyticsResult = (result = {}, startDate, endDate) => {
+    const summary = result.summary?.length
+        ? result.summary[0]
+        : { totalRevenue: 0, totalOrders: 0, totalItems: 0 };
+
+    return {
+        summary,
+        dailySales: buildDailySales(result.dailySales || [], startDate, endDate),
+        hourlySales: buildHourlySales(result.hourlySales || []),
+        paymentDistribution: (result.paymentDistribution || []).map((entry) => ({
+            type: entry._id,
+            revenue: entry.revenue
+        })),
+        orderTypeDistribution: (result.orderTypeDistribution || []).map((entry) => ({
+            type: entry._id,
+            revenue: entry.revenue
+        })),
+        topProducts: result.topProducts || []
+    };
+};
+
+const generateAnalytics = async (startDate, endDate) => {
     const analytics = await Bill.aggregate([
-        { $match: { createdAt: { $gte: start, $lt: end } } },
+        {
+            $match: {
+                createdAt: {
+                    $gte: startDate,
+                    $lte: endDate
+                }
+            }
+        },
         {
             $facet: {
-
                 summary: [
                     {
                         $group: {
@@ -72,12 +198,12 @@ const generateMonthlyAnalytics = async (month, year) => {
                         }
                     }
                 ],
-
                 dailySales: [
                     {
                         $group: {
                             _id: {
-                                $dayOfMonth: {
+                                $dateToString: {
+                                    format: "%Y-%m-%d",
                                     date: "$createdAt",
                                     timezone: TIMEZONE
                                 }
@@ -87,7 +213,6 @@ const generateMonthlyAnalytics = async (month, year) => {
                     },
                     { $sort: { _id: 1 } }
                 ],
-
                 hourlySales: [
                     {
                         $project: {
@@ -108,7 +233,6 @@ const generateMonthlyAnalytics = async (month, year) => {
                     },
                     { $sort: { _id: 1 } }
                 ],
-
                 paymentDistribution: [
                     {
                         $group: {
@@ -117,7 +241,6 @@ const generateMonthlyAnalytics = async (month, year) => {
                         }
                     }
                 ],
-
                 orderTypeDistribution: [
                     {
                         $group: {
@@ -126,7 +249,6 @@ const generateMonthlyAnalytics = async (month, year) => {
                         }
                     }
                 ],
-
                 topProducts: [
                     { $unwind: "$items" },
                     {
@@ -142,76 +264,42 @@ const generateMonthlyAnalytics = async (month, year) => {
         }
     ]);
 
-    const result = analytics[0] || {};
-
-    const summary = result.summary?.length
-        ? result.summary[0]
-        : { totalRevenue: 0, totalOrders: 0, totalItems: 0 };
-
-    return {
-        summary,
-        dailySales: result.dailySales || [],
-        hourlySales: result.hourlySales || [],
-        paymentDistribution: (result.paymentDistribution || []).map(p => ({
-            type: p._id,
-            revenue: p.revenue
-        })),
-        orderTypeDistribution: (result.orderTypeDistribution || []).map(o => ({
-            type: o._id,
-            revenue: o.revenue
-        })),
-        topProducts: result.topProducts || []
-    };
+    return normalizeAnalyticsResult(analytics[0], startDate, endDate);
 };
-
-
-/* -------------------------------- */
-/* GET ANALYTICS API                */
-/* -------------------------------- */
 
 exports.getMonthlyAnalytics = async (req, res) => {
     try {
 
-        const now = new Date();
+        const { startDate, endDate, filter, label } = buildDateFilter(req.query);
+        const analytics = await generateAnalytics(startDate, endDate);
 
-        const month = parseInt(req.query.month) || (now.getMonth() + 1);
-        const year = parseInt(req.query.year) || now.getFullYear();
-
-        const analytics = await generateMonthlyAnalytics(month, year);
-
-        res.json(analytics);
+        return res.status(200).json({
+            ...analytics,
+            filter,
+            periodLabel: label
+        });
 
     } catch (error) {
+
         console.error("Analytics error:", error);
 
-        res.status(500).json({
-            message: "Failed to fetch analytics",
-            error: error.message
+        return res.status(error.status || 500).json({
+            message: error.message || "Failed to fetch analytics",
+            error: error.status ? undefined : error.message
         });
     }
 };
 
-
-/* -------------------------------- */
-/* DOWNLOAD ANALYTICS CSV           */
-/* -------------------------------- */
-
 exports.downloadAnalyticsReport = async (req, res) => {
     try {
 
-        const now = new Date();
-
-        const month = parseInt(req.query.month) || (now.getMonth() + 1);
-        const year = parseInt(req.query.year) || now.getFullYear();
-
-        /* USE SAME DATA AS GET METHOD */
-        const analytics = await generateMonthlyAnalytics(month, year);
+        const { startDate, endDate, filter, label, fileLabel } = buildDateFilter(req.query);
+        const analytics = await generateAnalytics(startDate, endDate);
 
         const csvLines = [
-
             buildCsvRow(["Analytics Report"]),
-            buildCsvRow(["Month", MONTH_NAMES[month - 1]]),
-            buildCsvRow(["Year", year]),
+            buildCsvRow(["Filter", filter === "range" ? "Custom Range" : "This Month"]),
+            buildCsvRow(["Period", label]),
             buildCsvRow(["Generated At", formatReportDate(new Date())]),
             "",
 
@@ -222,61 +310,55 @@ exports.downloadAnalyticsReport = async (req, res) => {
             buildCsvRow(["Total Items", analytics.summary.totalItems]),
             "",
 
-            buildCsvRow(["Daily Sales"]),
-            buildCsvRow(["Day", "Revenue"]),
-            ...analytics.dailySales.map(d =>
-                buildCsvRow([d._id, d.revenue])
+            buildCsvRow(["Revenue Trend"]),
+            buildCsvRow(["Label", "Value"]),
+            ...analytics.dailySales.map((entry) =>
+                buildCsvRow([entry.label, entry.value])
             ),
-
             "",
 
             buildCsvRow(["Hourly Sales"]),
-            buildCsvRow(["Hour", "Revenue"]),
-            ...analytics.hourlySales.map(h =>
-                buildCsvRow([h._id, h.revenue])
+            buildCsvRow(["Hour", "Value"]),
+            ...analytics.hourlySales.map((entry) =>
+                buildCsvRow([entry.hour, entry.value])
             ),
-
             "",
 
             buildCsvRow(["Payment Distribution"]),
             buildCsvRow(["Payment Type", "Revenue"]),
-            ...analytics.paymentDistribution.map(p =>
-                buildCsvRow([p.type, p.revenue])
+            ...analytics.paymentDistribution.map((entry) =>
+                buildCsvRow([entry.type, entry.revenue])
             ),
-
             "",
 
             buildCsvRow(["Order Type Distribution"]),
             buildCsvRow(["Order Type", "Revenue"]),
-            ...analytics.orderTypeDistribution.map(p =>
-                buildCsvRow([p.type, p.revenue])
+            ...analytics.orderTypeDistribution.map((entry) =>
+                buildCsvRow([entry.type, entry.revenue])
             ),
-
             "",
 
             buildCsvRow(["Top Products"]),
             buildCsvRow(["Product Name", "Revenue"]),
-            ...analytics.topProducts.map(p =>
-                buildCsvRow([p._id, p.revenue])
+            ...analytics.topProducts.map((entry) =>
+                buildCsvRow([entry._id, entry.revenue])
             )
         ];
 
-        const fileName =
-            `analytics-report-${year}-${String(month).padStart(2, "0")}.csv`;
+        const fileName = `analytics-report-${fileLabel}.csv`;
 
         res.setHeader("Content-Type", "text/csv; charset=utf-8");
-        res.setHeader("Content-Disposition",
-            `attachment; filename="${fileName}"`);
+        res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
 
-        res.status(200).send(`\uFEFF${csvLines.join("\n")}`);
+        return res.status(200).send(`\uFEFF${csvLines.join("\n")}`);
 
     } catch (error) {
 
         console.error("Analytics export error:", error);
 
-        res.status(500).json({
-            message: "Failed to download analytics report",
-            error: error.message
+        return res.status(error.status || 500).json({
+            message: error.message || "Failed to download analytics report",
+            error: error.status ? undefined : error.message
         });
     }
 };
