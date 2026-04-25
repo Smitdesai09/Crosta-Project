@@ -101,6 +101,19 @@ const getAvatarClass = (name) => {
   return AVATAR_COLORS[index];
 };
 
+const formatLoginTime = (dateStr) => {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return null;
+  const yy = String(d.getFullYear()).slice(-2);
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  return `${yy}/${mm}/${dd} ${hh}:${min}:${ss}`;
+};
+
 const FilterSelect = ({ value, onChange, options, placeholder }) => {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
@@ -559,10 +572,11 @@ const AdminPanel = () => {
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl bg-white shadow-sm">
         <div className="grid flex-shrink-0 grid-cols-12 gap-2 bg-red-500 px-6 py-4 text-xs font-bold uppercase tracking-wider text-white">
-          <div className="col-span-5">User</div>
+          <div className="col-span-4">User</div>
           <div className="col-span-2 text-center">Role</div>
-          <div className="col-span-2 text-center">Status</div>
-          <div className="col-span-3 text-right">Actions</div>
+          <div className="col-span-1 text-center">Status</div>
+          <div className="col-span-3 text-center">Activity</div>
+          <div className="col-span-2 text-right">Actions</div>
         </div>
 
         <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
@@ -579,10 +593,12 @@ const AdminPanel = () => {
             paginatedUsers.map((item) => {
               const isCurrentUser = currentUserId === item._id;
               const isInactive = item.isDeleted;
+              const loginTime = formatLoginTime(item.currentLogin) || formatLoginTime(item.lastLogin);
+              const device = item.lastDevice || "Unknown";
 
               return (
                 <div key={item._id} className="grid grid-cols-12 gap-2 px-6 py-4 hover:bg-gray-50 transition-colors">
-                  <div className="col-span-5 flex min-w-0 items-center gap-4">
+                  <div className="col-span-4 flex min-w-0 items-center gap-4">
                     <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-bold ${getAvatarClass(item.name)}`}>
                       {getInitials(item.name)}
                     </div>
@@ -598,13 +614,20 @@ const AdminPanel = () => {
                     </span>
                   </div>
 
-                  <div className="col-span-2 flex items-center justify-center">
-                    <span className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-wide ${isInactive ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>
+                  <div className="col-span-1 flex items-center justify-center">
+                    <span className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${isInactive ? "bg-red-50 text-red-600" : "bg-green-50 text-green-700"}`}>
                       {isInactive ? "Inactive" : "Active"}
                     </span>
                   </div>
 
-                  <div className="col-span-3 flex items-center justify-end gap-2">
+                  <div className="col-span-3 flex items-center justify-center">
+                    <div className="min-w-0 text-center">
+                      <p className="truncate text-[13px] text-gray-500"><span className="text-gray-400">Last Login: </span><span className="text-gray-700">{loginTime || "N/A"}</span></p>
+                      <p className="truncate text-[13px] text-gray-500 mt-0.5"><span className="text-gray-400">Device: </span><span className="text-gray-700">{device}</span></p>
+                    </div>
+                  </div>
+
+                  <div className="col-span-2 flex items-center justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => openEditModal(item)}

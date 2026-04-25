@@ -4,7 +4,7 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendMail = require("../utils/sendMail");
-
+const UAParser = require("ua-parser-js");
 
 exports.login = async (req, res) => {
   try {
@@ -44,6 +44,23 @@ exports.login = async (req, res) => {
       });
     }
 
+    // device info
+    const ua = req.headers["user-agent"] || "";
+    const parser = new UAParser(ua);
+
+    const browser = parser.getBrowser().name || "Unknown";
+    const os = parser.getOS().name || "";
+    const deviceType = parser.getDevice().type || "Desktop";
+
+    existUser.lastLogin = existUser.currentLogin || null;
+    existUser.currentLogin = new Date();
+
+    existUser.lastDevice = os
+      ? `${browser} - ${os}`
+      : `${browser} - ${deviceType}`;
+
+    await existUser.save({ validateBeforeSave: false });
+
     const token = jwt.sign(
       {
         _id: existUser._id,
@@ -71,6 +88,9 @@ exports.login = async (req, res) => {
         name: existUser.name,
         email: existUser.email,
         role: existUser.role,
+        lastLogin: existUser.lastLogin,
+        currentLogin: existUser.currentLogin,
+        lastDevice: existUser.lastDevice,
       },
     });
 

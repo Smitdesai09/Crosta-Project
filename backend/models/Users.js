@@ -33,7 +33,18 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
-
+    lastLogin: {
+      type: Date,
+      default: null
+    },
+    currentLogin: {
+      type: Date,
+      default: null
+    },
+    lastDevice: {
+      type: String,
+      default: ""
+    },
     isDeleted: {
       type: Boolean,
       default: false,

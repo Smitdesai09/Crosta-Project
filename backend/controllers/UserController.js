@@ -66,7 +66,7 @@ exports.getAllUsers = async (req, res) => {
   try {
     const users = await User
       .find({})
-      .select("name email role isDeleted")
+      .select("name email role isDeleted lastLogin currentLogin lastDevice")
       .sort({ isDeleted: 1, createdAt: -1 })
       .lean();
 
